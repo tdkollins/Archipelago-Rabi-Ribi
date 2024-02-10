@@ -34,7 +34,7 @@ class RabiRibiItem(Item):
             "Charge Ring",
             "Easter Egg"
         )
-    
+
 def get_base_item_list() -> List[str]:
     """
     Get the base list of items in the game.
@@ -45,8 +45,13 @@ def get_base_item_list() -> List[str]:
     # load list of all game items from existing randomizer.
     item_locs = load_item_locs()
 
-    # Use a set amount of egg items
+    # Use a set amount of easter eggs
+    for _ in range(5):
+        item_list.append("Easter Egg")
+
     for item in item_locs.keys():
+        # If we want to include the item, convert to the AP item id.
+        # Otherwise, pass and dont include it.
         if item.startswith("ITEM_EGG"):
             pass
         elif item.startswith("ITEM_ATK_UP"):
