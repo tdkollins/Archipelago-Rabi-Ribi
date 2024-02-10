@@ -3,7 +3,7 @@ This module serves as an entrypoint into the Rabi-Ribi AP world.
 """
 from typing import Dict, Set
 
-from .items import item_table, RabiRibiItem
+from .items import item_table, RabiRibiItem, get_base_item_list
 from .locations import location_table, RabiRibiLocation
 from .options import RabiRibiOptions
 from .web import RabiRibiWeb
@@ -42,3 +42,18 @@ class RabiRibiWorld(World):
         classification = ItemClassification.progression if is_progression else \
             ItemClassification.filler
         return RabiRibiItem(name, classification, self.item_name_to_id[name], self.player)
+
+    def create_items(self) -> None:
+        base_item_list = get_base_item_list()
+
+        for item in map(self.create_item, base_item_list):
+            self.multiworld.itempool.append(item)
+
+        junk = 0
+        self.multiworld.itempool += [self.create_item("nothing") for _ in range(junk)]
+
+    def generate_early(self) -> None:
+        """Set world specific generation properties"""
+
+        # Will be configurable later, but for now always force eggs to be local.
+        self.multiworld.local_items[self.player].value.add("Easter Egg")

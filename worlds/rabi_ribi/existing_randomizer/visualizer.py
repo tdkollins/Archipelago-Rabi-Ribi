@@ -238,7 +238,7 @@ def get_item_coords(x, y, areaid, name):
 
 def load_item_locs():
     d = {}
-    with open('locations_items.txt') as f:
+    with open('worlds/rabi_ribi/existing_randomizer/locations_items.txt') as f:
         reading = False
         for line in f:
             if '===Items===' in line or '===ShufflableGiftItems===' in line:

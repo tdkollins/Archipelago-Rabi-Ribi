@@ -1,4 +1,7 @@
 """This module represents item definitions for Rabi-Ribi"""
+from typing import List
+
+from .existing_randomizer.visualizer import load_item_locs
 from BaseClasses import Item
 
 class RabiRibiItem(Item):
@@ -13,7 +16,7 @@ class RabiRibiItem(Item):
         This will likely be updated as future logic changes happen.
         For now im porting the logic from the existing rando as is.
         """
-        return name.startswith("Easter Egg") or name in set(
+        return name in set(
             "Fire Orb",
             "Water Orb",
             "Light Orb",
@@ -29,6 +32,48 @@ class RabiRibiItem(Item):
             "Hammer Roll",
             "Carrot Shooter",
             "Charge Ring",
+            "Easter Egg"
         )
+    
+def get_base_item_list() -> List[str]:
+    """
+    Get the base list of items in the game.
+    No options are configurable at the moment.
+    """
+    item_list = []
+
+    # load list of all game items from existing randomizer.
+    item_locs = load_item_locs()
+
+    # Use a set amount of egg items
+    for item in item_locs.keys():
+        if item.startswith("ITEM_EGG"):
+            pass
+        elif item.startswith("ITEM_ATK_UP"):
+            item_list.append("Attack Up")
+        elif item.startswith("ITEM_HP_UP"):
+            item_list.append("HP Up")
+        elif item.startswith("ITEM_MP_UP"):
+            item_list.append("MP Up")
+        elif item.startswith("ITEM_PACK_UP"):
+            item_list.append("Pack Up")
+        elif item.startswith("ITEM_REGEN_UP"):
+            item_list.append("Regen Up")
+        elif item in [
+            "ITEM_UNKNOWN_ITEM_1",
+            "ITEM_UNKNOWN_ITEM_2",
+            "ITEM_UNKNOWN_ITEM_3",
+            "ITEM_P_HAIRPIN",
+            "ITEM_SPEED_BOOST",
+            "ITEM_BUNNY_STRIKE",
+        ]:
+            pass
+        else:
+            # Format the item string and then add to the item list
+            item = item.split("_")
+            item = " ".join(word.capitalize() for word in item[1:])
+            item_list.append(item)
+
+    return item_list
 
 item_table = {}
