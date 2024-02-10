@@ -8,6 +8,7 @@ from .locations import location_table, RabiRibiLocation
 from .options import RabiRibiOptions
 from .web import RabiRibiWeb
 from worlds.AutoWorld import World, WebWorld
+from BaseClasses import ItemClassification
 
 class RabiRibiWorld(World):
     """
@@ -37,4 +38,7 @@ class RabiRibiWorld(World):
 
     def create_item(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
-        return NotImplementedError()
+        is_progression = RabiRibiItem.is_progression_item(name)
+        classification = ItemClassification.progression if is_progression else \
+            ItemClassification.filler
+        return RabiRibiItem(name, classification, self.item_name_to_id[name], self.player)
