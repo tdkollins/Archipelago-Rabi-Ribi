@@ -1,5 +1,5 @@
-from dataparser import KNOWLEDGE_INTERMEDIATE, KNOWLEDGE_ADVANCED, DIFFICULTY_HARD, DIFFICULTY_V_HARD, DIFFICULTY_STUPID
-from utility import fail
+from worlds.rabi_ribi.existing_randomizer.dataparser import KNOWLEDGE_INTERMEDIATE, KNOWLEDGE_ADVANCED, DIFFICULTY_HARD, DIFFICULTY_V_HARD, DIFFICULTY_STUPID
+from worlds.rabi_ribi.existing_randomizer.utility import fail
 import statistics
 
 class DifficultyConfig(object):

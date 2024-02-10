@@ -1,7 +1,7 @@
-from allocation import Allocation
-from analyzer import Analyzer
-from difficultyanalysis import DifficultyAnalysis
-from utility import fail, print_ln
+from worlds.rabi_ribi.existing_randomizer.allocation import Allocation
+from worlds.rabi_ribi.existing_randomizer.analyzer import Analyzer
+from worlds.rabi_ribi.existing_randomizer.difficultyanalysis import DifficultyAnalysis
+from worlds.rabi_ribi.existing_randomizer.utility import fail, print_ln
 import time
 
 class Generator(object):

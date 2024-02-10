@@ -1,5 +1,5 @@
 import ast, re, os
-from utility import *
+from worlds.rabi_ribi.existing_randomizer.utility import *
 
 """
 Knowledge levels:
@@ -256,7 +256,7 @@ def parse_locations_and_items():
     additional_items = {}
     map_transitions = []
 
-    lines = read_file_and_strip_comments('locations_items.txt')
+    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/locations_items.txt')
 
     type_map = {
         "WARP" : LOCATION_WARP,
@@ -342,7 +342,7 @@ def parse_locations_and_items():
 
 # throws errors for invalid formats.
 def parse_edge_constraints(locations_set, variable_names_set, default_expressions):
-    lines = read_file_and_strip_comments('constraints_graph.txt')
+    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/constraints_graph.txt')
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
     jsondata = '},{'.join(re.split('}\s*{', jsondata))
@@ -368,7 +368,7 @@ def parse_edge_constraints(locations_set, variable_names_set, default_expression
     return constraints
 
 def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locations_set, variable_names_set, default_expressions):
-    lines = read_file_and_strip_comments('constraints.txt')
+    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/constraints.txt')
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
     jsondata = '},{'.join(re.split('}\s*{', jsondata))
@@ -408,9 +408,9 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
 
     return item_constraints
 
-DIR_TEMPLATE_PATCH_FILES = './maptemplates/constraint_shuffle/'
+DIR_TEMPLATE_PATCH_FILES = 'worlds/rabi_ribi/existing_randomizer/maptemplates/constraint_shuffle/'
 def parse_template_constraints(locations_set, variable_names_set, default_expressions, edge_constraints):
-    lines = read_file_and_strip_comments('maptemplates/template_constraints.txt')
+    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/maptemplates/template_constraints.txt')
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
     jsondata = '},{'.join(re.split('}\s*{', jsondata))
