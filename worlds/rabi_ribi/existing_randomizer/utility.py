@@ -78,10 +78,12 @@ class EdgeConstraintData(object):
         ])
 
 class ItemConstraintData(object):
-    def __init__(self, item, from_location, entry_prereq, exit_prereq, alternate_entries, alternate_exits):
+    def __init__(self, item, from_location, entry_prereq, entry_prereq_expr, exit_prereq, exit_prereq_expr, alternate_entries, alternate_exits):
         self.item = item
         self.from_location = from_location
         self.entry_prereq = entry_prereq
+        self.entry_prereq_expr = entry_prereq_expr
+        self.exit_prereq_expr = exit_prereq_expr
         self.exit_prereq = exit_prereq
         self.alternate_entries = alternate_entries
         self.alternate_exits = alternate_exits

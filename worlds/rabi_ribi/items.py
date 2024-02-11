@@ -1,8 +1,8 @@
 """This module represents item definitions for Rabi-Ribi"""
 from typing import List
 
-from .existing_randomizer.visualizer import load_item_locs
 from BaseClasses import Item
+from .existing_randomizer.visualizer import load_item_locs
 
 class RabiRibiItem(Item):
     """Rabi Ribi Item Definition"""
@@ -16,7 +16,7 @@ class RabiRibiItem(Item):
         This will likely be updated as future logic changes happen.
         For now im porting the logic from the existing rando as is.
         """
-        return name in set(
+        return name in {
             "Fire Orb",
             "Water Orb",
             "Light Orb",
@@ -33,12 +33,14 @@ class RabiRibiItem(Item):
             "Carrot Shooter",
             "Charge Ring",
             "Easter Egg"
-        )
+        }
 
 def get_base_item_list() -> List[str]:
     """
     Get the base list of items in the game.
     No options are configurable at the moment.
+
+    :returns List[str]: a list of item names to be added to the AP world. 
     """
     item_list = []
 
@@ -81,4 +83,6 @@ def get_base_item_list() -> List[str]:
 
     return item_list
 
-item_table = {}
+item_set = set(
+    get_base_item_list()
+)

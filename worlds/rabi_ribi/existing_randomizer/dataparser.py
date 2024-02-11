@@ -58,8 +58,8 @@ def define_setting_flags(settings):
 def define_pseudo_items():
     return {
         "WALL_JUMP_LV2": "WALL_JUMP & TOWN_SHOP",
-        "HAMMER_ROLL_LV3": "rHAMMER_ROLL & TOWN_SHOP & CHAPTER_3",
-        "AIR_DASH_LV3": "rAIR_DASH & TOWN_SHOP",
+        "HAMMER_ROLL_LV3": "HAMMER_ROLL & TOWN_SHOP & CHAPTER_3",
+        "AIR_DASH_LV3": "AIR_DASH & TOWN_SHOP",
         "SPEED_BOOST_LV3": "SPEED_BOOST & TOWN_SHOP",
         "BUNNY_AMULET_LV2": "(BUNNY_AMULET & TOWN_SHOP) | CHAPTER_3",
         "BUNNY_AMULET_LV3": "(BUNNY_AMULET & TOWN_SHOP) | CHAPTER_4",
@@ -394,7 +394,9 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
             item = item,
             from_location = from_location,
             entry_prereq = parse_expression_lambda(cdict['entry_prereq'], variable_names_set, default_expressions),
+            entry_prereq_expr = parse_expression(cdict['entry_prereq'], variable_names_set, default_expressions),
             exit_prereq = parse_expression_lambda(cdict['exit_prereq'], variable_names_set, default_expressions),
+            exit_prereq_expr = parse_expression(cdict['exit_prereq'], variable_names_set, default_expressions),
             alternate_entries = parse_alternates(cdict.get('alternate_entries')),
             alternate_exits = parse_alternates(cdict.get('alternate_exits')),
         ))
