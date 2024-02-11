@@ -1,6 +1,6 @@
 import random
-from utility import *
-from difficultyanalysis import compute_average_goal_level
+from worlds.rabi_ribi.existing_randomizer.utility import *
+from worlds.rabi_ribi.existing_randomizer.difficultyanalysis import compute_average_goal_level
 
 START_LOCATION = 'FOREST_START'
 

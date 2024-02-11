@@ -1,19 +1,19 @@
 import argparse, random, sys
-from utility import *
-from generator import Generator
-from dataparser import RandomizerData
-import mapfileio
-import musicrandomizer
-import backgroundrandomizer
-import converter.diffgenerator as diffgenerator
-import versioncheck
+from worlds.rabi_ribi.existing_randomizer.utility import *
+from worlds.rabi_ribi.existing_randomizer.generator import Generator
+from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
+import worlds.rabi_ribi.existing_randomizer.mapfileio
+import worlds.rabi_ribi.existing_randomizer.musicrandomizer
+import worlds.rabi_ribi.existing_randomizer.backgroundrandomizer
+import worlds.rabi_ribi.existing_randomizer.converter.diffgenerator as diffgenerator
+import worlds.rabi_ribi.existing_randomizer.versioncheck as versioncheck
 
 def parse_args():
     args = argparse.ArgumentParser(description='Rabi-Ribi Randomizer - %s' % versioncheck.VERSION_STRING)
     args.add_argument('--version', action='store_true', help='Print Randomizer Version')
     args.add_argument('-source-dir', default='original_maps', help='Source directory for original maps. Defaults to original_maps/. Do not make the source dir the output dir.')
     args.add_argument('-output-dir', default='generated_maps', help='Output directory for generated maps. Defaults to generated_maps/. Do not make the source dir the output dir.')
-    args.add_argument('-config-file', default='config.txt', help='Config file to use')
+    args.add_argument('-config-file', default='worlds/rabi_ribi/existing_randomizer/config.txt', help='Config file to use')
     args.add_argument('-seed', default=None, type=str, help='Random seed')
     args.add_argument('--no-write', action='store_true', help='Flag to disable map generation, and do only map analysis')
     args.add_argument('--no-fixes', dest='apply_fixes', default=True, action='store_false', help='Flag to disable randomizer-specific map fixes')

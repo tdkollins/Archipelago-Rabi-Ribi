@@ -1,6 +1,6 @@
 import random
 import time
-from utility import print_ln
+from worlds.rabi_ribi.existing_randomizer.utility import print_ln
 
 LAGGY_BACKGROUNDS = set((37, 65, 66, 80, 84, 88, 89, 99))
 DIFFICULT_BACKGROUNDS = set((36, 37, 56, 57, 60, 65, 66, 80, 84, 89, 103, 110))

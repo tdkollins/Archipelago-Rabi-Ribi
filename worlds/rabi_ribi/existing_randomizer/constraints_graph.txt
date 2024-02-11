@@ -24,6 +24,7 @@
 "prereq": "NONE",
 }
 
+// todo:
 {
 "edge": "FOREST_EAST_ABOVE_SPRING -> FOREST_UPPER_EAST",
 "prereq": "ITM_HARD | (SPEED1 & ITM) | AIR_DASH | AIR_JUMP",
@@ -39,6 +40,7 @@
 "prereq": "EXPLOSIVES_ENEMY & SLIDING_POWDER & PROLOGUE_TRIGGER",
 }
 
+// todo:
 {
 "edge": "FOREST_LIGHT_ORB_ROOM -> FOREST_UPPER_EAST",
 "prereq": "
@@ -206,9 +208,10 @@ ITM & (
 "prereq": "IMPOSSIBLE", // dummy edge for template constraint
 }
 
+// TODO: "DARKNESS & (CARROT_SHOOTER | (CARROT_BOMB & BACKTRACK_1)"
 {
 "edge": "FOREST_NIGHT_ATK_UP_ROOM -> FOREST_NIGHT_WEST",
-"prereq": "DARKNESS & (CARROT_SHOOTER | (CARROT_BOMB & BACKTRACK_1))",
+"prereq": "DARKNESS & CARROT_SHOOTER",
 }
 
 
@@ -1537,9 +1540,10 @@ DARKNESS & (
 "prereq": "AIR_JUMP | WHIRL_BONK_CANCEL",
 }
 
+// TODO: "DOWNDRILL_SEMISOLID_CLIP | (PIKO_HAMMER_LEVELED & RABI_SLIPPERS) | BUNNY_WHIRL | AIR_DASH | (EXPLOSIVES_ENEMY & BACKTRACK_3)"
 {
 "edge": "RIVERBANK_LOWER_LEFT -> RIVERBANK_LOWER_MID",
-"prereq": "DOWNDRILL_SEMISOLID_CLIP | (PIKO_HAMMER_LEVELED & RABI_SLIPPERS) | BUNNY_WHIRL | AIR_DASH | (EXPLOSIVES_ENEMY & BACKTRACK_3)",
+"prereq": "DOWNDRILL_SEMISOLID_CLIP | (PIKO_HAMMER_LEVELED & RABI_SLIPPERS) | BUNNY_WHIRL | AIR_DASH",
 }
 
 {
@@ -1874,11 +1878,12 @@ DARKNESS & (
 "prereq": "SLIDING_POWDER",
 }
 
-{
-"edge": "LAB_SLIDING_POWDER_ROOM -> LAB_EAST",
-// bomb attack up hole, go to sliding powder room and hammer roll zip out (backtrack)
-"prereq": "EXPLOSIVES & HAMMER_ROLL_ZIP & ADVANCED & BACKTRACK_2",
-}
+// TODO: "EXPLOSIVES & HAMMER_ROLL_ZIP & ADVANCED & BACKTRACK_2"
+// {
+// "edge": "LAB_SLIDING_POWDER_ROOM -> LAB_EAST",
+// // bomb attack up hole, go to sliding powder room and hammer roll zip out (backtrack)
+// "prereq": "EXPLOSIVES & HAMMER_ROLL_ZIP & ADVANCED & BACKTRACK_2",
+// }
 
 {
 "edge": "LAB_WEST -> LAB_MID",

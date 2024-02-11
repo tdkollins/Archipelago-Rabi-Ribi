@@ -1,5 +1,5 @@
 import ast, re, os
-from utility import *
+from worlds.rabi_ribi.existing_randomizer.utility import *
 
 """
 Knowledge levels:
@@ -58,8 +58,8 @@ def define_setting_flags(settings):
 def define_pseudo_items():
     return {
         "WALL_JUMP_LV2": "WALL_JUMP & TOWN_SHOP",
-        "HAMMER_ROLL_LV3": "rHAMMER_ROLL & TOWN_SHOP & CHAPTER_3",
-        "AIR_DASH_LV3": "rAIR_DASH & TOWN_SHOP",
+        "HAMMER_ROLL_LV3": "HAMMER_ROLL & TOWN_SHOP & CHAPTER_3",
+        "AIR_DASH_LV3": "AIR_DASH & TOWN_SHOP",
         "SPEED_BOOST_LV3": "SPEED_BOOST & TOWN_SHOP",
         "BUNNY_AMULET_LV2": "(BUNNY_AMULET & TOWN_SHOP) | CHAPTER_3",
         "BUNNY_AMULET_LV3": "(BUNNY_AMULET & TOWN_SHOP) | CHAPTER_4",
@@ -256,7 +256,7 @@ def parse_locations_and_items():
     additional_items = {}
     map_transitions = []
 
-    lines = read_file_and_strip_comments('locations_items.txt')
+    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/locations_items.txt')
 
     type_map = {
         "WARP" : LOCATION_WARP,
@@ -342,7 +342,7 @@ def parse_locations_and_items():
 
 # throws errors for invalid formats.
 def parse_edge_constraints(locations_set, variable_names_set, default_expressions):
-    lines = read_file_and_strip_comments('constraints_graph.txt')
+    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/constraints_graph.txt')
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
     jsondata = '},{'.join(re.split('}\s*{', jsondata))
@@ -368,7 +368,7 @@ def parse_edge_constraints(locations_set, variable_names_set, default_expression
     return constraints
 
 def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locations_set, variable_names_set, default_expressions):
-    lines = read_file_and_strip_comments('constraints.txt')
+    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/constraints.txt')
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
     jsondata = '},{'.join(re.split('}\s*{', jsondata))
@@ -394,7 +394,9 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
             item = item,
             from_location = from_location,
             entry_prereq = parse_expression_lambda(cdict['entry_prereq'], variable_names_set, default_expressions),
+            entry_prereq_expr = parse_expression(cdict['entry_prereq'], variable_names_set, default_expressions),
             exit_prereq = parse_expression_lambda(cdict['exit_prereq'], variable_names_set, default_expressions),
+            exit_prereq_expr = parse_expression(cdict['exit_prereq'], variable_names_set, default_expressions),
             alternate_entries = parse_alternates(cdict.get('alternate_entries')),
             alternate_exits = parse_alternates(cdict.get('alternate_exits')),
         ))
@@ -408,9 +410,9 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
 
     return item_constraints
 
-DIR_TEMPLATE_PATCH_FILES = './maptemplates/constraint_shuffle/'
+DIR_TEMPLATE_PATCH_FILES = 'worlds/rabi_ribi/existing_randomizer/maptemplates/constraint_shuffle/'
 def parse_template_constraints(locations_set, variable_names_set, default_expressions, edge_constraints):
-    lines = read_file_and_strip_comments('maptemplates/template_constraints.txt')
+    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/maptemplates/template_constraints.txt')
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
     jsondata = '},{'.join(re.split('}\s*{', jsondata))

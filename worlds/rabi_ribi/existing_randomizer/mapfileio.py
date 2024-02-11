@@ -1,5 +1,5 @@
 import struct
-from utility import *
+from worlds.rabi_ribi.existing_randomizer.utility import *
 
 MAP_SIZE = 100000
 MINIMAP_SIZE = 450
