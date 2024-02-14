@@ -5,10 +5,23 @@ from typing import Dict, Set
 
 from BaseClasses import ItemClassification
 from worlds.AutoWorld import World, WebWorld
+from worlds.LauncherComponents import Component, components, launch_subprocess, Type
 from .items import item_set, RabiRibiItem, get_base_item_list
 from .locations import RegionDef, get_all_possible_locations
 from .options import RabiRibiOptions
 from .web import RabiRibiWeb
+
+def launch_client():
+    """Launch a rabi ribi client instance"""
+    from worlds.rabi_ribi.client.client import launch
+    launch_subprocess(launch, name="RabiRibiClient")
+
+components.append(Component(
+    "Rabi-Ribi Client",
+    "RabiRibiClient",
+    func=launch_client,
+    component_type=Type.CLIENT
+))
 
 class RabiRibiWorld(World):
     """
