@@ -9,8 +9,10 @@ in realtime. This is used to:
  - etc... 
 """
 import struct
+import psutil
 
 from pymem import pymem
+import asyncio
 import keystone
 
 from CommonClient import logger
@@ -27,15 +29,35 @@ class RabiRibiMemoryIO():
     """
 
     def __init__(self):
-        try:
-            self.rr_mem = pymem.Pymem("rabiribi.exe")
-            self.addr_injected_give_item_entrypoint = self.rr_mem.allocate(12) # 3 instructions.
-        except pymem.exception.ProcessNotFound as err:
-            logger.error("Unable to find Rabi Ribi game process. Is the game open?")
-            logger.error(str(err))
-            raise err  # TODO: handle me when this isnt just a POC
+        self.rr_mem = None
+        self.rr_process_id = None
+        self.addr_injected_give_item_entrypoint = None
 
-    def _read_word(self, offset):
+    def is_connected(self):
+        if self.rr_mem is None:
+            return False
+        if not psutil.pid_exists(self.rr_process_id):  # confirm the process is still running
+            logger.info("Rabi Ribi connection lost.")
+            self.rr_process_id = None
+            self.rr_mem = None
+            return False
+        return True
+
+    async def connect(self, exit_event: asyncio.Event):
+        logger.info("Waiting for connection to Rabi Ribi game instance...")
+        while not exit_event.is_set():
+            try:
+                self.rr_mem = pymem.Pymem("rabiribi.exe")
+                self.rr_process_id = self.rr_mem.process_id
+                logger.info("Successfully connected to Rabi Ribi Game.")
+                return
+            except pymem.exception.ProcessNotFound:
+                await asyncio.sleep(3)
+
+    async def allocate(self):
+        self.addr_injected_give_item_entrypoint = self.rr_mem.allocate(12) # 3 instructions.
+
+    async def _read_word(self, offset):
         """
         Read 4 bytes of data at <base_process_address> + offset and return it.
 
@@ -45,7 +67,7 @@ class RabiRibiMemoryIO():
         data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, 4)
         return data
 
-    def _read_float(self, offset):
+    async def _read_float(self, offset):
         """
         Read a word at the specified offset, and interpret it as a float.
 
@@ -55,7 +77,7 @@ class RabiRibiMemoryIO():
         data = self._read_word(offset)
         return struct.unpack("f", data)[0]
 
-    def read_player_tile_position(self):
+    async def read_player_tile_position(self):
         """
         Read the player (x,y) and convert it to tile (x,y).
 
@@ -65,7 +87,7 @@ class RabiRibiMemoryIO():
         player_y = self._read_float(OFFSET_PLAYER_Y)
         return (int(player_x // TILE_LENGTH), int(player_y // TILE_LENGTH))
 
-    def give_item(self, item_id):
+    async def give_item(self, item_id):
         """
         Run the in-game give-item function. We do this by injecting our own code
         which calls the func (setting the correct parameters in the registers),
