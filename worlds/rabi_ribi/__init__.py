@@ -44,6 +44,7 @@ class RabiRibiWorld(World):
         name: id_num for
         id_num, name in enumerate(item_set, base_id)
     }
+    item_name_to_id["Temp"] =  + base_id + len(item_name_to_id)
     location_name_to_id: Dict[str, int] = {
         name: id_num for
         id_num, name in enumerate(get_all_possible_locations(), base_id)
@@ -70,8 +71,8 @@ class RabiRibiWorld(World):
         for item in map(self.create_item, base_item_list):
             self.multiworld.itempool.append(item)
 
-        # junk = len(self.location_name_to_id) - len(base_item_list)
-        # self.multiworld.itempool += [self.create_item("nothing") for _ in range(junk)]
+        junk = len(self.location_name_to_id) - len(base_item_list)
+        self.multiworld.itempool += [self.create_item("Temp") for _ in range(junk)]
 
     def create_regions(self) -> None:
         """
@@ -94,9 +95,3 @@ class RabiRibiWorld(World):
         """
         self.multiworld.completion_condition[self.player] = \
             lambda state: state.has("Easter Egg", self.player, 5)
-
-    def generate_output(self, output_directory: str) -> None:
-        """For debug for now"""
-        from Utils import visualize_regions
-        visualize_regions(self.multiworld.get_region("Menu", self.player), "my_world.puml")
-        return super().generate_output(output_directory)

@@ -8,11 +8,11 @@ in realtime. This is used to:
  - Modify map data loaded into memory.
  - etc... 
 """
+import asyncio
 import struct
 import psutil
 
 from pymem import pymem
-import asyncio
 import keystone
 
 from CommonClient import logger

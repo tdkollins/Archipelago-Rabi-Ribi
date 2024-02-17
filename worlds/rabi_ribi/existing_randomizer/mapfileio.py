@@ -107,22 +107,22 @@ def write_items(areaid, items, path='.'):
 def map_filename(areaid, path='.'):
     return '%s/area%d.map' % (path, areaid)
 
-def print_all_items(path='.'):
-    sb = []
-    for areaid in range(0,10):
-        continue
-        items = load_items(areaid, path)
-        sb.append('Area %d: NAME' % areaid)
-        for item in items:
-            sb.append(str(item))
-    for areaid in range(0,10):
-        items = load_eggs(areaid, path)
-        for item in items:
-            item.name = 'EGG_'
-        sb.append('Area %d: NAME' % areaid)
-        for item in items:
-            sb.append(str(item))
-    print_ln('\n'.join(sb))
+# def print_all_items(path='.'):
+#     sb = []
+#     for areaid in range(0,10):
+#         continue
+#         items = load_items(areaid, path)
+#         sb.append('Area %d: NAME' % areaid)
+#         for item in items:
+#             sb.append(str(item))
+#     for areaid in range(0,10):
+#         items = load_eggs(areaid, path)
+#         for item in items:
+#             item.name = 'EGG_'
+#         sb.append('Area %d: NAME' % areaid)
+#         for item in items:
+#             sb.append(str(item))
+#     print_ln('\n'.join(sb))
 
 def has_neighboring_bomb_block(tiledata_event, x, y):
     px, py = x-1, y
@@ -225,17 +225,28 @@ class StoredMapData(object):
 
 class ItemModifier(object):
     def __init__(self, areaids, source_dir='.', no_load=False):
+        """
+        AP Note:
+            In the existing randomizer, this function is currently always
+            called with no_load=True. It looks like no_load=False will break things
+            so I'm just going to remove that code path...
+        """
         self.areaids = list(areaids)
         self.items = dict((areaid, {}) for areaid in areaids)
 
-        if no_load:
-            self._set_all_dirty_flags(True)
-        else:
-            # Load items from maps
-            for areaid in areaids:
-                for item in load_items(areaid, source_dir):
-                    self.items[item.areaid][item.position] = item
-            self._set_all_dirty_flags(False)
+
+        """
+        AP Note: always take the no_load = True code path.
+        """
+        # if no_load:
+        #     self._set_all_dirty_flags(True)
+        # else:
+        #     # Load items from maps
+        #     for areaid in areaids:
+        #         for item in load_items(areaid, source_dir):
+        #             self.items[item.areaid][item.position] = item
+        #     self._set_all_dirty_flags(False)
+        self._set_all_dirty_flags(True)
 
         self.stored_datas = {}
         for areaid in self.areaids:

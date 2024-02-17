@@ -17,17 +17,48 @@ class RabiRibiContext(CommonContext):
     def __init__(self, server_address: Optional[str], password: Optional[str]) -> None:
         super().__init__(server_address, password)
         self.game = "Rabi-Ribi"
+        self.items_handling = 0b001  # only items from other worlds
         self.rr_interface = RabiRibiMemoryIO()
+        self.location_name_to_id = None
+        self.location_id_to_name = None
+        self.item_name_to_id = None
+        self.item_id_to_name = None
+
+    async def server_auth(self, password_requested: bool = False):
+        if password_requested and not self.password:
+            await super().server_auth(password_requested)
+        await self.get_username()
+        await self.send_connect()
+
+    def on_package(self, cmd: str, args: dict):
+        if cmd == "Connected":
+            asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
+        elif cmd == "DataPackage":
+            self.location_name_to_id = args["data"]["games"]["Rabi-Ribi"]["location_name_to_id"]
+            self.location_id_to_name = {v: k for k, v in self.location_name_to_id.items()}
+            self.item_name_to_id = args["data"]["games"]["Rabi-Ribi"]["item_name_to_id"]
+            self.item_id_to_name = {v: k for k, v in self.item_name_to_id.items()}
+            location_ids = [loc_id for loc_id in self.location_id_to_name.keys()]
+            asyncio.create_task(self.send_msgs([{
+                "cmd": "LocationScouts",
+                "locations": location_ids
+            }]))
+        elif cmd == "LocationInfo":
+            # finished recieving location packets?
+            if self.location_id_to_name and len(self.location_id_to_name) == len(self.locations_info):
+                from worlds.rabi_ribi.client.patch import patch_map_files
+                patch_map_files(self)
 
 async def rabi_ribi_watcher(ctx: RabiRibiContext):
     logger.info("Waiting for connection to Rabi Ribi")
     while not ctx.exit_event.is_set():
-        if not ctx.rr_interface.is_connected():
-            await ctx.rr_interface.connect(ctx.exit_event)
+        # if not ctx.rr_interface.is_connected():
+            # await ctx.rr_interface.connect(ctx.exit_event)
         try:
+            # logger.info(ctx.locations_info)
             pass
-        except pymem.exception.ProcessNotFound:
-            # Process was closed, attempt to reconnect at the top of the loop
+        except pymem.exception.ProcessNotFound:  # Rabi Ribi Process closed?
+            # attempt to reconnect at the top of the loop
             continue
         await asyncio.sleep(1)
 

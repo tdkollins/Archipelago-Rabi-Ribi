@@ -305,6 +305,18 @@ def convert_existing_rando_name_to_ap_name(name):
     ap_name = " ".join(word.capitalize() for word in ap_name)
     return ap_name
 
+def convert_ap_name_to_existing_rando_name(name):
+    """
+    Converts a name from the existing randomizer to AP.
+    This converts from capitalized underscore seperation to Captialization with spaces.
+    E.g. My Item Name -> MY_ITEM_NAME
+
+    :string name: The name to convert
+    """
+    existing_rando_name = name.split(" ")
+    existing_rando_name = "_".join(existing_rando_name).upper()
+    return existing_rando_name
+
 def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int):
     """
     This method converts a rule from the existing randomizer to a lambda which can be passed to AP.
