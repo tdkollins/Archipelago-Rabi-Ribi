@@ -26,19 +26,24 @@ class Allocation():
         self.map_modifications = []
         self.item_at_item_location = self.set_location_info(
             ctx.locations_info,
-            ctx.location_id_to_name,
-            ctx.item_id_to_name
+            ctx.location_ap_id_to_name,
+            ctx.item_ap_id_to_name
         )
         self.walking_left_transitions = randomizer_data.walking_left_transitions
 
-    def set_location_info(self, location_info, location_id_to_name, item_id_to_name):
+    def set_location_info(self, location_info, location_ap_id_to_name, item_ap_id_to_name):
         return {
-            convert_ap_name_to_existing_rando_name(location_id_to_name[location.location]):
-            convert_ap_name_to_existing_rando_name(item_id_to_name[location.item])
+            convert_ap_name_to_existing_rando_name(location_ap_id_to_name[location.location]):
+            convert_ap_name_to_existing_rando_name(item_ap_id_to_name[location.item])
             for location in location_info.values()
         }
 
 def patch_map_files(ctx: RabiRibiContext):
+    """
+    Patch the map files to make map modifications (item changes / room changes, etc).
+
+    :RabiRibiContext ctx: The Rabi Ribi Context instance.
+    """
     grab_original_maps("worlds/rabi_ribi/existing_randomizer/original_maps", "output")
     settings = parse_args() # this should be done through slot data later
     area_ids = get_default_areaids()

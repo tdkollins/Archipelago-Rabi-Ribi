@@ -17,9 +17,11 @@ import keystone
 
 from CommonClient import logger
 
+OFFSET_AREA_ID = int(0xD9CF88)
 OFFSET_PLAYER_X = int(0x0103469C)
 OFFSET_PLAYER_Y = int(0x013AFDB4)
 OFFSET_GIVE_ITEM_FUNC = int(0x15A90)
+OFFSET_PLAYER_FROZEN = int(0x1031DDC)
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -49,15 +51,16 @@ class RabiRibiMemoryIO():
             try:
                 self.rr_mem = pymem.Pymem("rabiribi.exe")
                 self.rr_process_id = self.rr_mem.process_id
+                self.allocate()
                 logger.info("Successfully connected to Rabi Ribi Game.")
                 return
             except pymem.exception.ProcessNotFound:
                 await asyncio.sleep(3)
 
-    async def allocate(self):
+    def allocate(self):
         self.addr_injected_give_item_entrypoint = self.rr_mem.allocate(12) # 3 instructions.
 
-    async def _read_word(self, offset):
+    def _read_word(self, offset):
         """
         Read 4 bytes of data at <base_process_address> + offset and return it.
 
@@ -67,7 +70,7 @@ class RabiRibiMemoryIO():
         data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, 4)
         return data
 
-    async def _read_float(self, offset):
+    def _read_float(self, offset):
         """
         Read a word at the specified offset, and interpret it as a float.
 
@@ -77,17 +80,54 @@ class RabiRibiMemoryIO():
         data = self._read_word(offset)
         return struct.unpack("f", data)[0]
 
-    async def read_player_tile_position(self):
+    def _read_int(self, offset):
         """
-        Read the player (x,y) and convert it to tile (x,y).
+        Read a word at the specified offset, and interpret it as an int.
+
+        :int offset: the offset to read data from.
+        :returns: The data represented as a float.
+        """
+        data = self._read_word(offset)
+        return struct.unpack("i", data)[0]
+
+    def _read_bool(self, offset):
+        """
+        Read a word at the specified offset, and interpret it as a bool
+
+        :int offset: the offset to read data from.
+        :returns: The data represented as a float.
+        """
+        data = self._read_word(offset)
+        if (struct.unpack("i", data)[0] == 0):
+            return False
+        return True
+
+    def read_player_tile_position(self):
+        """
+        Read the player (area_id,x,y) and convert it to tile (area_id,x,y).
 
         :returns: The tile position represented as an integer 2-tuple
         """
+        area_id = self._read_int(OFFSET_AREA_ID)
         player_x = self._read_float(OFFSET_PLAYER_X)
         player_y = self._read_float(OFFSET_PLAYER_Y)
-        return (int(player_x // TILE_LENGTH), int(player_y // TILE_LENGTH))
 
-    async def give_item(self, item_id):
+        # Round to nearest tile
+        if (player_x % TILE_LENGTH >= (TILE_LENGTH / 2)):
+            player_x += (TILE_LENGTH / 2)
+        if (player_y % TILE_LENGTH >= (TILE_LENGTH / 2)):
+            player_y += (TILE_LENGTH / 2)
+
+        return (int(area_id), int(player_x // TILE_LENGTH), int(player_y // TILE_LENGTH))
+
+    def is_player_frozen(self):
+        """
+        Returns True if the player is frozen. This is a way of checking if we (potentially)
+        just got an item.
+        """
+        return self._read_bool(OFFSET_PLAYER_FROZEN)
+
+    def give_item(self, item_id):
         """
         Run the in-game give-item function. We do this by injecting our own code
         which calls the func (setting the correct parameters in the registers),
