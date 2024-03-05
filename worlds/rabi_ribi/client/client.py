@@ -91,32 +91,49 @@ class RabiRibiContext(CommonContext):
         await self.send_connect()
 
     def on_package(self, cmd: str, args: dict):
+        if cmd == "Connected":
+            self.patch_if_recieved_all_data()
+
         if cmd == "RoomInfo":
             self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{args['seed_name']}-{self.auth}"
             if not os.path.isdir(self.custom_seed_subdir):
                 os.mkdir(self.custom_seed_subdir)
-            if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
-                asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
+            asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
+
         elif cmd == "DataPackage":
             self.location_name_to_ap_id = args["data"]["games"]["Rabi-Ribi"]["location_name_to_id"]
             self.location_ap_id_to_name = {v: k for k, v in self.location_name_to_ap_id.items()}
             self.item_name_to_ap_id = args["data"]["games"]["Rabi-Ribi"]["item_name_to_id"]
             self.item_ap_id_to_name = {v: k for k, v in self.item_name_to_ap_id.items()}
             location_ids = [loc_id for loc_id in self.location_ap_id_to_name.keys()]
-            asyncio.create_task(self.send_msgs([{
-                "cmd": "LocationScouts",
-                "locations": location_ids
-            }]))
+            # Only request location data if there doesnt appear to be patched game files already
+            if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
+                asyncio.create_task(self.send_msgs([{
+                    "cmd": "LocationScouts",
+                    "locations": location_ids
+                }]))
+
         elif cmd == "LocationInfo":
-            # finished recieving location packets?
-            if self.location_ap_id_to_name and len(self.location_ap_id_to_name) == len(self.locations_info):
+            self.patch_if_recieved_all_data()
+
+        elif cmd == "ReceivedItems":
+            if args["index"] > self.received_items_index:
+                asyncio.create_task(self.queue_items(args["items"]))
+
+    def patch_if_recieved_all_data(self):
+        """
+        Requirements for patching:
+            - All LocationInfo packages recieved - requested only if patch files dont exist.
+            - DataPackage package recieved (id_to_name maps and name_to_id maps are popualted)
+            - Connection package recieved (slot number populated)
+            - RoomInfo package recieved (seed name populated)
+        """
+        if self.custom_seed_subdir and self.slot and self.location_ap_id_to_name and \
+            len(self.location_ap_id_to_name) == len(self.locations_info):
                 # Patch the map files if we haven't done so already
                 if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
                     from worlds.rabi_ribi.client.patch import patch_map_files
                     patch_map_files(self)
-        elif cmd == "ReceivedItems":
-            if args["index"] > self.received_items_index:
-                asyncio.create_task(self.queue_items(args["items"]))
 
     async def queue_items(self, items: List[NetworkItem]):
         """

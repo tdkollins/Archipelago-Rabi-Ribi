@@ -26,16 +26,18 @@ class Allocation():
     def __init__(self, ctx: RabiRibiContext, randomizer_data: RandomizerData):
         self.map_modifications = []
         self.item_at_item_location = self.set_location_info(
+            ctx.slot,
             ctx.locations_info,
             ctx.location_ap_id_to_name,
-            ctx.item_ap_id_to_name
+            ctx.item_ap_id_to_name,
         )
         self.walking_left_transitions = randomizer_data.walking_left_transitions
 
-    def set_location_info(self, location_info, location_ap_id_to_name, item_ap_id_to_name):
+    def set_location_info(self, slot_num, location_info, location_ap_id_to_name, item_ap_id_to_name):
         return {
             convert_ap_name_to_existing_rando_name(location_ap_id_to_name[location.location]):
-            convert_ap_name_to_existing_rando_name(item_ap_id_to_name[location.item])
+            convert_ap_name_to_existing_rando_name(item_ap_id_to_name[location.item]) \
+                if location.player == slot_num else "ANOTHER_PLAYERS_ITEM"
             for location in location_info.values()
         }
 

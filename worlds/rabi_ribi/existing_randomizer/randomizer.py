@@ -329,6 +329,8 @@ def insert_items_into_map(mod, data, settings, allocation):
             if item_at_location in cur_stat_boost_ids:
                 item.itemid = cur_stat_boost_ids[item_at_location]
                 cur_stat_boost_ids[item_at_location] += 1
+            elif item_at_location == "ANOTHER_PLAYERS_ITEM":
+                item.itemid = 43
             elif item_at_location == "EASTER_EGG":
                 item.itemid = -250
             else:
