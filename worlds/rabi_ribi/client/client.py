@@ -30,6 +30,7 @@ class RabiRibiContext(CommonContext):
             self.read_location_coordinates_and_rr_item_ids()
         # TODO: store on disconnect.
         self.received_items_index = 0
+        # TODO: make sure queue syncs if game quits before all items sent out
         self.gift_item_queue = asyncio.Queue()  # Items queued up to give to the player.
 
     def read_location_coordinates_and_rr_item_ids(self):
