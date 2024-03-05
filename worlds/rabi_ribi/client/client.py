@@ -1,8 +1,9 @@
 from typing import Optional, List
+import ast
 import asyncio
 import colorama
+import os
 import pymem
-import ast
 
 from CommonClient import (
     CommonContext,
@@ -11,6 +12,7 @@ from CommonClient import (
     server_loop,
     gui_enabled,
 )
+from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
 from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
 from NetUtils import NetworkItem
@@ -32,6 +34,7 @@ class RabiRibiContext(CommonContext):
         self.received_items_index = 0
         # TODO: make sure queue syncs if game quits before all items sent out
         self.gift_item_queue = asyncio.Queue()  # Items queued up to give to the player.
+        self.custom_seed_subdir = None # populated when we have the unique seed ID
 
     def read_location_coordinates_and_rr_item_ids(self):
         """
@@ -88,8 +91,12 @@ class RabiRibiContext(CommonContext):
         await self.send_connect()
 
     def on_package(self, cmd: str, args: dict):
-        if cmd == "Connected":
-            asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
+        if cmd == "RoomInfo":
+            self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{args['seed_name']}-{self.auth}"
+            if not os.path.isdir(self.custom_seed_subdir):
+                os.mkdir(self.custom_seed_subdir)
+            if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
+                asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
         elif cmd == "DataPackage":
             self.location_name_to_ap_id = args["data"]["games"]["Rabi-Ribi"]["location_name_to_id"]
             self.location_ap_id_to_name = {v: k for k, v in self.location_name_to_ap_id.items()}
@@ -103,8 +110,10 @@ class RabiRibiContext(CommonContext):
         elif cmd == "LocationInfo":
             # finished recieving location packets?
             if self.location_ap_id_to_name and len(self.location_ap_id_to_name) == len(self.locations_info):
-                from worlds.rabi_ribi.client.patch import patch_map_files
-                patch_map_files(self)
+                # Patch the map files if we haven't done so already
+                if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
+                    from worlds.rabi_ribi.client.patch import patch_map_files
+                    patch_map_files(self)
         elif cmd == "ReceivedItems":
             if args["index"] > self.received_items_index:
                 asyncio.create_task(self.queue_items(args["items"]))

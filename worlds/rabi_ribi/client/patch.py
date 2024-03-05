@@ -2,6 +2,7 @@
 This module is responsible for patching the game's map files per world.
 This is done on the client side upon connect to allow for a smoother setup experience.
 """
+from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
 from worlds.rabi_ribi.existing_randomizer.mapfileio import ItemModifier, grab_original_maps
 from worlds.rabi_ribi.client.client import RabiRibiContext
@@ -44,13 +45,14 @@ def patch_map_files(ctx: RabiRibiContext):
 
     :RabiRibiContext ctx: The Rabi Ribi Context instance.
     """
-    grab_original_maps("worlds/rabi_ribi/existing_randomizer/original_maps", "output")
+    map_source_dir = f"{RabiRibiWorld.settings.game_installation_path}/data/area"
+    grab_original_maps(map_source_dir, ctx.custom_seed_subdir)
     settings = parse_args() # this should be done through slot data later
     area_ids = get_default_areaids()
     randomizer_data = RandomizerData(settings)
     item_modifier = ItemModifier(
         area_ids,
-        "worlds/rabi_ribi/existing_randomizer/original_maps",
+        map_source_dir,
         no_load=True
     )
     allocation = Allocation(ctx, randomizer_data)
@@ -58,4 +60,4 @@ def patch_map_files(ctx: RabiRibiContext):
     apply_item_specific_fixes(item_modifier, allocation)
     apply_map_transition_shuffle(item_modifier, randomizer_data, settings, allocation)
     insert_items_into_map(item_modifier, randomizer_data, settings, allocation)
-    item_modifier.save("output")
+    item_modifier.save(ctx.custom_seed_subdir)

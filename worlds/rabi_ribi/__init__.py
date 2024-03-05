@@ -1,7 +1,7 @@
 """
 This module serves as an entrypoint into the Rabi-Ribi AP world.
 """
-from typing import Dict, Set
+from typing import ClassVar, Dict, Set
 
 from BaseClasses import ItemClassification
 from worlds.AutoWorld import World, WebWorld
@@ -9,6 +9,7 @@ from worlds.LauncherComponents import Component, components, launch_subprocess, 
 from .items import item_set, RabiRibiItem, get_base_item_list
 from .locations import RegionDef, get_all_possible_locations
 from .options import RabiRibiOptions
+from .settings import RabiRibiSettings
 from .web import RabiRibiWeb
 
 def launch_client():
@@ -49,6 +50,8 @@ class RabiRibiWorld(World):
         name: id_num for
         id_num, name in enumerate(get_all_possible_locations(), base_id)
     }
+
+    settings: ClassVar[RabiRibiSettings]
 
     def __init__(self, multiworld, player):
         super().__init__(multiworld, player)
