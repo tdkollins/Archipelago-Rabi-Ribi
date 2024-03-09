@@ -206,7 +206,17 @@ async def check_for_locations(ctx: RabiRibiContext):
                 if location_id not in ctx.locations_checked:
                     ctx.locations_checked.add(location_id)
                     await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": ctx.locations_checked}])
-                    break
+                await remove_exclamation_point(ctx, coordinates)
+                break
+
+async def remove_exclamation_point(ctx: RabiRibiContext, coordinates):
+    while ctx.rr_interface.is_player_frozen():
+        await asyncio.sleep(0.25)
+    ctx.rr_interface.remove_exclamation_point_from_inventory()
+    ctx.rr_interface.remove_item_from_in_memory_map(coordinates[0], coordinates[1], coordinates[2])
+    from worlds.rabi_ribi.client.patch import remove_item_from_map
+    remove_item_from_map(ctx, coordinates[0], coordinates[1], coordinates[2])
+
 
 def launch():
     """

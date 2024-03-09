@@ -2,9 +2,17 @@
 This module is responsible for patching the game's map files per world.
 This is done on the client side upon connect to allow for a smoother setup experience.
 """
+import struct
+
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
-from worlds.rabi_ribi.existing_randomizer.mapfileio import ItemModifier, grab_original_maps
+from worlds.rabi_ribi.existing_randomizer.mapfileio import (
+    ItemModifier,
+    grab_original_maps,
+    MAP_ITEMS_OFFSET,
+    MAP_SIZE
+)
+from worlds.rabi_ribi.existing_randomizer.utility import to_index
 from worlds.rabi_ribi.client.client import RabiRibiContext
 from worlds.rabi_ribi.logic_helpers import convert_ap_name_to_existing_rando_name
 from worlds.rabi_ribi.existing_randomizer.randomizer import (
@@ -63,3 +71,22 @@ def patch_map_files(ctx: RabiRibiContext):
     apply_map_transition_shuffle(item_modifier, randomizer_data, settings, allocation)
     insert_items_into_map(item_modifier, randomizer_data, settings, allocation)
     item_modifier.save(ctx.custom_seed_subdir)
+
+def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
+    """
+    This method removes a specified item from the map. This is used to delete
+    items from other worlds (represented by exclamation point items) on the map
+    after the player collects it. This is needed because the item being visible
+    is directly linked to whether the exclamation point item is in the player's
+    inventory. We always set that value to false so that the player can see all
+    of the exclamation points, but we want to delete the ones the player has already
+    obtained.
+    """
+    f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
+    f.seek(MAP_ITEMS_OFFSET)
+    tiledata_items = list(struct.unpack('%dh' % MAP_SIZE, f.read(MAP_SIZE*2)))
+    index = to_index((x, y))
+    tiledata_items[index] = 0
+    f.seek(MAP_ITEMS_OFFSET)
+    f.write(struct.pack('%dh' % MAP_SIZE, *tiledata_items))
+    f.close()

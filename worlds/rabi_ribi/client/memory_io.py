@@ -22,6 +22,8 @@ OFFSET_PLAYER_X = int(0x0103469C)
 OFFSET_PLAYER_Y = int(0x013AFDB4)
 OFFSET_GIVE_ITEM_FUNC = int(0x15A90)
 OFFSET_PLAYER_FROZEN = int(0x1031DDC)
+OFFSET_ITEM_MAP_0 = int(0xDFFB3C)
+OFFSET_INVENTORY_EXCLAMATION_POINT = int(0x1673050)
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -159,3 +161,42 @@ class RabiRibiMemoryIO():
 
         # start a thread at the entrypoint of our injected code
         self.rr_mem.start_thread(self.addr_injected_give_item_entrypoint)
+
+    def remove_item_from_in_memory_map(self, area_id: int, x: int, y: int):
+        """
+        This method sets a specific tile on the map loaded into memory to having no item
+        on it. This is used to delete items from the map when the player collects an item
+        for another world.
+
+        :int area_id: the area id of the location
+        :int x: the x coordinate of the item
+        :int y: the y coordinate of the item
+        """
+        map_tile_item_info_offset = (
+            self.rr_mem.base_address +
+            OFFSET_ITEM_MAP_0 +
+            (area_id * 200000) +
+            (((x * 200) + y) * 2)
+        )
+        self.rr_mem.write_bytes(
+            map_tile_item_info_offset,
+            b'\x00\x00',
+            2
+        )
+
+    def remove_exclamation_point_from_inventory(self):
+        """
+        This removes the exclamation point item (the item that represents other worlds' items
+        to false, and takes it away from the player after its recieved)
+        """
+        self.rr_mem.write_bytes(
+            self.rr_mem.base_address + OFFSET_INVENTORY_EXCLAMATION_POINT,
+            b'\x00\x00\x00\x00',
+            4
+        )
+
+# TODO: replace map files in memory when exclamation point collected.
+
+# Memory location:
+# rabiribi.exe+DFFB3C+hex((itemXCoord*200+itemYCoord)*2)+hex(map_num*200000).
+# Tiles are shorts (2 bytes)
