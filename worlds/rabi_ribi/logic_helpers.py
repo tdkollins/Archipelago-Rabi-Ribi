@@ -19,14 +19,14 @@ def has_3_magic_types(state: CollectionState, player: int):
 
 def has_item_menu(state: CollectionState, player: int):
     """Player has access to the item menu"""
-    return state.has("Town Main", player) or \
+    return state.can_reach("Town Main", "Region", player) or \
         has_3_magic_types(state, player)
 
 def can_use_boost(state: CollectionState, player: int):
     """Player can use the boost skill"""
-    return state.has("Beach Main", player) or \
+    return state.can_reach("Beach Main", "Region", player) or \
         (
-            state.has("Town Shop", player) and
+            state.can_reach("Town Shop", "Region", player) and
             has_item_menu(state, player)
         )
 
@@ -79,12 +79,12 @@ def can_air_dash(state: CollectionState, player: int):
 def can_air_dash_3(state: CollectionState, player: int):
     """Player can use the upgraded air dash skill"""
     return can_air_dash(state, player) and \
-        state.has("Town Shop", player)
+        state.can_reach("Town Shop", "Region", player)
 
 def wall_jump_2(state: CollectionState, player: int):
     """Player can use the upgraded wall jump skill"""
     return state.has("Wall Jump", player) and \
-        state.has("Town Shop", player)
+        state.can_reach("Town Shop", "Region", player)
 
 def can_hammer_roll(state: CollectionState, player: int):
     """Player can use the hammer roll skill"""
@@ -95,13 +95,13 @@ def can_hammer_roll(state: CollectionState, player: int):
 def can_hammer_roll_3(state: CollectionState, player: int):
     """Player can use the upgraded hammer roll skill"""
     return can_hammer_roll(state, player) and \
-        state.has("Town Shop", player) and \
+        state.can_reach("Town Shop", "Region", player) and \
         can_reach_chapter_3(state, player)
 
 def can_get_speed_boost_3(state: CollectionState, player: int):
     """Player can use the upgraded speed boost skill"""
     return state.has("Speed boost", player) and \
-        state.has("Town Shop", player)
+        state.can_reach("Town Shop", "Region", player)
 
 def can_bunny_amulet(state: CollectionState, player: int):
     """Player can use the bunny amulet skill"""
@@ -112,7 +112,7 @@ def can_bunny_amulet_2(state: CollectionState, player: int):
     return can_reach_chapter_3(state, player) or \
         (
             can_bunny_amulet(state, player) and \
-            state.has ("Town Shop", player)
+            state.can_reach("Town Shop", "Region", player)
         )
 
 def can_bunny_amulet_3(state: CollectionState, player: int):
@@ -120,90 +120,89 @@ def can_bunny_amulet_3(state: CollectionState, player: int):
     return can_reach_chapter_4(state, player) or \
         (
             can_bunny_amulet(state, player) and \
-            state.has ("Town Shop", player)
+            state.can_reach("Town Shop", "Region", player)
         )
 
 def can_recruit_cocoa(state: CollectionState, player: int):
     """Player can recruit cocoa"""
     return state.has("Cocoa 1", player) and \
         state.has("Kotri 1", player) and \
-        state.has("Cave Cocoa", player)
+        state.can_reach("Cave Cocoa", "Region", player)
 
 def can_recruit_ashuri(state: CollectionState, player: int):
     """Player can recruit ashuri"""
-    return state.has("Riverbank Level3", player) and \
-        state.has("Town Main", player) and \
-        state.has("Spectral West", player)
+    return state.can_reach("Riverbank Level3", "Region", player) and \
+        state.can_reach("Town Main", "Region", player) and \
+        state.can_reach("Spectral West", "Region", player)
 
 def can_recruit_rita(state: CollectionState, player: int):
     """Player can recruit rita"""
-    return state.has("Snowland Rita", player)
+    return state.can_reach("Snowland Rita", "Region", player)
 
 def can_recruit_cicini(state: CollectionState, player: int):
     """Player can recruit cicini"""
-    return state.has("Spectral Cicini Room", player)
+    return state.can_reach("Spectral Cicini Room", "Region", player)
 
 def can_recruit_saya(state: CollectionState, player: int):
     """Player can recruit saya"""
-    return state.has("Evernight Saya", player) and \
-        state.has("Evernight East of Warp", player)
+    return state.can_reach("Evernight Saya", "Region", player) and \
+        state.can_reach("Evernight East Of Warp", "Region", player)
 
 def can_recruit_syaro(state: CollectionState, player: int):
     """Player can recruit syaro"""
-    return state.has("System Interior Main", player)
+    return state.can_reach("System Interior Main", "Region", player)
 
 def can_recruit_pandora(state: CollectionState, player: int):
     """Player can recruit pandora"""
-    return state.has("Pyramid Main", player)
+    return state.can_reach("Pyramid Main", "Region", player)
 
 def can_recruit_nieve(state: CollectionState, player: int):
     """Player can recruit nieve"""
-    return state.has("Palace Level 5", player) and \
-        state.has("Icy Summit Main", player)
+    return state.can_reach("Palace Level 5", "Region", player) and \
+        state.can_reach("Icy Summit Main", "Region", player)
 
 def can_recruit_nixie(state: CollectionState, player: int):
     """Player can recruit nixie"""
-    return state.has("Palace Level 5", player) and \
-        state.has("Icy Summit Main", player)
+    return state.can_reach("Palace Level 5", "Region", player) and \
+        state.can_reach("Icy Summit Main", "Region", player)
 
 def can_recruit_aruraune(state: CollectionState, player: int):
     """Player can recruit aruraune"""
-    return state.has("Forest Night West", player)
+    return state.can_reach("Forest Night West", "Region", player)
 
 def can_recruit_seana(state: CollectionState, player: int):
     """Player can recruit seana"""
-    return can_recruit_vanilla(state, player) and \
-        can_recruit_chocolate(state, player) and \
-        can_recruit_cicini(state, player) and \
-        can_recruit_syaro(state, player) and \
-        can_recruit_nieve(state, player) and \
-        can_recruit_nixie(state, player) and \
-        state.has("Aquarium East", player) and \
-        state.has("Park Town Entrance"), player
+    return state.has("Vanilla Recruit", player) and \
+        state.has("Chocolate Recruit", player) and \
+        state.has("Cicini Recruit", player) and \
+        state.has("Syaro Recruit", player) and \
+        state.has("Nieve Recruit", player) and \
+        state.has("Nixie Recruit", player) and \
+        state.can_reach("Aquarium East", "Region", player) and \
+        state.can_reach("Park Town Entrance", "Region", player)
 
 def can_recruit_lilith(state: CollectionState, player: int):
     """Player can recruit lilith"""
-    return state.has("Sky Island Main", player)
+    return state.can_reach("Sky Island Main", "Region", player)
 
 def can_recruit_vanilla(state: CollectionState, player: int):
     """Player can recruit vanilla"""
-    return state.has("Sky Bridge East Lower", player)
+    return state.can_reach("Sky Bridge East Lower", "Region", player)
 
 def can_recruit_chocolate(state: CollectionState, player: int):
     """Player can recruit chocolate"""
     return can_reach_chapter_1(state, player) and \
-        state.has("Ravine Chocolate", player)
+        state.can_reach("Ravine Chocolate", "Region", player)
 
 def can_recruit_kotri(state: CollectionState, player: int):
-    """Player can recruit lotri"""
-    return state.has("Graveyard Kotri", player) and \
-        state.has("Volcanic Main", player)
+    """Player can recruit kotri"""
+    return state.has("Kotri 2", player) and \
+        state.can_reach("Volcanic Main", "Region", player)
 
 def can_recruit_keke_bunny(state: CollectionState, player: int):
     """Player can recruit keke bunny"""
-    return state.has("Boss Keke Bunny", player) and \
-        state.has("Plurkwood Main", player) and \
-        state.has("Town Main", player)
+    return state.can_reach("Plurkwood Main", "Region", player) and \
+        state.can_reach("Town Main", "Region", player)
 
 def can_recruit_n_town_members(state: CollectionState, num_town_members: int, player: int):
     """
@@ -211,30 +210,12 @@ def can_recruit_n_town_members(state: CollectionState, num_town_members: int, pl
     
     :int num_town_members: the number of town members to satisfy the condition
     """
-    total_recruitable = sum(1 for can_recruit in [
-        can_recruit_cocoa,
-        can_recruit_ashuri,
-        can_recruit_rita,
-        can_recruit_cicini,
-        can_recruit_saya,
-        can_recruit_syaro,
-        can_recruit_pandora,
-        can_recruit_nieve,
-        can_recruit_nixie,
-        can_recruit_aruraune,
-        can_recruit_seana,
-        can_recruit_lilith,
-        can_recruit_vanilla,
-        can_recruit_chocolate,
-        can_recruit_kotri,
-        can_recruit_keke_bunny,
-    ] if can_recruit(state, player))
-    return total_recruitable >= num_town_members
+    return state.count_group("Town Members", player) > num_town_members
 
 def can_be_speedy(state: CollectionState, player: int):
     """Player can buy the speed up buff"""
     return can_recruit_cicini(state, player) and \
-        state.has("Town Main", player) and \
+        state.can_reach("Town Main", "Region", player) and \
         can_recruit_n_town_members(state, 3, player)
 
 def can_use_speed_1(state: CollectionState, player: int):
@@ -265,27 +246,27 @@ def can_use_speed_5(state: CollectionState, player: int):
         can_get_speed_boost_3(state, player)
 
 def can_reach_chapter_1(state: CollectionState, player: int):
-    """Player can complete chapter 1"""
-    return state.has("Town Main", player)
+    """Player can reach chapter 1"""
+    return state.can_reach("Town Main", "Region", player)
 
 def can_reach_chapter_2(state: CollectionState, player: int):
-    """Player can complete chapter 2"""
-    return state.has("Town Main", player) and \
+    """Player can reach chapter 2"""
+    return state.can_reach("Town Main", "Region", player) and \
         can_recruit_n_town_members(state, 2, player)
 
 def can_reach_chapter_3(state: CollectionState, player: int):
-    """Player can complete chapter 3"""
-    return state.has("Town Main", player) and \
+    """Player can reach chapter 3"""
+    return state.can_reach("Town Main", "Region", player) and \
         can_recruit_n_town_members(state, 4, player)
 
 def can_reach_chapter_4(state: CollectionState, player: int):
-    """Player can complete chapter 4"""
-    return state.has("Town Main", player) and \
+    """Player can reach chapter 4"""
+    return state.can_reach("Town Main", "Region", player) and \
         can_recruit_n_town_members(state, 6, player)
 
 def can_reach_chapter_5(state: CollectionState, player: int):
-    """Player can complete chapter 5"""
-    return state.has("Town Main", player) and \
+    """Player can reach chapter 5"""
+    return state.can_reach("Town Main", "Region", player) and \
         can_recruit_n_town_members(state, 10, player)
 
 
