@@ -4,6 +4,7 @@ import asyncio
 import colorama
 import os
 import pymem
+from pathlib import Path
 
 from CommonClient import (
     CommonContext,
@@ -28,10 +29,12 @@ class RabiRibiContext(CommonContext):
         self.location_ap_id_to_name = None
         self.item_name_to_ap_id = None
         self.item_ap_id_to_name = None
-        self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_id = \
+        self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
-        # TODO: store on disconnect.
+
         self.received_items_index = 0
+        self.recieved_rabi_ribi_item_ids = []
+
         # TODO: make sure queue syncs if game quits before all items sent out
         self.gift_item_queue = asyncio.Queue()  # Items queued up to give to the player.
         self.custom_seed_subdir = None # populated when we have the unique seed ID
@@ -98,6 +101,9 @@ class RabiRibiContext(CommonContext):
             self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{args['seed_name']}-{self.auth}"
             if not os.path.isdir(self.custom_seed_subdir):
                 os.mkdir(self.custom_seed_subdir)
+                Path(self.custom_seed_subdir + "/items_received.txt").touch()
+            else:
+                self.read_items_recieved_from_storage()
             asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
 
         elif cmd == "DataPackage":
@@ -118,7 +124,7 @@ class RabiRibiContext(CommonContext):
 
         elif cmd == "ReceivedItems":
             if args["index"] > self.received_items_index:
-                asyncio.create_task(self.queue_items(args["items"]))
+                self.write_items_recieved_to_memory_and_storage(args["items"])
 
     def patch_if_recieved_all_data(self):
         """
@@ -135,27 +141,109 @@ class RabiRibiContext(CommonContext):
                     from worlds.rabi_ribi.client.patch import patch_map_files
                     patch_map_files(self)
 
-    async def queue_items(self, items: List[NetworkItem]):
+    async def give_item(self):
         """
-        Queue item(s) to give to the player
-
-        :List[NetworkItem] items: the items to queue
-        """
-        for item in items:
-            await self.gift_item_queue.put(item)
-
-    async def give_item(self, item: NetworkItem):
-        """
-        Give an item to the player
+        Give an item to the player. This method will always give the oldest
+        item that the player has recieved from AP, but not in game yet.
 
         :NetworkItem item: The item to give to the player
         """
+        # find the first item id that the player has not recieved yet
+        cur_item_id = 0
+        for item_id in self.recieved_rabi_ribi_item_ids:
+            cur_item_id = item_id
+            if not self.rr_interface.does_player_have_item_id(cur_item_id):
+                break
+        self.rr_interface.give_item(cur_item_id)
+
+    def convert_network_item_to_rabi_ribi_item_id(self, item: NetworkItem):
+        """
+        This method converts a network item into a given rabi ribi item id.
+        If the item has multiple valid ids, it will decrement the value for the next instance
+        such that they are unique.
+        """
         item_name = self.item_ap_id_to_name[item.item]
-        rabi_ribi_item_id = self.item_name_to_rabi_ribi_id[item_name]
-        self.rr_interface.give_item(rabi_ribi_item_id)
+        rabi_ribi_item_id = self.item_name_to_rabi_ribi_item_id[item_name]
         if item_name in ["Attack Up", "MP Up", "HP Up", "Regen Up", "Pack Up"]:
-            self.item_name_to_rabi_ribi_id[item_name] -= 1
-        self.received_items_index += 1
+            self.item_name_to_rabi_ribi_item_id[item_name] -= 1
+        return rabi_ribi_item_id
+
+    def write_items_recieved_to_memory_and_storage(self, items):
+        """
+        This method writes the recieved items into permanent storage.
+        This is used to sync items during a save load.
+        """
+        item_ids = []
+        for item in items:
+            item_id = self.convert_network_item_to_rabi_ribi_item_id(item)
+            item_ids.append(item_id)
+        self.recieved_rabi_ribi_item_ids += item_ids
+
+        # Write to permanent storage as well so that we can load during a new session.
+        with open(self.custom_seed_subdir + "/items_received.txt", "a", encoding="utf-8") as fp:
+            for item_id in item_ids:
+                fp.write(str(item_id) + "\n")
+                self.received_items_index += 1
+
+    def read_items_recieved_from_storage(self):
+        """
+        This method reads the recieved items from storage into memory.
+        this is used to sync items during a save load.
+        """
+        self.recieved_rabi_ribi_item_ids = []
+        with open(self.custom_seed_subdir + "/items_received.txt", "r", encoding="utf-8") as fp:
+            for item_id in fp:
+                item_id = int(item_id.strip())
+                self.recieved_rabi_ribi_item_ids.append(item_id)
+                if 96 <= item_id <= 319:
+                    self.decrement_current_potion_item_id(item_id)
+
+    def decrement_current_potion_item_id(self, item_id):
+        """
+        Sets the id of the next potion found. This function should be called
+        when a new potion is found and we need to decrement the current id.
+        """
+        if 96 <= item_id <= 159:
+            self.item_name_to_rabi_ribi_item_id["HP Up"] -= 1
+        elif 160 <= item_id <= 223:
+            self.item_name_to_rabi_ribi_item_id["Attack Up"] -= 1
+        elif 224 <= item_id <= 287:
+            self.item_name_to_rabi_ribi_item_id["MP Up"] -= 1
+        elif 288 <= item_id <= 351:
+            self.item_name_to_rabi_ribi_item_id["Regen Up"] -= 1
+        else:
+            self.item_name_to_rabi_ribi_item_id["Pack Up"] -= 1
+
+    def is_item_queued(self):
+        """
+        To determine if we have any items to give, look at the last recieved item and check if the player
+        currently has it in their inventory
+        """
+        if self.recieved_rabi_ribi_item_ids:
+            return not self.rr_interface.does_player_have_item_id(self.recieved_rabi_ribi_item_ids[-1])
+        return False
+
+    def is_in_shaft(self):
+        """
+        Returns true if the player is in the starting shaft. We want to avoid giving them items
+        if this is the case since its pitch black so you cant see any of the items that you get.
+        """
+        area_id, x, y = self.rr_interface.read_player_tile_position()
+        return area_id == 0 and \
+            110 <= x <= 112 and \
+            36 <= y <= 91
+
+    async def wait_until_out_of_shaft(self):
+        """
+        Waits until the player is out of the starting shaft, plus a few extra seconds for safety.
+        If the player isnt in the starting shaft, returns immediatly.
+        """
+        if not self.is_in_shaft():
+            return
+        while self.is_in_shaft() and not self.exit_event.is_set():
+            await asyncio.sleep(1)
+        if not self.exit_event.is_set():
+            await asyncio.sleep(5)
 
 async def rabi_ribi_watcher(ctx: RabiRibiContext):
     """
@@ -170,9 +258,16 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
             await ctx.rr_interface.connect(ctx.exit_event)
         # make sure to check if the server is connected
         try:
+            await ctx.wait_until_out_of_shaft()
             await check_for_locations(ctx)
-            if not ctx.gift_item_queue.empty() and not ctx.rr_interface.is_player_frozen():
-                await ctx.give_item(await ctx.gift_item_queue.get())
+            if not ctx.rr_interface.is_player_frozen() and ctx.is_item_queued():
+                await ctx.give_item()
+
+            # Fallback if player collected items while the client was disconnected.
+            #   Make sure the player never has an exclamation point in their inventory.
+            #   (or else they wont be able to see/collect any other exclamation point)
+            ctx.rr_interface.remove_exclamation_point_from_inventory()
+
         except pymem.exception.ProcessNotFound:  # Rabi Ribi Process closed?
             # attempt to reconnect at the top of the loop
             continue
@@ -216,7 +311,6 @@ async def remove_exclamation_point(ctx: RabiRibiContext, coordinates):
     ctx.rr_interface.remove_item_from_in_memory_map(coordinates[0], coordinates[1], coordinates[2])
     from worlds.rabi_ribi.client.patch import remove_item_from_map
     remove_item_from_map(ctx, coordinates[0], coordinates[1], coordinates[2])
-
 
 def launch():
     """

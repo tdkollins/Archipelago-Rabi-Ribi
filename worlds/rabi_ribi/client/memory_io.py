@@ -24,6 +24,8 @@ OFFSET_GIVE_ITEM_FUNC = int(0x15A90)
 OFFSET_PLAYER_FROZEN = int(0x1031DDC)
 OFFSET_ITEM_MAP_0 = int(0xDFFB3C)
 OFFSET_INVENTORY_EXCLAMATION_POINT = int(0x1673050)
+OFFSET_INVENTORY_START = int(0x1672FA4)
+OFFSET_MAX_HEALTH = int(0x16E6D24)
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -127,7 +129,7 @@ class RabiRibiMemoryIO():
         Returns True if the player is frozen. This is a way of checking if we (potentially)
         just got an item.
         """
-        return self._read_bool(OFFSET_PLAYER_FROZEN)
+        return self._read_bool(OFFSET_PLAYER_FROZEN) or not self._read_bool(OFFSET_MAX_HEALTH)
 
     def give_item(self, item_id):
         """
@@ -194,6 +196,12 @@ class RabiRibiMemoryIO():
             b'\x00\x00\x00\x00',
             4
         )
+
+    def does_player_have_item_id(self, item_id) -> bool:
+        """
+        Returns true if player currently has item_id in their inventory.
+        """
+        return self._read_bool(OFFSET_INVENTORY_START + (4 * int(item_id)))
 
 # TODO: replace map files in memory when exclamation point collected.
 
