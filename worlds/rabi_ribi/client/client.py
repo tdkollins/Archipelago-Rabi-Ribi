@@ -16,6 +16,7 @@ from CommonClient import (
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
 from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
+from worlds.rabi_ribi.utility import get_world_directory, load_text_file
 from NetUtils import NetworkItem, ClientStatus
 
 class RabiRibiContext(CommonContext):
@@ -61,31 +62,32 @@ class RabiRibiContext(CommonContext):
             "HP Up": 159,
             "Pack Up": 415
         }
-        with open("worlds/rabi_ribi/existing_randomizer/locations_items.txt", "r", encoding="utf-8") as f:
-            reading = False
-            for line in f:
-                if '===Items===' in line or '===ShufflableGiftItems===' in line:
-                    reading = True
-                    continue
-                elif '===' in line:
-                    reading = False
-                    continue
-                if not reading: continue
-                l = line
-                if '//' in line:
-                    l = l[:l.find('//')]
-                l = l.strip()
-                if len(l) == 0: continue
-                coords, areaid, rabi_ribi_item_id, name = (x.strip() for x in l.split(':'))
+        locations_items_file = os.path.join(get_world_directory(), 'existing_randomizer', 'locations_items.txt')
+        f = load_text_file(locations_items_file)
+        reading = False
+        for line in f.splitlines():
+            if '===Items===' in line or '===ShufflableGiftItems===' in line:
+                reading = True
+                continue
+            elif '===' in line:
+                reading = False
+                continue
+            if not reading: continue
+            l = line
+            if '//' in line:
+                l = l[:l.find('//')]
+            l = l.strip()
+            if len(l) == 0: continue
+            coords, areaid, rabi_ribi_item_id, name = (x.strip() for x in l.split(':'))
 
-                # Set location coordinate to location name mapping
-                area_id = int(areaid)
-                x, y = ast.literal_eval(coords)
-                ap_name = convert_existing_rando_name_to_ap_name(name)
-                coordinate_to_location_name[(area_id, x, y)] = convert_existing_rando_name_to_ap_name(name)
+            # Set location coordinate to location name mapping
+            area_id = int(areaid)
+            x, y = ast.literal_eval(coords)
+            ap_name = convert_existing_rando_name_to_ap_name(name)
+            coordinate_to_location_name[(area_id, x, y)] = convert_existing_rando_name_to_ap_name(name)
 
-                # Set item name to rabi ribi item id mapping
-                item_name_to_rabi_ribi_item_id[ap_name] = rabi_ribi_item_id
+            # Set item name to rabi ribi item id mapping
+            item_name_to_rabi_ribi_item_id[ap_name] = rabi_ribi_item_id
 
         return coordinate_to_location_name, item_name_to_rabi_ribi_item_id
 

@@ -1,4 +1,7 @@
 import ast
+import os
+
+from worlds.rabi_ribi.utility import get_world_directory, load_text_file
 # Visualisation primarily used for debugging
 
 class Visualization(object):
@@ -238,25 +241,26 @@ def get_item_coords(x, y, areaid, name):
 
 def load_item_locs():
     d = {}
-    with open('worlds/rabi_ribi/existing_randomizer/locations_items.txt') as f:
-        reading = False
-        for line in f:
-            if '===Items===' in line or '===ShufflableGiftItems===' in line:
-                reading = True
-                continue
-            elif '===' in line:
-                reading = False
-                continue
-            if not reading: continue
-            l = line
-            if '//' in line:
-                l = l[:l.find('//')]
-            l = l.strip()
-            if len(l) == 0: continue
-            coords, areaid, _2, name = (x.strip() for x in l.split(':'))
-            areaid = int(areaid)
-            x, y = ast.literal_eval(coords)
-            d['ITEM_' + name] = get_item_coords(x, y, areaid, name)
+    locations_items = os.path.join(get_world_directory(), 'existing_randomizer', 'locations_items.txt')
+    f = load_text_file(locations_items)
+    reading = False
+    for line in f.splitlines():
+        if '===Items===' in line or '===ShufflableGiftItems===' in line:
+            reading = True
+            continue
+        elif '===' in line:
+            reading = False
+            continue
+        if not reading: continue
+        l = line
+        if '//' in line:
+            l = l[:l.find('//')]
+        l = l.strip()
+        if len(l) == 0: continue
+        coords, areaid, _2, name = (x.strip() for x in l.split(':'))
+        areaid = int(areaid)
+        x, y = ast.literal_eval(coords)
+        d['ITEM_' + name] = get_item_coords(x, y, areaid, name)
     return d
 
 

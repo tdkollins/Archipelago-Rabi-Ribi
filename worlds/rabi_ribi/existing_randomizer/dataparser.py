@@ -1,5 +1,6 @@
 import ast, re, os
 from worlds.rabi_ribi.existing_randomizer.utility import *
+from worlds.rabi_ribi.utility import get_world_directory, load_text_file
 
 """
 Knowledge levels:
@@ -256,7 +257,8 @@ def parse_locations_and_items():
     additional_items = {}
     map_transitions = []
 
-    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/locations_items.txt')
+    locations_items_file = os.path.join(get_world_directory(), 'existing_randomizer', 'locations_items.txt')
+    lines = read_file_and_strip_comments(locations_items_file)
 
     type_map = {
         "WARP" : LOCATION_WARP,
@@ -342,7 +344,8 @@ def parse_locations_and_items():
 
 # throws errors for invalid formats.
 def parse_edge_constraints(locations_set, variable_names_set, default_expressions):
-    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/constraints_graph.txt')
+    constraints_graph = os.path.join(get_world_directory(), 'existing_randomizer', 'constraints_graph.txt')
+    lines = read_file_and_strip_comments(constraints_graph)
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
     jsondata = '},{'.join(re.split('}\s*{', jsondata))
@@ -368,7 +371,8 @@ def parse_edge_constraints(locations_set, variable_names_set, default_expression
     return constraints
 
 def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locations_set, variable_names_set, default_expressions):
-    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/constraints.txt')
+    constraints = os.path.join(get_world_directory(), 'existing_randomizer', 'constraints.txt')
+    lines = read_file_and_strip_comments(constraints)
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
     jsondata = '},{'.join(re.split('}\s*{', jsondata))
@@ -410,16 +414,148 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
 
     return item_constraints
 
-DIR_TEMPLATE_PATCH_FILES = 'worlds/rabi_ribi/existing_randomizer/maptemplates/constraint_shuffle/'
 def parse_template_constraints(locations_set, variable_names_set, default_expressions, edge_constraints):
-    lines = read_file_and_strip_comments('worlds/rabi_ribi/existing_randomizer/maptemplates/template_constraints.txt')
+    patch_files = [
+        'CS_above_hammer_fireorb.txt',
+        'CS_above_hammer_unclimbable.txt',
+        'CS_aquarium_east_transition_fireorb.txt',
+        'CS_aquarium_east_transition_nothing.txt',
+        'CS_aquarium_east_transition_whirlblocks.txt',
+        'CS_aquarium_entrance_fireorb.txt',
+        'CS_aquarium_entrance_hammer.txt',
+        'CS_aquarium_entrance_underwater_zip.txt',
+        'CS_aquarium_interior_left_entrance_semisolid.txt',
+        'CS_aquarium_interior_left_entrance_wall.txt',
+        'CS_aquarium_upperlevel_east_hammer.txt',
+        'CS_aquarium_upperlevel_east_wall.txt',
+        'CS_aurora_palace_fireorb.txt',
+        'CS_aurora_palace_nospring.txt',
+        'CS_aurora_palace_wall.txt',
+        'CS_aurora_palace_whirlblocks.txt',
+        'CS_beach_aquarium_entrance_fireorb.txt',
+        'CS_beach_east_wall.txt',
+        'CS_beach_volcanic_entrance_fireorb.txt',
+        'CS_beach_volcanic_entrance_hammer.txt',
+        'CS_beach_volcanic_entrance_oneway.txt',
+        'CS_cicini_room_fireorb.txt',
+        'CS_cicini_room_hammer.txt',
+        'CS_cicini_room_nostupid.txt',
+        'CS_cicini_room_slide.txt',
+        'CS_cocoa_fireorb.txt',
+        'CS_cocoa_hammer.txt',
+        'CS_computer_entrance_5tile.txt',
+        'CS_computer_entrance_bombs_slide.txt',
+        'CS_computer_entrance_fireorb.txt',
+        'CS_computer_entrance_hammer.txt',
+        'CS_evernight_to_lower_riverbank_fireorb.txt',
+        'CS_evernight_to_lower_riverbank_hammer.txt',
+        'CS_evernight_warp_left_redirect.txt',
+        'CS_forest_east_above_spring_wall.txt',
+        'CS_forest_east_no_spring.txt',
+        'CS_forest_lower_riverbank_exit_fireorb.txt',
+        'CS_forest_lower_riverbank_exit_whirlblocks.txt',
+        'CS_forest_night_spike_gap.txt',
+        'CS_forest_northwest_oneway.txt',
+        'CS_icy_summit_entrance_airjump.txt',
+        'CS_icy_summit_entrance_fireorb.txt',
+        'CS_lab_west_to_mid_fireorb.txt',
+        'CS_lab_west_to_mid_hammer.txt',
+        'CS_lab_west_to_mid_wall.txt',
+        'CS_lower_riverbank_east_nospring.txt',
+        'CS_lower_riverbank_east_oneway.txt',
+        'CS_lower_riverbank_east_oneway_fireorb.txt',
+        'CS_lower_riverbank_east_oneway_hammer.txt',
+        'CS_mid_lower_riverbank_left_semisolid.txt',
+        'CS_mid_lower_riverbank_left_semisolid_fireorb.txt',
+        'CS_mid_lower_riverbank_left_semisolid_hammer.txt',
+        'CS_pacifist_jump_fireorb.txt',
+        'CS_pacifist_jump_wall.txt',
+        'CS_pacifist_jump_whirlblocks.txt',
+        'CS_palace_level2_fireorb.txt',
+        'CS_palace_level2_hammer.txt',
+        'CS_palace_level2_nospring.txt',
+        'CS_palace_level2_wall.txt',
+        'CS_palace_level3_semisolid_spring.txt',
+        'CS_palace_level4_nospring.txt',
+        'CS_park_defgrow_semisolid.txt',
+        'CS_park_kotri_right_4tile.txt',
+        'CS_park_kotri_right_fireorb.txt',
+        'CS_park_kotri_right_hammer_slide.txt',
+        'CS_pyramid_darkroom_fireorb.txt',
+        'CS_pyramid_entrance_fireorb.txt',
+        'CS_pyramid_entrance_hammer_nobomb.txt',
+        'CS_pyramid_entrance_left_wall.txt',
+        'CS_pyramid_lower_fireorb.txt',
+        'CS_pyramid_lower_hammer_nobomb.txt',
+        'CS_pyramid_lower_wall.txt',
+        'CS_ravine_mana_surge_airdash.txt',
+        'CS_ravine_mana_surge_fireorb.txt',
+        'CS_ravine_mana_surge_hammer.txt',
+        'CS_ravine_mid_fireorb.txt',
+        'CS_ravine_mid_wall.txt',
+        'CS_ravine_mid_whirlblocks.txt',
+        'CS_ravine_town_entrance_fireorb.txt',
+        'CS_ravine_town_entrance_hammer.txt',
+        'CS_ravine_town_entrance_wall.txt',
+        'CS_rita_right_hammer.txt',
+        'CS_rita_right_slide.txt',
+        'CS_rita_right_wall.txt',
+        'CS_riverbank_level1_fireorb.txt',
+        'CS_riverbank_level1_hammer_nobomb.txt',
+        'CS_riverbank_level1_wall.txt',
+        'CS_riverbank_level2_wall.txt',
+        'CS_riverbank_lower_exit_fireorb.txt',
+        'CS_riverbank_lower_exit_wall.txt',
+        'CS_riverbank_post_ashuri2_fireorb.txt',
+        'CS_riverbank_post_ashuri2_hammer.txt',
+        'CS_riverbank_post_ashuri2_wall.txt',
+        'CS_riverbank_ribbonblocks_fireorb.txt',
+        'CS_riverbank_ribbonblocks_hammer.txt',
+        'CS_riverbank_ribbonblocks_wall.txt',
+        'CS_shop_entrance_fireorb.txt',
+        'CS_shop_entrance_hammer_nobomb.txt',
+        'CS_shop_entrance_slide.txt',
+        'CS_sky_island_entrance_fireorb.txt',
+        'CS_sky_island_entrance_hammer.txt',
+        'CS_sky_island_entrance_walljump.txt',
+        'CS_skybridge_eastwest_fireorb.txt',
+        'CS_skybridge_eastwest_hammer.txt',
+        'CS_skybridge_eastwest_slippers.txt',
+        'CS_skybridge_eastwest_wall.txt',
+        'CS_skybridge_west_fireorb.txt',
+        'CS_skybridge_west_hammer.txt',
+        'CS_skybridge_west_wall.txt',
+        'CS_snowland_east_mid_4tile.txt',
+        'CS_snowland_east_mid_wall.txt',
+        'CS_snowland_east_mid_whirlblocks.txt',
+        'CS_snowland_lake_left_entrance_semisolid.txt',
+        'CS_snowland_lake_left_entrance_wall.txt',
+        'CS_snowland_lake_left_entrance_whirlblocks.txt',
+        'CS_snowland_lake_right_entrance_semisolid.txt',
+        'CS_snowland_lake_right_entrance_whirlblocks.txt',
+        'CS_spike_barrier_fireorb.txt',
+        'CS_spike_barrier_nostupid.txt',
+        'CS_upper_icy_summit_4tile.txt',
+        'CS_upper_icy_summit_wall.txt',
+        'CS_upper_park_4tile.txt',
+        'CS_upper_park_fireorb.txt',
+        'CS_upper_park_whirlblocks.txt',
+        'CS_uprprc_base_fireorb.txt',
+        'CS_uprprc_base_wall.txt',
+        'CS_uprprc_base_whirlblocks.txt',
+        'CS_uprprc_slippers_exit_4tile.txt',
+        'CS_vanilla_left_wall.txt',
+        'CS_volcanic_west_nostupid.txt',
+    ]
+
+    template_constraints = os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'template_constraints.txt')
+    lines = read_file_and_strip_comments(template_constraints)
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
     jsondata = '},{'.join(re.split('}\s*{', jsondata))
     jsondata = '[' + jsondata + ']'
     cdicts = parse_json(jsondata)
 
-    patch_files = sorted(os.listdir(DIR_TEMPLATE_PATCH_FILES))
     patch_names = []
     for patch_file in patch_files:
         if not patch_file.startswith('CS_'): fail('Patch file %s does not start with CS_' % patch_file)
@@ -428,7 +564,7 @@ def parse_template_constraints(locations_set, variable_names_set, default_expres
     name_to_patch_file = dict(zip(patch_names, patch_files))
 
     original_prereqs = dict(((e.from_location, e.to_location), e.prereq_expression) for e in edge_constraints)
-    
+
     def parse_change(change):
         from_location, to_location = (x.strip() for x in change['edge'].split('->'))
         if from_location not in locations_set: fail('Unknown location: %s' % from_location)
@@ -447,7 +583,9 @@ def parse_template_constraints(locations_set, variable_names_set, default_expres
         template_constraints.append(TemplateConstraintData(
             name=name,
             weight=weight,
-            template_file=DIR_TEMPLATE_PATCH_FILES + name_to_patch_file[name],
+            template_file=os.path.join(
+                get_world_directory(), 'existing_randomizer', 'maptemplates',
+                'constraint_shuffle', name_to_patch_file[name]),
             changes=changes,
         ))
 
@@ -589,8 +727,8 @@ class RandomizerData(object):
     #
     # list: items_to_allocate
     #
-    # list: walking_left_transitions 
-    # list: walking_right_transitions 
+    # list: walking_left_transitions
+    # list: walking_right_transitions
     #
     # int: nLocations
     # int: nNormalItems
@@ -624,7 +762,7 @@ class RandomizerData(object):
 
         self.nHardToReach = settings.num_hard_to_reach
 
-        # Do some preprocessing of variable names        
+        # Do some preprocessing of variable names
         self.item_names = [item.name for item in self.items]
         self.location_list = sorted(list(self.locations.keys()))
         self.variable_names_list = self.location_list + \
@@ -812,7 +950,6 @@ class RandomizerData(object):
 
     def generate_variables(self):
         return dict(self.configured_variables)
-        
+
     def generate_pessimistic_variables(self):
         return dict(self.pessimistic_variables)
-        

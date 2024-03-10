@@ -4,6 +4,8 @@ import json
 import os
 import sys
 
+from worlds.rabi_ribi.utility import load_text_file
+
 DIR_ORIGINAL_MAPS = './original'
 DIR_MODIFIED_MAPS = './modified'
 DIR_GENERATED_MAPS = './generated'
@@ -102,9 +104,8 @@ class MapData(object):
 
 class DiffData(object):
     def __init__(self, diff_file):
-        f = open(diff_file)
-        lines = f.read().split('\n')
-        f.close()
+        f = load_text_file(diff_file)
+        lines = f.splitlines()
 
         area_diffs = {}
 

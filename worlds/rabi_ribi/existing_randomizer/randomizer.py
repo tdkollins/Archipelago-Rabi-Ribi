@@ -7,13 +7,14 @@ import worlds.rabi_ribi.existing_randomizer.musicrandomizer as musicrandomizer
 import worlds.rabi_ribi.existing_randomizer.backgroundrandomizer as backgroundrandomizer
 import worlds.rabi_ribi.existing_randomizer.converter.diffgenerator as diffgenerator
 import worlds.rabi_ribi.existing_randomizer.versioncheck as versioncheck
+from worlds.rabi_ribi.utility import get_world_directory
 
 def parse_args():
     args = argparse.ArgumentParser(description='Rabi-Ribi Randomizer - %s' % versioncheck.VERSION_STRING)
     args.add_argument('--version', action='store_true', help='Print Randomizer Version')
     args.add_argument('-source-dir', default='original_maps', help='Source directory for original maps. Defaults to original_maps/. Do not make the source dir the output dir.')
     args.add_argument('-output-dir', default='generated_maps', help='Output directory for generated maps. Defaults to generated_maps/. Do not make the source dir the output dir.')
-    args.add_argument('-config-file', default='worlds/rabi_ribi/existing_randomizer/config.txt', help='Config file to use')
+    args.add_argument('-config-file', default='existing_randomizer/config.txt', help='Config file to use')
     args.add_argument('-seed', default=None, type=str, help='Random seed')
     args.add_argument('--no-write', action='store_true', help='Flag to disable map generation, and do only map analysis')
     args.add_argument('--no-fixes', dest='apply_fixes', default=True, action='store_false', help='Flag to disable randomizer-specific map fixes')
@@ -171,7 +172,7 @@ def build_start_game_shaft(areaid, data, events_list):
     EVENT_COUNT = len(events_list)
     if EVENT_COUNT > MAX_EVENTS:
         fail('Too many events in start game shaft: %d/%d' % (EVENT_COUNT, MAX_EVENTS))
-    
+
     # EV_MOVEDOWN event to move erina down to start position
     data.tiledata_event[xy_to_index(111,43)] = 554
 
@@ -242,9 +243,9 @@ def pre_modify_map_data(mod, settings, diff_patch_files):
         for areaid, data in mod.stored_datas.items():
             apply_fixes_for_randomizer(areaid, data)
         diff_patch_files += [
-            'worlds/rabi_ribi/existing_randomizer/maptemplates/event_warps/ew_cicini_to_ravine.txt',
-            'worlds/rabi_ribi/existing_randomizer/maptemplates/event_warps/ew_forest_to_beach.txt',
-            'worlds/rabi_ribi/existing_randomizer/maptemplates/event_warps/ew_town_to_riverbank.txt',
+            os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'event_warps', 'ew_cicini_to_ravine.txt'),
+            os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'event_warps', 'ew_forest_to_beach.txt'),
+            os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'event_warps', 'ew_town_to_riverbank.txt'),
         ]
         print_ln('Map fixes applied')
 
@@ -379,7 +380,7 @@ def generate_analysis_file(data, allocation, analyzer, difficulty_analysis, sett
     print_setting_bool('Shuffle Backgrounds', settings.shuffle_backgrounds)
     print_setting_bool('No Laggy Backgrounds', settings.no_laggy_backgrounds)
     print_setting_bool('No Difficult Backgrounds', settings.no_difficult_backgrounds)
-    
+
     print_setting_bool('Super Attack Mode', settings.super_attack_mode)
     print_setting_bool('Hyper Attack Mode', settings.hyper_attack_mode)
     print_setting_bool('Open Mode', settings.open_mode)
@@ -413,7 +414,7 @@ def generate_analysis_file(data, allocation, analyzer, difficulty_analysis, sett
         print_to_analysis('Difficulty: %.2f' % difficulty_analysis.difficulty_score)
         print_to_analysis('Sequence Break Potential: %.2f' % difficulty_analysis.breakability_score)
         print_to_analysis_only()
-    
+
 
     if not settings.no_write:
         f = open('%s/%s' % (settings.output_dir, 'analysis.txt'), 'w+')

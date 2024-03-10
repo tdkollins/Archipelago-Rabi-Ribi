@@ -6,6 +6,8 @@ import re
 import ast
 import os
 
+from worlds.rabi_ribi.utility import load_text_file
+
 ### Enums
 LOCATION_WARP = 0
 LOCATION_MAJOR = 1
@@ -355,8 +357,9 @@ def read_file_and_strip_comments(filename):
     def strip_comments(line):
         if '//' not in line: return line
         return line[:line.find('//')]
-    with open(filename) as f:
-        lines = [strip_comments(line).strip() for line in f]
+    f = load_text_file(filename)
+    lines = f.splitlines()
+    lines = [strip_comments(line).strip() for line in lines]
     return lines
 
 
