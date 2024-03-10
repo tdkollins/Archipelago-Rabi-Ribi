@@ -16,7 +16,7 @@ from CommonClient import (
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
 from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
-from NetUtils import NetworkItem
+from NetUtils import NetworkItem, ClientStatus
 
 class RabiRibiContext(CommonContext):
     """Rabi Ribi Game Context"""
@@ -34,6 +34,8 @@ class RabiRibiContext(CommonContext):
 
         self.received_items_index = 0
         self.recieved_rabi_ribi_item_ids = []
+        self.egg_incremented_flag = False
+        self.current_egg_count = 0
 
         # TODO: make sure queue syncs if game quits before all items sent out
         self.gift_item_queue = asyncio.Queue()  # Items queued up to give to the player.
@@ -245,6 +247,12 @@ class RabiRibiContext(CommonContext):
         if not self.exit_event.is_set():
             await asyncio.sleep(5)
 
+    def handle_egg_changes(self):
+        old_egg_count = self.current_egg_count
+        self.current_egg_count = self.rr_interface.get_number_of_eggs_collected()
+        if self.current_egg_count == (old_egg_count + 1):
+            self.egg_incremented_flag = True
+
 async def rabi_ribi_watcher(ctx: RabiRibiContext):
     """
     Client loop, watching the rabi ribi game process.
@@ -259,6 +267,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
         # make sure to check if the server is connected
         try:
             await ctx.wait_until_out_of_shaft()
+            ctx.handle_egg_changes()
             await check_for_locations(ctx)
             if not ctx.rr_interface.is_player_frozen() and ctx.is_item_queued():
                 await ctx.give_item()
@@ -268,10 +277,14 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
             #   (or else they wont be able to see/collect any other exclamation point)
             ctx.rr_interface.remove_exclamation_point_from_inventory()
 
+            if ctx.rr_interface.get_number_of_eggs_collected() >= 5:
+                ctx.finished_game = True
+                await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
+
         except pymem.exception.ProcessNotFound:  # Rabi Ribi Process closed?
             # attempt to reconnect at the top of the loop
             continue
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
 
 async def check_for_locations(ctx: RabiRibiContext):
     """
@@ -281,7 +294,8 @@ async def check_for_locations(ctx: RabiRibiContext):
 
     :RabiRibiContext ctx: The Rabi Ribi Client context instance.
     """
-    if ctx.rr_interface.is_player_frozen():  # Game paused or just got item
+    # Game paused or just got item
+    if ctx.rr_interface.is_player_frozen():
         # Check if we're in a 1 tile radius of an item
         player_coordinates = ctx.rr_interface.read_player_tile_position()
         for coordinates in [
@@ -303,6 +317,26 @@ async def check_for_locations(ctx: RabiRibiContext):
                     await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": ctx.locations_checked}])
                 await remove_exclamation_point(ctx, coordinates)
                 break
+    if ctx.egg_incremented_flag:
+        # Just recieved an egg, mark the closet location as the one found
+        area_id, x, y = ctx.rr_interface.read_player_tile_position()
+        closest_location = None
+        closest_distance = 9999
+        for coordinate_entry in ctx.location_coordinates_to_ap_location_name.keys():
+            if area_id != coordinate_entry[0]:
+                continue
+            distance = abs(x - coordinate_entry[1]) + abs(y - coordinate_entry[2])
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_location = coordinate_entry
+        if closest_distance < 8:
+            ap_location_name = ctx.location_coordinates_to_ap_location_name[closest_location]
+            location_id = ctx.location_name_to_ap_id[ap_location_name]
+            if location_id not in ctx.locations_checked:
+                ctx.locations_checked.add(location_id)
+                await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": ctx.locations_checked}])
+        ctx.egg_incremented_flag = False
+
 
 async def remove_exclamation_point(ctx: RabiRibiContext, coordinates):
     while ctx.rr_interface.is_player_frozen():

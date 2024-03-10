@@ -42,11 +42,6 @@ def explosives_enemy(state: CollectionState, player: int):
     """Player has explosives or can explode an enemy nearby."""
     return state.has("Carrot Bomb", player) or state.has("Carrot Shooter", player)
 
-def not_locked_to_prologue(state: CollectionState, player: int):
-    """Player is out of prologue and has access to more areas."""
-    # TODO: open mode option
-    return can_reach_chapter_1(state, player)
-
 def can_navigate_darkness(state: CollectionState, player: int):
     """
     Player has light orb or has option for darkness 
@@ -96,7 +91,7 @@ def can_hammer_roll_3(state: CollectionState, player: int):
     """Player can use the upgraded hammer roll skill"""
     return can_hammer_roll(state, player) and \
         state.can_reach("Town Shop", "Region", player) and \
-        can_reach_chapter_3(state, player)
+        state.has("Chapter 3", player)
 
 def can_get_speed_boost_3(state: CollectionState, player: int):
     """Player can use the upgraded speed boost skill"""
@@ -105,11 +100,11 @@ def can_get_speed_boost_3(state: CollectionState, player: int):
 
 def can_bunny_amulet(state: CollectionState, player: int):
     """Player can use the bunny amulet skill"""
-    return can_reach_chapter_2(state, player)
+    return state.has("Chapter 2", player)
 
 def can_bunny_amulet_2(state: CollectionState, player: int):
     """Player can use 2 bunny amulet skills"""
-    return can_reach_chapter_3(state, player) or \
+    return state.has("Chapter 3", player) or \
         (
             can_bunny_amulet(state, player) and \
             state.can_reach("Town Shop", "Region", player)
@@ -117,7 +112,7 @@ def can_bunny_amulet_2(state: CollectionState, player: int):
 
 def can_bunny_amulet_3(state: CollectionState, player: int):
     """Player can use 3 bunny amulet skills"""
-    return can_reach_chapter_4(state, player) or \
+    return state.has("Chapter 4", player) or \
         (
             can_bunny_amulet(state, player) and \
             state.can_reach("Town Shop", "Region", player)
@@ -191,7 +186,7 @@ def can_recruit_vanilla(state: CollectionState, player: int):
 
 def can_recruit_chocolate(state: CollectionState, player: int):
     """Player can recruit chocolate"""
-    return can_reach_chapter_1(state, player) and \
+    return state.has("Chapter 1", player)and \
         state.can_reach("Ravine Chocolate", "Region", player)
 
 def can_recruit_kotri(state: CollectionState, player: int):
@@ -347,22 +342,22 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int):
             "Piko Hammer Leveled": lambda state: state.has("Piko Hammer", player),
             "Carrot Bomb Entry": lambda state: state.has("Carrot Bomb", player),
             "Carrot Shooter Entry": lambda state: state.has("Carrot Shooter", player),
-            "Tm Cocoa": lambda state: can_recruit_cocoa(state, player),
-            "Tm Ashuri": lambda state: can_recruit_ashuri(state, player),
-            "Tm Rita": lambda state: can_recruit_rita(state, player),
-            "Tm Cicini": lambda state: can_recruit_cicini(state, player),
-            "Tm Saya": lambda state: can_recruit_saya(state, player),
-            "Tm Syaro": lambda state: can_recruit_syaro(state, player),
-            "Tm Pandora": lambda state: can_recruit_pandora(state, player),
-            "Tm Nieve": lambda state: can_recruit_nieve(state, player),
-            "Tm Nixie": lambda state: can_recruit_nixie(state, player),
-            "Tm Aruraune": lambda state: can_recruit_aruraune(state, player),
-            "Tm Seana": lambda state: can_recruit_seana(state, player),
-            "Tm Lilith": lambda state: can_recruit_lilith(state, player),
-            "Tm Vanilla": lambda state: can_recruit_vanilla(state, player),
-            "Tm Chocolate": lambda state: can_recruit_chocolate(state, player),
-            "Tm Kotri": lambda state: can_recruit_kotri(state, player),
-            "Tm Keke Bunny": lambda state: can_recruit_keke_bunny(state, player),
+            "Tm Cocoa": lambda state: state.has("Cocoa Recruit", player),
+            "Tm Ashuri": lambda state: state.has("Ashuri Recruit", player),
+            "Tm Rita": lambda state: state.has("Rita Recruit", player),
+            "Tm Cicini": lambda state: state.has("Cicini Recruit", player),
+            "Tm Saya": lambda state: state.has("Saya Recruit", player),
+            "Tm Syaro": lambda state: state.has("Syaro Recruit", player),
+            "Tm Pandora": lambda state: state.has("Pandora Recruit", player),
+            "Tm Nieve": lambda state: state.has("Nieve Recruit", player),
+            "Tm Nixie": lambda state: state.has("Nixie Recruit", player),
+            "Tm Aruraune": lambda state: state.has("Aruraune Recruit", player),
+            "Tm Seana": lambda state: state.has("Seana Recruit", player),
+            "Tm Lilith": lambda state: state.has("Lilith Recruit", player),
+            "Tm Vanilla": lambda state: state.has("Vanilla Recruit", player),
+            "Tm Chocolate": lambda state: state.has("Chocolate Recruit", player),
+            "Tm Kotri": lambda state: state.has("Kotri Recruit", player),
+            "Tm Keke Bunny": lambda state: state.has("Keke Bunny Recruit", player),
             "Speedy": lambda state: can_be_speedy(state, player),
             "Speed1": lambda state: can_use_speed_1(state, player),
             "Speed2": lambda state: can_use_speed_2(state, player),
@@ -370,11 +365,11 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int):
             "Speed5": lambda state: can_use_speed_5(state, player),
             "3 Magic Types": lambda state: has_3_magic_types(state, player),
             "Item Menu": lambda state: has_item_menu(state, player),
-            "Chapter 1": lambda state: can_reach_chapter_1(state, player),
-            "Chapter 2": lambda state: can_reach_chapter_2(state, player),
-            "Chapter 3": lambda state: can_reach_chapter_3(state, player),
-            "Chapter 4": lambda state: can_reach_chapter_4(state, player),
-            "Chapter 5": lambda state: can_reach_chapter_5(state, player),
+            "Chapter 1": lambda state: state.has("Chapter 1", player),
+            "Chapter 2": lambda state: state.has("Chapter 2", player),
+            "Chapter 3": lambda state: state.has("Chapter 3", player),
+            "Chapter 4": lambda state: state.has("Chapter 4", player),
+            "Chapter 5": lambda state: state.has("Chapter 5", player),
             "Boost": lambda state: can_use_boost(state, player),
             "Boost Many": lambda state: can_use_boost(state, player),
             "Darkness": lambda state: can_navigate_darkness(state, player),

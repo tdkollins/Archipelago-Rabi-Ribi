@@ -119,4 +119,4 @@ class RabiRibiWorld(World):
         Set remaining rules (for now this is just the win condition). 
         """
         self.multiworld.completion_condition[self.player] = \
-            lambda state: state.has("Easter Egg", self.player, 5) and state.has("Chapter 5", self.player)
+            lambda state: state.has("Easter Egg", self.player, 5)

@@ -26,6 +26,7 @@ OFFSET_ITEM_MAP_0 = int(0xDFFB3C)
 OFFSET_INVENTORY_EXCLAMATION_POINT = int(0x1673050)
 OFFSET_INVENTORY_START = int(0x1672FA4)
 OFFSET_MAX_HEALTH = int(0x16E6D24)
+OFFSET_EGG_COUNT = int(0x1675CCC)
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -62,7 +63,7 @@ class RabiRibiMemoryIO():
                 await asyncio.sleep(3)
 
     def allocate(self):
-        self.addr_injected_give_item_entrypoint = self.rr_mem.allocate(12) # 3 instructions.
+        self.addr_injected_give_item_entrypoint = self.rr_mem.allocate(12)
 
     def _read_word(self, offset):
         """
@@ -203,8 +204,8 @@ class RabiRibiMemoryIO():
         """
         return self._read_bool(OFFSET_INVENTORY_START + (4 * int(item_id)))
 
-# TODO: replace map files in memory when exclamation point collected.
-
-# Memory location:
-# rabiribi.exe+DFFB3C+hex((itemXCoord*200+itemYCoord)*2)+hex(map_num*200000).
-# Tiles are shorts (2 bytes)
+    def get_number_of_eggs_collected(self) -> int:
+        """
+        Returns the number of eggs the player currently has
+        """
+        return self._read_int(OFFSET_EGG_COUNT)
