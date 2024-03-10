@@ -1,14 +1,28 @@
 """
 This module serves as an entrypoint into the Rabi-Ribi AP world.
 """
-from typing import Dict, Set
+from typing import ClassVar, Dict, Set
 
 from BaseClasses import ItemClassification
 from worlds.AutoWorld import World, WebWorld
+from worlds.LauncherComponents import Component, components, launch_subprocess, Type
 from .items import item_set, RabiRibiItem, get_base_item_list
 from .locations import RegionDef, get_all_possible_locations
 from .options import RabiRibiOptions
+from .settings import RabiRibiSettings
 from .web import RabiRibiWeb
+
+def launch_client():
+    """Launch a rabi ribi client instance"""
+    from worlds.rabi_ribi.client.client import launch
+    launch_subprocess(launch, name="RabiRibiClient")
+
+components.append(Component(
+    "Rabi-Ribi Client",
+    "RabiRibiClient",
+    func=launch_client,
+    component_type=Type.CLIENT
+))
 
 class RabiRibiWorld(World):
     """
@@ -31,10 +45,34 @@ class RabiRibiWorld(World):
         name: id_num for
         id_num, name in enumerate(item_set, base_id)
     }
+    item_name_to_id["Nothing"] = base_id + len(item_name_to_id)
     location_name_to_id: Dict[str, int] = {
         name: id_num for
         id_num, name in enumerate(get_all_possible_locations(), base_id)
     }
+
+    item_name_groups = {
+        "Town Members": {
+            "Cocoa Recruit",
+            "Ashuri Recruit",
+            "Rita Recruit",
+            "Cicini Recruit",
+            "Saya Recruit",
+            "Syaro Recruit",
+            "Pandora Recruit",
+            "Nieve Recruit",
+            "Nixie Recruit",
+            "Aruraune Recruit",
+            "Seana Recruit",
+            "Lilith Recruit",
+            "Vanilla Recruit",
+            "Chocolate Recruit",
+            "Kotri Recruit",
+            "Keke Bunny Recruit"
+        }
+    }
+
+    settings: ClassVar[RabiRibiSettings]
 
     def __init__(self, multiworld, player):
         super().__init__(multiworld, player)
@@ -57,8 +95,8 @@ class RabiRibiWorld(World):
         for item in map(self.create_item, base_item_list):
             self.multiworld.itempool.append(item)
 
-        # junk = len(self.location_name_to_id) - len(base_item_list)
-        # self.multiworld.itempool += [self.create_item("nothing") for _ in range(junk)]
+        junk = len(self.location_name_to_id) - len(base_item_list)
+        self.multiworld.itempool += [self.create_item("Nothing") for _ in range(junk)]
 
     def create_regions(self) -> None:
         """
@@ -68,6 +106,7 @@ class RabiRibiWorld(World):
         self.region_def.set_regions()
         self.region_def.connect_regions()
         self.region_def.set_locations(self.location_name_to_id)
+        self.region_def.set_events()
 
     def generate_early(self) -> None:
         """Set world specific generation properties"""
@@ -81,9 +120,3 @@ class RabiRibiWorld(World):
         """
         self.multiworld.completion_condition[self.player] = \
             lambda state: state.has("Easter Egg", self.player, 5)
-
-    def generate_output(self, output_directory: str) -> None:
-        """For debug for now"""
-        from Utils import visualize_regions
-        visualize_regions(self.multiworld.get_region("Menu", self.player), "my_world.puml")
-        return super().generate_output(output_directory)

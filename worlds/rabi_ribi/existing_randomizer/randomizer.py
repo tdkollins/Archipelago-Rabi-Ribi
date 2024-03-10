@@ -2,9 +2,9 @@ import argparse, random, sys
 from worlds.rabi_ribi.existing_randomizer.utility import *
 from worlds.rabi_ribi.existing_randomizer.generator import Generator
 from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
-import worlds.rabi_ribi.existing_randomizer.mapfileio
-import worlds.rabi_ribi.existing_randomizer.musicrandomizer
-import worlds.rabi_ribi.existing_randomizer.backgroundrandomizer
+import worlds.rabi_ribi.existing_randomizer.mapfileio as mapfileio
+import worlds.rabi_ribi.existing_randomizer.musicrandomizer as musicrandomizer
+import worlds.rabi_ribi.existing_randomizer.backgroundrandomizer as backgroundrandomizer
 import worlds.rabi_ribi.existing_randomizer.converter.diffgenerator as diffgenerator
 import worlds.rabi_ribi.existing_randomizer.versioncheck as versioncheck
 
@@ -242,9 +242,9 @@ def pre_modify_map_data(mod, settings, diff_patch_files):
         for areaid, data in mod.stored_datas.items():
             apply_fixes_for_randomizer(areaid, data)
         diff_patch_files += [
-            './maptemplates/event_warps/ew_cicini_to_ravine.txt',
-            './maptemplates/event_warps/ew_forest_to_beach.txt',
-            './maptemplates/event_warps/ew_town_to_riverbank.txt',
+            'worlds/rabi_ribi/existing_randomizer/maptemplates/event_warps/ew_cicini_to_ravine.txt',
+            'worlds/rabi_ribi/existing_randomizer/maptemplates/event_warps/ew_forest_to_beach.txt',
+            'worlds/rabi_ribi/existing_randomizer/maptemplates/event_warps/ew_town_to_riverbank.txt',
         ]
         print_ln('Map fixes applied')
 
@@ -300,16 +300,41 @@ def apply_map_transition_shuffle(mod, data, settings, allocation):
 
 
 def insert_items_into_map(mod, data, settings, allocation):
+    """
+    AP Changes:
+        Increment duplicate item ids based on the same name
+    """
+    cur_stat_boost_ids = {
+        "ATTACK_UP": 160,
+        "HP_UP": 96,
+        "PACK_UP": 352,
+        "MP_UP": 224,
+        "REGEN_UP": 288
+    }
+
     name_to_id = dict((item.name, item.itemid) for item in data.items)
     name_to_id.update(data.additional_items)
 
     mod.clear_items()
     for original_item in data.items:
+        if original_item.name in [
+            "UNKNOWN_ITEM_1",
+            "UNKNOWN_ITEM_2",
+            "UNKNOWN_ITEM_3"
+        ]:
+            continue
         item = original_item.copy()
         item_at_location = allocation.item_at_item_location[item.name]
-        if item_at_location != None:
-            #item.name = item_at_location
-            item.itemid = name_to_id[item_at_location]
+        if item_at_location != None and item_at_location != "NOTHING":
+            if item_at_location in cur_stat_boost_ids:
+                item.itemid = cur_stat_boost_ids[item_at_location]
+                cur_stat_boost_ids[item_at_location] += 1
+            elif item_at_location == "ANOTHER_PLAYERS_ITEM":
+                item.itemid = 43
+            elif item_at_location == "EASTER_EGG":
+                item.itemid = -250
+            else:
+                item.itemid = name_to_id[item_at_location]
             mod.add_item(item)
 
 
