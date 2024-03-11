@@ -147,7 +147,9 @@ class RabiRibiMemoryIO():
         """
         addr_give_item_func = self.rr_mem.base_address + OFFSET_GIVE_ITEM_FUNC
         # We need the relative address for the x86 call instruction.
-        addr_give_item_func = addr_give_item_func - self.addr_injected_give_item_entrypoint
+        # subtract 10 because our injected code traverses 10 bytes before we
+        # desired address
+        addr_give_item_func = addr_give_item_func - self.addr_injected_give_item_entrypoint - 10
 
         """
         The below code uses keystone to compile our desired assembly code. But since
@@ -178,7 +180,7 @@ class RabiRibiMemoryIO():
         # write our code to memory
         self.rr_mem.write_bytes(
             self.addr_injected_give_item_entrypoint, 
-            injected_call_func_code, 
+            injected_call_func_code,
             len(injected_call_func_code)
         )
 
