@@ -25,6 +25,7 @@ OFFSET_INVENTORY_EXCLAMATION_POINT = int(0x1673050)
 OFFSET_INVENTORY_START = int(0x1672FA4)
 OFFSET_MAX_HEALTH = int(0x16E6D24)
 OFFSET_EGG_COUNT = int(0x1675CCC)
+OFFSET_PLAYER_PAUSED = int(0x16E5C40)
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -134,7 +135,13 @@ class RabiRibiMemoryIO():
 
         This is used to know when we are safe to do certain actions, like give items to the player.
         """
-        return self._read_bool(OFFSET_PLAYER_FROZEN) or not self._read_bool(OFFSET_MAX_HEALTH)
+        return self._read_bool(OFFSET_PLAYER_FROZEN) or not self._read_bool(OFFSET_MAX_HEALTH) or self.is_player_paused()
+    
+    def is_player_paused(self):
+        """
+        Returns true if the player is currently in a menu
+        """
+        return self._read_bool(OFFSET_PLAYER_PAUSED)
 
     def give_item(self, item_id):
         """

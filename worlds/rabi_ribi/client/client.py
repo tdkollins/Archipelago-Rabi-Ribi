@@ -44,6 +44,8 @@ class RabiRibiContext(CommonContext):
         self.gift_item_queue = asyncio.Queue()  # Items queued up to give to the player.
         self.custom_seed_subdir = None # populated when we have the unique seed ID
 
+        self.time_since_last_paused = time.time()
+
     def read_location_coordinates_and_rr_item_ids(self):
         """
         This method retrieves the location coordinates of each item from
@@ -308,6 +310,22 @@ class RabiRibiContext(CommonContext):
         if self.current_egg_count == (old_egg_count + 1):
             self.egg_incremented_flag = True
 
+    def is_player_paused(self):
+        paused = self.rr_interface.is_player_paused()
+        if paused:
+            self.time_since_last_paused = time.time()
+        return paused
+    
+    async def watch_for_pauses(self):
+        """
+        run this on a faster loop. We want to detect pauses really fast since players
+          can reload a save really fast with quick save reload. We want to make sure that
+          we dont give items too soon after a save load since this lags the game hard.
+        """
+        while self.rr_interface.is_connected() and not self.exit_event.is_set():
+            self.is_player_paused()
+            await asyncio.sleep(0.1)
+
 async def rabi_ribi_watcher(ctx: RabiRibiContext):
     """
     Client loop, watching the rabi ribi game process.
@@ -322,13 +340,19 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
         if not ctx.rr_interface.is_connected():
             logger.info("Waiting for connection to Rabi Ribi")
             await ctx.rr_interface.connect(ctx.exit_event)
+            asyncio.create_task(ctx.watch_for_pauses())
         try:
             await ctx.wait_until_out_of_shaft()
 
             ctx.handle_egg_changes()
             await check_for_locations(ctx)
 
-            if not ctx.rr_interface.is_player_frozen() and ctx.is_item_queued():
+            cur_time = time.time()
+            if (
+                (cur_time - ctx.time_since_last_paused >= 2) and
+                not ctx.rr_interface.is_player_frozen() and
+                ctx.is_item_queued()
+            ):
                 await ctx.give_item()
 
             # Fallback if player collected items while the client was disconnected.
