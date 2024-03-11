@@ -20,7 +20,7 @@ OFFSET_PLAYER_X = int(0x0103469C)
 OFFSET_PLAYER_Y = int(0x013AFDB4)
 OFFSET_GIVE_ITEM_FUNC = int(0x15A90)
 OFFSET_PLAYER_FROZEN = int(0x1031DDC)
-OFFSET_ITEM_MAP_0 = int(0xDFFB3C)
+OFFSET_ITEM_MAP = int(0xDFFB3C)
 OFFSET_INVENTORY_EXCLAMATION_POINT = int(0x1673050)
 OFFSET_INVENTORY_START = int(0x1672FA4)
 OFFSET_MAX_HEALTH = int(0x16E6D24)
@@ -206,8 +206,7 @@ class RabiRibiMemoryIO():
         """
         map_tile_item_info_offset = (
             self.rr_mem.base_address +
-            OFFSET_ITEM_MAP_0 +
-            (area_id * 200000) +
+            OFFSET_ITEM_MAP +
             (((x * 200) + y) * 2)
         )
         self.rr_mem.write_bytes(
