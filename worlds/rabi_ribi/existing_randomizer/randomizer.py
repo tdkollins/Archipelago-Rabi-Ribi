@@ -42,7 +42,7 @@ def parse_args():
     args.add_argument('-extra-eggs', default=0, type=int, help='Number of extra randomly-chosen eggs for egg-goals mode (in addition to the hard-to-reach eggs)')
     args.add_argument('-num-hard-to-reach', default=5, type=int, help='Number of hard to reach items/eggs. Default is 5.')
 
-    return args.parse_args(sys.argv[1:])
+    return args.parse_args("")
 
 
 def apply_item_specific_fixes(mod, allocation):
@@ -453,20 +453,20 @@ def run_randomizer(seed, settings):
     display_hash(settings)
 
 
-if __name__ == '__main__':
-    args = parse_args()
+# if __name__ == '__main__':
+#     args = parse_args()
 
-    if args.version:
-        print_ln('Rabi-Ribi Randomizer - %s' % versioncheck.VERSION_STRING)
-    elif args.check_for_updates:
-        versioncheck.check_for_updates()
-    elif args.check_branch:
-        versioncheck.check_branch()
-    elif args.hash:
-        display_hash(args)
-    elif args.reset:
-        reset_maps(args.source_dir, args.output_dir)
-    else:
-        if args.seed == None: seed = None
-        else: seed = string_to_integer_seed('%s_hd:%s' % (args.seed, args.hide_difficulty))
-        run_randomizer(seed, args)
+#     if args.version:
+#         print_ln('Rabi-Ribi Randomizer - %s' % versioncheck.VERSION_STRING)
+#     elif args.check_for_updates:
+#         versioncheck.check_for_updates()
+#     elif args.check_branch:
+#         versioncheck.check_branch()
+#     elif args.hash:
+#         display_hash(args)
+#     elif args.reset:
+#         reset_maps(args.source_dir, args.output_dir)
+#     else:
+#         if args.seed == None: seed = None
+#         else: seed = string_to_integer_seed('%s_hd:%s' % (args.seed, args.hide_difficulty))
+#         run_randomizer(seed, args)

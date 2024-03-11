@@ -10,10 +10,8 @@ in realtime. This is used to:
 """
 import asyncio
 import struct
-import psutil
 
 from pymem import pymem
-import keystone
 
 from CommonClient import logger
 
@@ -43,8 +41,11 @@ class RabiRibiMemoryIO():
     def is_connected(self):
         if self.rr_mem is None:
             return False
-        if not psutil.pid_exists(self.rr_process_id):  # confirm the process is still running
-            logger.info("Rabi Ribi connection lost.")
+        # confirm the process is still running
+        try:
+            self._read_int(OFFSET_AREA_ID)
+        except pymem.exception.ProcessError:
+            logger.info("Lost connection with rabi ribi game.")
             self.rr_process_id = None
             self.rr_mem = None
             return False
@@ -127,8 +128,11 @@ class RabiRibiMemoryIO():
 
     def is_player_frozen(self):
         """
-        Returns True if the player is frozen. This is a way of checking if we (potentially)
-        just got an item.
+        Returns True if the player is frozen.
+        Frozen counts as losing control of a player (e.g. "you just got item! animation")
+        or being in a menu.
+
+        This is used to know when we are safe to do certain actions, like give items to the player.
         """
         return self._read_bool(OFFSET_PLAYER_FROZEN) or not self._read_bool(OFFSET_MAX_HEALTH)
 
@@ -142,17 +146,33 @@ class RabiRibiMemoryIO():
         :returns: None
         """
         addr_give_item_func = self.rr_mem.base_address + OFFSET_GIVE_ITEM_FUNC
-        # keystone interprets injected entrypoint as 0. We subtract the injected entrypoint address
-        #   so we can math the actual offset we want from the real 0 addr.
+        # We need the relative address for the x86 call instruction.
         addr_give_item_func = addr_give_item_func - self.addr_injected_give_item_entrypoint
 
+        """
+        The below code uses keystone to compile our desired assembly code. But since
+        .apworlds dont support external depedencies at the moment, we'll write the bytes
+        manually.
+        """
         # convert our assembly code to bytes
-        architecture = keystone.KS_ARCH_X86
-        mode = keystone.KS_MODE_32
-        endianess = keystone.KS_MODE_LITTLE_ENDIAN
-        ks = keystone.Ks(architecture, mode | endianess)
-        injected_call_func_code = f"mov ecx,{item_id}; call {addr_give_item_func}; ret".encode()
-        injected_call_func_code, _ = ks.asm(injected_call_func_code)
+        # architecture = keystone.KS_ARCH_X86
+        # mode = keystone.KS_MODE_32
+        # endianess = keystone.KS_MODE_LITTLE_ENDIAN
+        # ks = keystone.Ks(architecture, mode | endianess)
+        # injected_call_func_code = f"mov ecx,{item_id}; call {addr_give_item_func}; ret".encode()
+        # injected_call_func_code, _ = ks.asm(injected_call_func_code)
+        # injected_call_func_code = bytes(injected_call_func_code)
+
+        """
+        Notation:
+            185: mov instruction
+            next 4 bytes: the little endian integer value of the item_id
+            232: call instruction
+            next 4 bytes: the relative address we want to call
+            195: ret instruction
+        """
+        addr_give_item_func =  int(addr_give_item_func).to_bytes(4, byteorder='little', signed=True)
+        injected_call_func_code = [185] + list(struct.pack('<i', item_id)) + [232] + list(addr_give_item_func) + [195]
         injected_call_func_code = bytes(injected_call_func_code)
 
         # write our code to memory

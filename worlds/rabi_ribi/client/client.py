@@ -5,6 +5,7 @@ import colorama
 import os
 import pymem
 from pathlib import Path
+import time
 
 from CommonClient import (
     CommonContext,
@@ -17,7 +18,7 @@ from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
 from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
 from worlds.rabi_ribi.utility import get_world_directory, load_text_file
-from NetUtils import NetworkItem, ClientStatus
+from NetUtils import NetworkItem, ClientStatus, color
 
 class RabiRibiContext(CommonContext):
     """Rabi Ribi Game Context"""
@@ -33,10 +34,11 @@ class RabiRibiContext(CommonContext):
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 
-        self.received_items_index = 0
+        self.received_items_index = -1
         self.recieved_rabi_ribi_item_ids = []
         self.egg_incremented_flag = False
         self.current_egg_count = 0
+        self.seed_name = None
 
         # TODO: make sure queue syncs if game quits before all items sent out
         self.gift_item_queue = asyncio.Queue()  # Items queued up to give to the player.
@@ -101,13 +103,15 @@ class RabiRibiContext(CommonContext):
         if cmd == "Connected":
             self.patch_if_recieved_all_data()
 
-        if cmd == "RoomInfo":
-            self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{args['seed_name']}-{self.auth}"
-            if not os.path.isdir(self.custom_seed_subdir):
-                os.mkdir(self.custom_seed_subdir)
-                Path(self.custom_seed_subdir + "/items_received.txt").touch()
-            else:
+            # if we dont have the seed name from the RoomInfo packet, wait until we do.
+            while not self.seed_name:
+                time.sleep(1)
+            self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_name}-{self.auth}"
+            if os.path.isdir(self.custom_seed_subdir) and os.path.isfile(f"{self.custom_seed_subdir}/items_received.txt"):
                 self.read_items_recieved_from_storage()
+
+        if cmd == "RoomInfo":
+            self.seed_name = args['seed_name']
             asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
 
         elif cmd == "DataPackage":
@@ -128,22 +132,58 @@ class RabiRibiContext(CommonContext):
 
         elif cmd == "ReceivedItems":
             if args["index"] > self.received_items_index:
-                self.write_items_recieved_to_memory_and_storage(args["items"])
+                asyncio.create_task(self.write_items_recieved_to_memory_and_storage(args["items"]))
 
-    def patch_if_recieved_all_data(self):
+    def client_recieved_initial_server_data(self):
         """
-        Requirements for patching:
+        This method waits until the client finishes the initial conversation with the server.
+        This means:
             - All LocationInfo packages recieved - requested only if patch files dont exist.
             - DataPackage package recieved (id_to_name maps and name_to_id maps are popualted)
             - Connection package recieved (slot number populated)
             - RoomInfo package recieved (seed name populated)
         """
-        if self.custom_seed_subdir and self.slot and self.location_ap_id_to_name and \
-            len(self.location_ap_id_to_name) == len(self.locations_info):
-                # Patch the map files if we haven't done so already
-                if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
-                    from worlds.rabi_ribi.client.patch import patch_map_files
-                    patch_map_files(self)
+        return (
+            self.custom_seed_subdir and
+            self.slot and
+            self.location_ap_id_to_name
+        )
+
+    async def wait_for_initial_connection_info(self):
+        """
+        This method waits until the client finishes the initial conversation with the server.
+        See client_recieved_initial_server_data for wait requirements.
+        """
+        if self.client_recieved_initial_server_data():
+            return
+
+        logger.info("Waiting for connect from server...")
+        while not self.client_recieved_initial_server_data() and not self.exit_event.is_set():
+            await asyncio.sleep(1)
+        if not self.exit_event.is_set():
+            # wait an extra second to process data
+            await asyncio.sleep(1)
+            logger.info("Received initial data from server!")
+            logger.info("****************************************************")
+            logger.info("Please press f5 on the main menu and start scenario:")
+            logger.info("       %s - %s",
+                self.seed_name,
+                self.auth)
+            logger.info("****************************************************")
+
+    def patch_if_recieved_all_data(self):
+        """
+        See client_recieved_initial_server_data for wait requirements.
+        """
+        if self.client_recieved_initial_server_data():
+            # Patch the map files if we haven't done so already
+            self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_name}-{self.auth}"
+            if not os.path.isdir(self.custom_seed_subdir):
+                os.mkdir(self.custom_seed_subdir)
+                Path(self.custom_seed_subdir + "/items_received.txt").touch()
+            if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
+                from worlds.rabi_ribi.client.patch import patch_map_files
+                patch_map_files(self)
 
     async def give_item(self):
         """
@@ -156,6 +196,8 @@ class RabiRibiContext(CommonContext):
         cur_item_id = 0
         for item_id in self.recieved_rabi_ribi_item_ids:
             cur_item_id = item_id
+            if item_id == -1:  # junk/nothing
+                continue
             if not self.rr_interface.does_player_have_item_id(cur_item_id):
                 break
         self.rr_interface.give_item(cur_item_id)
@@ -167,19 +209,24 @@ class RabiRibiContext(CommonContext):
         such that they are unique.
         """
         item_name = self.item_ap_id_to_name[item.item]
+        if item_name == "Nothing":
+            return -1
         rabi_ribi_item_id = self.item_name_to_rabi_ribi_item_id[item_name]
         if item_name in ["Attack Up", "MP Up", "HP Up", "Regen Up", "Pack Up"]:
             self.item_name_to_rabi_ribi_item_id[item_name] -= 1
         return rabi_ribi_item_id
 
-    def write_items_recieved_to_memory_and_storage(self, items):
+    async def write_items_recieved_to_memory_and_storage(self, items):
         """
         This method writes the recieved items into permanent storage.
         This is used to sync items during a save load.
         """
+        # make sure we have all of the item info from the server connection
+        await self.wait_for_initial_connection_info()
+
         item_ids = []
         for item in items:
-            item_id = self.convert_network_item_to_rabi_ribi_item_id(item)
+            item_id = int(self.convert_network_item_to_rabi_ribi_item_id(item))
             item_ids.append(item_id)
         self.recieved_rabi_ribi_item_ids += item_ids
 
@@ -188,6 +235,9 @@ class RabiRibiContext(CommonContext):
             for item_id in item_ids:
                 fp.write(str(item_id) + "\n")
                 self.received_items_index += 1
+
+        # TODO: Check if recieved_items_index matches the amount of items in the file.
+        # If not request and perform a sync.
 
     def read_items_recieved_from_storage(self):
         """
@@ -201,6 +251,7 @@ class RabiRibiContext(CommonContext):
                 self.recieved_rabi_ribi_item_ids.append(item_id)
                 if 96 <= item_id <= 319:
                     self.decrement_current_potion_item_id(item_id)
+                self.received_items_index += 1
 
     def decrement_current_potion_item_id(self, item_id):
         """
@@ -224,7 +275,9 @@ class RabiRibiContext(CommonContext):
         currently has it in their inventory
         """
         if self.recieved_rabi_ribi_item_ids:
-            return not self.rr_interface.does_player_have_item_id(self.recieved_rabi_ribi_item_ids[-1])
+            for item_id in self.recieved_rabi_ribi_item_ids[::-1]:
+                if item_id != -1:
+                    return not self.rr_interface.does_player_have_item_id(item_id)
         return False
 
     def is_in_shaft(self):
@@ -262,15 +315,19 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
     :RabiRibiContext ctx: The Rabi Ribi Client context instance.
     """
-    logger.info("Waiting for connection to Rabi Ribi")
+    # TODO: on disonnect reload the context and watcher. Will break if player was changed.
+
+    await ctx.wait_for_initial_connection_info()
     while not ctx.exit_event.is_set():
         if not ctx.rr_interface.is_connected():
+            logger.info("Waiting for connection to Rabi Ribi")
             await ctx.rr_interface.connect(ctx.exit_event)
-        # make sure to check if the server is connected
         try:
             await ctx.wait_until_out_of_shaft()
+
             ctx.handle_egg_changes()
             await check_for_locations(ctx)
+
             if not ctx.rr_interface.is_player_frozen() and ctx.is_item_queued():
                 await ctx.give_item()
 
@@ -283,7 +340,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 ctx.finished_game = True
                 await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
-        except pymem.exception.ProcessNotFound:  # Rabi Ribi Process closed?
+        except pymem.exception.ProcessError:  # Rabi Ribi Process closed?
             # attempt to reconnect at the top of the loop
             continue
         await asyncio.sleep(0.5)
