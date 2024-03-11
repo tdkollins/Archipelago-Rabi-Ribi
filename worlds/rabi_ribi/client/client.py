@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 import ast
 import asyncio
 import colorama
@@ -18,7 +18,7 @@ from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
 from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
 from worlds.rabi_ribi.utility import get_world_directory, load_text_file
-from NetUtils import NetworkItem, ClientStatus, color
+from NetUtils import NetworkItem, ClientStatus
 
 class RabiRibiContext(CommonContext):
     """Rabi Ribi Game Context"""
