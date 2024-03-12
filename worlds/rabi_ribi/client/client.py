@@ -331,8 +331,8 @@ class RabiRibiContext(CommonContext):
             self.is_player_paused()
             await asyncio.sleep(0.1)
 
-    async def is_on_main_menu(self):
-        on_main_menu = self.rr_interface.is_player_paused()
+    def is_on_main_menu(self):
+        on_main_menu = self.rr_interface.is_on_main_menu()
         if on_main_menu:
             self.time_since_main_menu = time.time()
         return on_main_menu
@@ -356,12 +356,16 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
         try:
             while True:
                 await asyncio.sleep(0.5)
+                if ctx.exit_event.is_set():
+                    break
                 if not ctx.rr_interface.is_on_correct_scenerio(ctx.seed_player):
                     continue
                 if ctx.is_on_main_menu():
                     continue
-                if time.time() - ctx.time_since_main_menu() > 4:
+                if time.time() - ctx.time_since_main_menu < 4:
                     continue
+                break
+            if ctx.exit_event.is_set():
                 break
             await ctx.wait_until_out_of_shaft()
 
@@ -385,7 +389,8 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 ctx.finished_game = True
                 await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
-        except Exception:  # Rabi Ribi Process closed?
+        except Exception as err:  # Rabi Ribi Process closed?
+            logger.info(err)
             # attempt to reconnect at the top of the loop
             continue
         await asyncio.sleep(0.5)
@@ -399,7 +404,7 @@ async def check_for_locations(ctx: RabiRibiContext):
     :RabiRibiContext ctx: The Rabi Ribi Client context instance.
     """
     # Game paused or just got item
-    if ctx.rr_interface.is_player_frozen():
+    if ctx.rr_interface.is_player_frozen() and not ctx.is_player_paused():
         # Check if we're in a 1 tile radius of an item
         player_coordinates = ctx.rr_interface.read_player_tile_position()
         for coordinates in [
