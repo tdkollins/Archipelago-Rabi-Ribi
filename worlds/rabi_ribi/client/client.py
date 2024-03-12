@@ -6,6 +6,7 @@ import os
 import pymem
 from pathlib import Path
 import time
+import hashlib
 
 from CommonClient import (
     CommonContext,
@@ -47,9 +48,13 @@ class RabiRibiContext(CommonContext):
         # populated when we have the unique seed ID
         self.custom_seed_subdir = None
         self.seed_player = None
+        self.seed_player_id = None
 
         self.time_since_last_paused = time.time()
         self.time_since_main_menu = time.time()
+        self.time_since_last_item_obtained = time.time()
+        
+        self.obtained_items_queue = asyncio.Queue()
 
     def read_location_coordinates_and_rr_item_ids(self):
         """
@@ -117,6 +122,7 @@ class RabiRibiContext(CommonContext):
             while not self.seed_name:
                 time.sleep(1)
             self.seed_player = f"{self.seed_name}-{self.auth}"
+            self.seed_player_id = str(hashlib.sha256(self.seed_player.encode()).hexdigest()[:7])
             self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_player}"
             if os.path.isdir(self.custom_seed_subdir) and os.path.isfile(f"{self.custom_seed_subdir}/items_received.txt"):
                 self.read_items_recieved_from_storage()
@@ -142,7 +148,12 @@ class RabiRibiContext(CommonContext):
                 }]))
 
         elif cmd == "LocationInfo":
-            self.patch_if_recieved_all_data()
+            if len(args["locations"]) > 1:
+                # initial request on first connect.
+                self.patch_if_recieved_all_data()
+            else:
+                # request after an item is obtained
+                asyncio.create_task(self.obtained_items_queue.put(args["locations"][0]))
 
         elif cmd == "ReceivedItems":
             if args["index"] > self.received_items_index:
@@ -365,7 +376,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 await asyncio.sleep(0.5)
                 if ctx.exit_event.is_set():
                     break
-                if not ctx.rr_interface.is_on_correct_scenerio(ctx.seed_player):
+                if not ctx.rr_interface.is_on_correct_scenerio(ctx.seed_player_id):
                     continue
                 if ctx.is_on_main_menu():
                     continue
@@ -390,7 +401,8 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
             # Fallback if player collected items while the client was disconnected.
             #   Make sure the player never has an exclamation point in their inventory.
             #   (or else they wont be able to see/collect any other exclamation point)
-            ctx.rr_interface.remove_exclamation_point_from_inventory()
+            if cur_time - ctx.time_since_last_item_obtained > 7:
+                ctx.rr_interface.remove_exclamation_point_from_inventory()
 
             if ctx.rr_interface.get_number_of_eggs_collected() >= 5:
                 ctx.finished_game = True
@@ -431,7 +443,16 @@ async def check_for_locations(ctx: RabiRibiContext):
                 if location_id not in ctx.locations_checked:
                     ctx.locations_checked.add(location_id)
                     await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": ctx.locations_checked}])
-                await remove_exclamation_point(ctx, coordinates)
+
+                # scout the location and delete it from the map if its an explanation point
+                asyncio.create_task(ctx.send_msgs([{
+                    "cmd": "LocationScouts",
+                    "locations": [location_id]
+                }]))
+                ctx.time_since_last_item_obtained = time.time()
+                network_item = await ctx.obtained_items_queue.get()
+                if network_item.player != ctx.slot:
+                    await remove_exclamation_point(ctx, coordinates)
                 break
     if ctx.egg_incremented_flag:
         # Just recieved an egg, mark the closet location as the one found

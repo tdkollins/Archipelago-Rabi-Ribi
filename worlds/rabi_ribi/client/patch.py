@@ -96,5 +96,5 @@ def embed_seed_player_into_mapdata(ctx: RabiRibiContext, item_modifier):
     for area_id, _ in item_modifier.stored_datas.items():
         f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
         f.seek(MAP_ITEMS_OFFSET)
-        f.write(ctx.seed_player.encode())
+        f.write(ctx.seed_player_id.encode())
         f.close()
