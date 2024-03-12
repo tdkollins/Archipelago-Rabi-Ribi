@@ -71,6 +71,7 @@ def patch_map_files(ctx: RabiRibiContext):
     apply_map_transition_shuffle(item_modifier, randomizer_data, settings, allocation)
     insert_items_into_map(item_modifier, randomizer_data, settings, allocation)
     item_modifier.save(ctx.custom_seed_subdir)
+    embed_seed_player_into_mapdata(ctx, item_modifier)
 
 def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
     """
@@ -90,3 +91,10 @@ def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
     f.seek(MAP_ITEMS_OFFSET)
     f.write(struct.pack('%dh' % MAP_SIZE, *tiledata_items))
     f.close()
+
+def embed_seed_player_into_mapdata(ctx: RabiRibiContext, item_modifier):
+    for area_id, _ in item_modifier.stored_datas.items():
+        f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
+        f.seek(MAP_ITEMS_OFFSET)
+        f.write(ctx.seed_player.encode())
+        f.close()

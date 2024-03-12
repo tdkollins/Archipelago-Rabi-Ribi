@@ -26,6 +26,7 @@ OFFSET_INVENTORY_START = int(0x1672FA4)
 OFFSET_MAX_HEALTH = int(0x16E6D24)
 OFFSET_EGG_COUNT = int(0x1675CCC)
 OFFSET_PLAYER_PAUSED = int(0x16E5C40)
+OFFSET_SCENERIO_INDICATOR = int(0xDFFB3C)
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -76,6 +77,11 @@ class RabiRibiMemoryIO():
         """
         data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, 4)
         return data
+    
+    
+    def _read_string(self, offset, length):
+        data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, length)
+        return data.decode("utf-8")
 
     def _read_float(self, offset):
         """
@@ -237,3 +243,15 @@ class RabiRibiMemoryIO():
         Returns the number of eggs the player currently has
         """
         return self._read_int(OFFSET_EGG_COUNT)
+    
+    def is_on_correct_scenerio(self, scenerio_id: str) -> bool:
+        """
+        Used for sanity checking that we're on the correct file.
+        """
+        return self._read_string(OFFSET_SCENERIO_INDICATOR, len(scenerio_id)) == scenerio_id
+    
+    def is_on_main_menu(self) -> bool:
+        """
+        True if the player isnt loaded into a game.
+        """
+        return not self._read_bool(OFFSET_MAX_HEALTH)

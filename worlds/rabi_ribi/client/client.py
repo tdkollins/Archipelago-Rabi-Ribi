@@ -42,9 +42,13 @@ class RabiRibiContext(CommonContext):
 
         # TODO: make sure queue syncs if game quits before all items sent out
         self.gift_item_queue = asyncio.Queue()  # Items queued up to give to the player.
-        self.custom_seed_subdir = None # populated when we have the unique seed ID
+
+        # populated when we have the unique seed ID
+        self.custom_seed_subdir = None
+        self.seed_player = None
 
         self.time_since_last_paused = time.time()
+        self.time_since_main_menu = time.time()
 
     def read_location_coordinates_and_rr_item_ids(self):
         """
@@ -108,7 +112,8 @@ class RabiRibiContext(CommonContext):
             # if we dont have the seed name from the RoomInfo packet, wait until we do.
             while not self.seed_name:
                 time.sleep(1)
-            self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_name}-{self.auth}"
+            self.seed_player = f"{self.seed_name}-{self.auth}"
+            self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_player}"
             if os.path.isdir(self.custom_seed_subdir) and os.path.isfile(f"{self.custom_seed_subdir}/items_received.txt"):
                 self.read_items_recieved_from_storage()
 
@@ -326,6 +331,13 @@ class RabiRibiContext(CommonContext):
             self.is_player_paused()
             await asyncio.sleep(0.1)
 
+    async def is_on_main_menu(self):
+        on_main_menu = self.rr_interface.is_player_paused()
+        if on_main_menu:
+            self.time_since_main_menu = time.time()
+        return on_main_menu
+
+
 async def rabi_ribi_watcher(ctx: RabiRibiContext):
     """
     Client loop, watching the rabi ribi game process.
@@ -342,6 +354,15 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
             await ctx.rr_interface.connect(ctx.exit_event)
             asyncio.create_task(ctx.watch_for_pauses())
         try:
+            while True:
+                await asyncio.sleep(0.5)
+                if not ctx.rr_interface.is_on_correct_scenerio(ctx.seed_player):
+                    continue
+                if ctx.is_on_main_menu():
+                    continue
+                if time.time() - ctx.time_since_main_menu() > 4:
+                    continue
+                break
             await ctx.wait_until_out_of_shaft()
 
             ctx.handle_egg_changes()
@@ -364,7 +385,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 ctx.finished_game = True
                 await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
-        except pymem.exception.ProcessError:  # Rabi Ribi Process closed?
+        except Exception:  # Rabi Ribi Process closed?
             # attempt to reconnect at the top of the loop
             continue
         await asyncio.sleep(0.5)
