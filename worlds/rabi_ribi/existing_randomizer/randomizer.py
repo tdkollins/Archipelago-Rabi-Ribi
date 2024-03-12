@@ -325,6 +325,8 @@ def insert_items_into_map(mod, data, settings, allocation):
         ]:
             continue
         item = original_item.copy()
+        if item.name not in allocation.item_at_item_location:
+            continue
         item_at_location = allocation.item_at_item_location[item.name]
         if item_at_location != None and item_at_location != "NOTHING":
             if item_at_location in cur_stat_boost_ids:

@@ -27,6 +27,7 @@ class RabiRibiContext(CommonContext):
         self.game = "Rabi-Ribi"
         self.items_handling = 0b001  # only items from other worlds
         self.rr_interface = RabiRibiMemoryIO()
+        self.location_ids = None
         self.location_name_to_ap_id = None
         self.location_ap_id_to_name = None
         self.item_name_to_ap_id = None
@@ -107,7 +108,10 @@ class RabiRibiContext(CommonContext):
 
     def on_package(self, cmd: str, args: dict):
         if cmd == "Connected":
-            self.patch_if_recieved_all_data()
+            self.location_ids = set(args["missing_locations"] + args["checked_locations"])
+            asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
+
+            # self.patch_if_recieved_all_data()
 
             # if we dont have the seed name from the RoomInfo packet, wait until we do.
             while not self.seed_name:
@@ -119,19 +123,22 @@ class RabiRibiContext(CommonContext):
 
         if cmd == "RoomInfo":
             self.seed_name = args['seed_name']
-            asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
 
         elif cmd == "DataPackage":
             self.location_name_to_ap_id = args["data"]["games"]["Rabi-Ribi"]["location_name_to_id"]
+            self.location_name_to_ap_id = {
+                name: loc_id for name, loc_id in 
+                self.location_name_to_ap_id.items() if loc_id in self.location_ids
+            }
             self.location_ap_id_to_name = {v: k for k, v in self.location_name_to_ap_id.items()}
             self.item_name_to_ap_id = args["data"]["games"]["Rabi-Ribi"]["item_name_to_id"]
             self.item_ap_id_to_name = {v: k for k, v in self.item_name_to_ap_id.items()}
-            location_ids = [loc_id for loc_id in self.location_ap_id_to_name.keys()]
+
             # Only request location data if there doesnt appear to be patched game files already
             if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
                 asyncio.create_task(self.send_msgs([{
                     "cmd": "LocationScouts",
-                    "locations": location_ids
+                    "locations": self.location_ids
                 }]))
 
         elif cmd == "LocationInfo":
