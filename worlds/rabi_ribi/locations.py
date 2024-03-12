@@ -111,6 +111,22 @@ class RegionDef:
         locations = self.randomizer_data.item_constraints
         regions = self.multiworld.regions.region_cache[self.player]
         for location in locations:
+
+            # exlcude post game
+            prereq_expr = str(location.entry_prereq_expr)
+            if "POST_GAME_ALLOWED" in prereq_expr:
+                continue
+            if "POST_IRISU_ALLOWED" in prereq_expr:
+                continue
+            if "HALLOWEEN_REACHABLE" in prereq_expr:
+                continue
+            if "PLURKWOOD_REACHABLE" in prereq_expr:
+                continue
+            if "WARP_DESTINATION_REACHABLE" in prereq_expr:
+                continue
+            if "EVENT_WARPS_REQUIRED" in prereq_expr:
+                continue
+
             entry_rule = convert_existing_rando_rule_to_ap_rule(location.entry_prereq_expr, self.player)
             exit_rule = convert_existing_rando_rule_to_ap_rule(location.exit_prereq_expr, self.player)
             location_name = convert_existing_rando_name_to_ap_name(location.item)
