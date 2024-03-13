@@ -36,15 +36,10 @@ class RabiRibiContext(CommonContext):
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 
-        self.received_items_index = -1
         self.state_giving_item = False
-        self.recieved_rabi_ribi_item_ids = []
         self.egg_incremented_flag = False
         self.current_egg_count = 0
         self.seed_name = None
-
-        # TODO: make sure queue syncs if game quits before all items sent out
-        self.gift_item_queue = asyncio.Queue()  # Items queued up to give to the player.
 
         # populated when we have the unique seed ID
         self.custom_seed_subdir = None
@@ -55,6 +50,7 @@ class RabiRibiContext(CommonContext):
         self.time_since_main_menu = time.time()
         self.time_since_last_item_obtained = time.time()
         
+        self.items_received_rabi_ribi_ids = []
         self.obtained_items_queue = asyncio.Queue()
 
     def read_location_coordinates_and_rr_item_ids(self):
@@ -69,7 +65,6 @@ class RabiRibiContext(CommonContext):
         worlds.rabi_ribi.existing_randomizer.visualizer.load_item_locs()
         """
         coordinate_to_location_name = {}
-        # TODO: will have to store the current id on disconnect
         item_name_to_rabi_ribi_item_id = {
             "Attack Up": 223,
             "MP Up": 287,
@@ -128,8 +123,9 @@ class RabiRibiContext(CommonContext):
             self.seed_player = f"{self.seed_name}-{self.auth}"
             self.seed_player_id = str(hashlib.sha256(self.seed_player.encode()).hexdigest()[:7])
             self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_player}"
-            if os.path.isdir(self.custom_seed_subdir) and os.path.isfile(f"{self.custom_seed_subdir}/items_received.txt"):
-                self.read_items_recieved_from_storage()
+
+        if cmd == "ReceivedItems":
+            asyncio.create_task(self.set_received_rabi_ribi_item_ids())
 
         if cmd == "RoomInfo":
             self.seed_name = args['seed_name']
@@ -158,10 +154,6 @@ class RabiRibiContext(CommonContext):
             else:
                 # request after an item is obtained
                 asyncio.create_task(self.obtained_items_queue.put(args["locations"][0]))
-
-        elif cmd == "ReceivedItems":
-            if args["index"] > self.received_items_index:
-                asyncio.create_task(self.write_items_recieved_to_memory_and_storage(args["items"]))
 
     def client_recieved_initial_server_data(self):
         """
@@ -223,7 +215,7 @@ class RabiRibiContext(CommonContext):
         """
         # find the first item id that the player has not recieved yet
         cur_item_id = 0
-        for item_id in self.recieved_rabi_ribi_item_ids:
+        for item_id in self.items_received_rabi_ribi_ids:
             cur_item_id = item_id
             if item_id == -1:  # junk/nothing
                 continue
@@ -233,80 +225,37 @@ class RabiRibiContext(CommonContext):
         await asyncio.sleep(1)
         await self.wait_until_out_of_item_receive_animation()
 
-    def convert_network_item_to_rabi_ribi_item_id(self, item: NetworkItem):
-        """
-        This method converts a network item into a given rabi ribi item id.
-        If the item has multiple valid ids, it will decrement the value for the next instance
-        such that they are unique.
-        """
-        item_name = self.item_ap_id_to_name[item.item]
-        if item_name == "Nothing":
-            return -1
-        rabi_ribi_item_id = self.item_name_to_rabi_ribi_item_id[item_name]
-        if item_name in ["Attack Up", "MP Up", "HP Up", "Regen Up", "Pack Up"]:
-            self.item_name_to_rabi_ribi_item_id[item_name] -= 1
-        return rabi_ribi_item_id
+    async def set_received_rabi_ribi_item_ids(self):
+        self.items_received_rabi_ribi_ids = []
+        potion_ids = {
+            "Attack Up": 223,
+            "MP Up": 287,
+            "Regen Up": 351,
+            "HP Up": 159,
+            "Pack Up": 415
+        }
 
-    async def write_items_recieved_to_memory_and_storage(self, items):
-        """
-        This method writes the recieved items into permanent storage.
-        This is used to sync items during a save load.
-        """
-        # make sure we have all of the item info from the server connection
-        await self.wait_for_initial_connection_info()
+        if not self.item_ap_id_to_name:
+            await self.wait_for_initial_connection_info()
 
-        item_ids = []
-        for item in items:
-            item_id = int(self.convert_network_item_to_rabi_ribi_item_id(item))
-            item_ids.append(item_id)
-        self.recieved_rabi_ribi_item_ids += item_ids
-
-        # Write to permanent storage as well so that we can load during a new session.
-        with open(self.custom_seed_subdir + "/items_received.txt", "a", encoding="utf-8") as fp:
-            for item_id in item_ids:
-                fp.write(str(item_id) + "\n")
-                self.received_items_index += 1
-
-        # TODO: Check if recieved_items_index matches the amount of items in the file.
-        # If not request and perform a sync.
-
-    def read_items_recieved_from_storage(self):
-        """
-        This method reads the recieved items from storage into memory.
-        this is used to sync items during a save load.
-        """
-        self.recieved_rabi_ribi_item_ids = []
-        with open(self.custom_seed_subdir + "/items_received.txt", "r", encoding="utf-8") as fp:
-            for item_id in fp:
-                item_id = int(item_id.strip())
-                self.recieved_rabi_ribi_item_ids.append(item_id)
-                if 96 <= item_id <= 319:
-                    self.decrement_current_potion_item_id(item_id)
-                self.received_items_index += 1
-
-    def decrement_current_potion_item_id(self, item_id):
-        """
-        Sets the id of the next potion found. This function should be called
-        when a new potion is found and we need to decrement the current id.
-        """
-        if 96 <= item_id <= 159:
-            self.item_name_to_rabi_ribi_item_id["HP Up"] -= 1
-        elif 160 <= item_id <= 223:
-            self.item_name_to_rabi_ribi_item_id["Attack Up"] -= 1
-        elif 224 <= item_id <= 287:
-            self.item_name_to_rabi_ribi_item_id["MP Up"] -= 1
-        elif 288 <= item_id <= 351:
-            self.item_name_to_rabi_ribi_item_id["Regen Up"] -= 1
-        else:
-            self.item_name_to_rabi_ribi_item_id["Pack Up"] -= 1
+        for network_item in self.items_received:
+            item_name = self.item_ap_id_to_name[network_item.item]
+            if item_name == "Nothing":
+                self.items_received_rabi_ribi_ids.append(-1)
+            elif item_name in potion_ids:
+                self.items_received_rabi_ribi_ids.append(potion_ids[item_name])
+                potion_ids[item_name] -= 1
+            else:
+                self.items_received_rabi_ribi_ids.append(
+                    int(self.item_name_to_rabi_ribi_item_id[item_name]))
 
     def is_item_queued(self):
         """
         To determine if we have any items to give, look at the last recieved item and check if the player
         currently has it in their inventory
         """
-        if self.recieved_rabi_ribi_item_ids:
-            for item_id in self.recieved_rabi_ribi_item_ids[::-1]:
+        if self.items_received:
+            for item_id in self.items_received_rabi_ribi_ids[::-1]:
                 if item_id != -1:
                     return not self.rr_interface.does_player_have_item_id(item_id)
         return False
