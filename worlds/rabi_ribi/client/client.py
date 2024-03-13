@@ -377,6 +377,9 @@ class RabiRibiContext(CommonContext):
         if area_id not in self.location_coordinates_to_ap_location_name:
             return None, None
         for coordinate_entry, location_name in self.location_coordinates_to_ap_location_name[area_id].items():
+            if location_name not in self.location_name_to_ap_id:
+                # location not included with the enabled settings.
+                continue
             distance = abs(x - coordinate_entry[0]) + abs(y - coordinate_entry[1])
             if distance < closest_distance:
                 closest_distance = distance
