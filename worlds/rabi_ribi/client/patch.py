@@ -10,6 +10,7 @@ from worlds.rabi_ribi.existing_randomizer.mapfileio import (
     ItemModifier,
     grab_original_maps,
     MAP_ITEMS_OFFSET,
+    MAP_TILES0_OFFSET,
     MAP_SIZE
 )
 from worlds.rabi_ribi.existing_randomizer.utility import to_index
@@ -95,6 +96,6 @@ def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
 def embed_seed_player_into_mapdata(ctx: RabiRibiContext, item_modifier):
     for area_id, _ in item_modifier.stored_datas.items():
         f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
-        f.seek(MAP_ITEMS_OFFSET)
+        f.seek(MAP_TILES0_OFFSET)
         f.write(ctx.seed_player_id.encode())
         f.close()
