@@ -27,6 +27,7 @@ OFFSET_MAX_HEALTH = int(0x16E6D24)
 OFFSET_EGG_COUNT = int(0x1675CCC)
 OFFSET_PLAYER_PAUSED = int(0x16E5C40)
 OFFSET_SCENERIO_INDICATOR = int(0xDFFB3C)
+OFFSET_IN_ITEM_GET_ANIMATION = int(0x1682ACA)
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -78,6 +79,14 @@ class RabiRibiMemoryIO():
         data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, 4)
         return data
     
+    def _read_byte(self, offset):
+        """
+        Read 1 byte of data at <base_process_address> + offset and return it.
+
+        :int offset: the offset to read data from.
+        """
+        data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, 1)
+        return data
     
     def _read_string(self, offset, length):
         data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, length)
@@ -103,7 +112,7 @@ class RabiRibiMemoryIO():
         data = self._read_word(offset)
         return struct.unpack("i", data)[0]
 
-    def _read_bool(self, offset):
+    def _read_4_byte_bool(self, offset):
         """
         Read a word at the specified offset, and interpret it as a bool
 
@@ -112,6 +121,12 @@ class RabiRibiMemoryIO():
         """
         data = self._read_word(offset)
         if (struct.unpack("i", data)[0] == 0):
+            return False
+        return True
+
+    def _read_1_byte_bool(self, offset):
+        data = self._read_byte(offset)
+        if (struct.unpack("?", data)[0] == 0):
             return False
         return True
 
@@ -141,13 +156,16 @@ class RabiRibiMemoryIO():
 
         This is used to know when we are safe to do certain actions, like give items to the player.
         """
-        return self._read_bool(OFFSET_PLAYER_FROZEN) or not self._read_bool(OFFSET_MAX_HEALTH) or self.is_player_paused()
+        return self._read_4_byte_bool(OFFSET_PLAYER_FROZEN) or not self._read_4_byte_bool(OFFSET_MAX_HEALTH) or self.is_player_paused()
     
     def is_player_paused(self):
         """
         Returns true if the player is currently in a menu
         """
-        return self._read_bool(OFFSET_PLAYER_PAUSED)
+        return self._read_4_byte_bool(OFFSET_PLAYER_PAUSED)
+
+    def is_in_item_receive_animation(self):
+        return self._read_1_byte_bool(OFFSET_IN_ITEM_GET_ANIMATION)
 
     def give_item(self, item_id):
         """
@@ -236,7 +254,7 @@ class RabiRibiMemoryIO():
         """
         Returns true if player currently has item_id in their inventory.
         """
-        return self._read_bool(OFFSET_INVENTORY_START + (4 * int(item_id)))
+        return self._read_4_byte_bool(OFFSET_INVENTORY_START + (4 * int(item_id)))
 
     def get_number_of_eggs_collected(self) -> int:
         """
@@ -254,4 +272,4 @@ class RabiRibiMemoryIO():
         """
         True if the player isnt loaded into a game.
         """
-        return not self._read_bool(OFFSET_MAX_HEALTH)
+        return not self._read_4_byte_bool(OFFSET_MAX_HEALTH)

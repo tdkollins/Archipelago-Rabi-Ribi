@@ -37,6 +37,7 @@ class RabiRibiContext(CommonContext):
             self.read_location_coordinates_and_rr_item_ids()
 
         self.received_items_index = -1
+        self.state_giving_item = False
         self.recieved_rabi_ribi_item_ids = []
         self.egg_incremented_flag = False
         self.current_egg_count = 0
@@ -98,7 +99,10 @@ class RabiRibiContext(CommonContext):
             area_id = int(areaid)
             x, y = ast.literal_eval(coords)
             ap_name = convert_existing_rando_name_to_ap_name(name)
-            coordinate_to_location_name[(area_id, x, y)] = convert_existing_rando_name_to_ap_name(name)
+            if area_id not in coordinate_to_location_name:
+                coordinate_to_location_name[area_id] = {(x, y): ap_name}
+            else:
+                coordinate_to_location_name[area_id][(x, y)] = ap_name
 
             # Set item name to rabi ribi item id mapping
             item_name_to_rabi_ribi_item_id[ap_name] = rabi_ribi_item_id
@@ -226,6 +230,8 @@ class RabiRibiContext(CommonContext):
             if not self.rr_interface.does_player_have_item_id(cur_item_id):
                 break
         self.rr_interface.give_item(cur_item_id)
+        await asyncio.sleep(1)
+        await self.wait_until_out_of_item_receive_animation()
 
     def convert_network_item_to_rabi_ribi_item_id(self, item: NetworkItem):
         """
@@ -355,6 +361,38 @@ class RabiRibiContext(CommonContext):
             self.time_since_main_menu = time.time()
         return on_main_menu
 
+    def find_closest_item_location(self):
+        """
+        Finds the closest location to the player for the purpose of finding which
+        check they just cleared. Returns None if it cannot find any location within
+        10 tiles.
+
+        :returns int, (int, int, int): the ap id of the closest location and the coordinates of it
+        """
+        # Just recieved an egg, mark the closet location as the one found
+        area_id, x, y = self.rr_interface.read_player_tile_position()
+        closest_location_id = None
+        closest_location_coordinates = None
+        closest_distance = 9999
+        if area_id not in self.location_coordinates_to_ap_location_name:
+            return None, None
+        for coordinate_entry, location_name in self.location_coordinates_to_ap_location_name[area_id].items():
+            distance = abs(x - coordinate_entry[0]) + abs(y - coordinate_entry[1])
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_location_id = self.location_name_to_ap_id[location_name]
+                closest_location_coordinates = (area_id, *coordinate_entry)
+        if closest_distance < 10:
+            return closest_location_id, closest_location_coordinates
+        return None, None
+
+    async def wait_until_out_of_item_receive_animation(self):
+        """
+        Waits until the player is outside the item receive animation, and then returns.
+        """
+        while self.rr_interface.is_in_item_receive_animation() and not self.exit_event.is_set():
+            await asyncio.sleep(0.1)
+
 
 async def rabi_ribi_watcher(ctx: RabiRibiContext):
     """
@@ -409,7 +447,10 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
         except Exception as err:  # Rabi Ribi Process closed?
-            logger.info(err)
+            logger.warning("*******************************")
+            logger.warning("Encountered error. Please post a message to the RabiRibi thread on the AP discord")
+            logger.warning("*******************************")
+            logger.exception(str(err))
             # attempt to reconnect at the top of the loop
             continue
         await asyncio.sleep(0.5)
@@ -423,57 +464,40 @@ async def check_for_locations(ctx: RabiRibiContext):
     :RabiRibiContext ctx: The Rabi Ribi Client context instance.
     """
     # Game paused or just got item
-    if ctx.rr_interface.is_player_frozen() and not ctx.is_player_paused():
-        # Check if we're in a 1 tile radius of an item
-        player_coordinates = ctx.rr_interface.read_player_tile_position()
-        for coordinates in [
-            # area_id, x, y. The player is 2 tiles high and 1 tile wide.
-            (player_coordinates[0], player_coordinates[1], player_coordinates[2]),
-            (player_coordinates[0], player_coordinates[1] - 1, player_coordinates[2]),
-            (player_coordinates[0], player_coordinates[1] + 1, player_coordinates[2]),
-            (player_coordinates[0], player_coordinates[1], player_coordinates[2] - 1),
-            (player_coordinates[0], player_coordinates[1], player_coordinates[2] + 1),
-            (player_coordinates[0], player_coordinates[1] - 1, player_coordinates[2] - 1),
-            (player_coordinates[0], player_coordinates[1] + 1, player_coordinates[2] - 1),
-            (player_coordinates[0], player_coordinates[1], player_coordinates[2] - 2),
-        ]:
-            if coordinates in ctx.location_coordinates_to_ap_location_name:
-                ap_location_name = ctx.location_coordinates_to_ap_location_name[coordinates]
-                location_id = ctx.location_name_to_ap_id[ap_location_name]
-                if location_id not in ctx.locations_checked:
-                    ctx.locations_checked.add(location_id)
-                    await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": ctx.locations_checked}])
+    if ctx.rr_interface.is_in_item_receive_animation():
+        ap_location_id, coordinates = ctx.find_closest_item_location()
+        if not ap_location_id:
+            logger.warning("Detected item obtained, but unable to find location.")
+            return
+        if ap_location_id not in ctx.locations_checked:
+            ctx.locations_checked.add(ap_location_id)
+            await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": ctx.locations_checked}])
 
-                # scout the location and delete it from the map if its an explanation point
-                asyncio.create_task(ctx.send_msgs([{
-                    "cmd": "LocationScouts",
-                    "locations": [location_id]
-                }]))
-                ctx.time_since_last_item_obtained = time.time()
-                network_item = await ctx.obtained_items_queue.get()
-                if network_item.player != ctx.slot:
-                    await remove_exclamation_point(ctx, coordinates)
-                break
+        # scout the location and delete it from the map if its an explanation point
+        asyncio.create_task(ctx.send_msgs([{
+            "cmd": "LocationScouts",
+            "locations": [ap_location_id]
+        }]))
+        ctx.time_since_last_item_obtained = time.time()
+
+        try:
+            network_item = await asyncio.wait_for(ctx.obtained_items_queue.get(), timeout=15)
+            if network_item.player != ctx.slot:
+                await remove_exclamation_point(ctx, coordinates)
+        except TimeoutError:
+            logger.warning("Never received response to scout request for ap_location_id %d", ap_location_id)
+
     if ctx.egg_incremented_flag:
         # Just recieved an egg, mark the closet location as the one found
-        area_id, x, y = ctx.rr_interface.read_player_tile_position()
-        closest_location = None
-        closest_distance = 9999
-        for coordinate_entry in ctx.location_coordinates_to_ap_location_name.keys():
-            if area_id != coordinate_entry[0]:
-                continue
-            distance = abs(x - coordinate_entry[1]) + abs(y - coordinate_entry[2])
-            if distance < closest_distance:
-                closest_distance = distance
-                closest_location = coordinate_entry
-        if closest_distance < 8:
-            ap_location_name = ctx.location_coordinates_to_ap_location_name[closest_location]
-            location_id = ctx.location_name_to_ap_id[ap_location_name]
-            if location_id not in ctx.locations_checked:
-                ctx.locations_checked.add(location_id)
-                await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": ctx.locations_checked}])
+        ap_location_id, _ = ctx.find_closest_item_location()
+        if not ap_location_id:
+            logger.warning("Detected egg obtained, but unable to find location.")
+            ctx.egg_incremented_flag = False
+            return
+        if ap_location_id not in ctx.locations_checked:
+            ctx.locations_checked.add(ap_location_id)
+            await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": ctx.locations_checked}])
         ctx.egg_incremented_flag = False
-
 
 async def remove_exclamation_point(ctx: RabiRibiContext, coordinates):
     ctx.rr_interface.remove_item_from_in_memory_map(coordinates[0], coordinates[1], coordinates[2])
