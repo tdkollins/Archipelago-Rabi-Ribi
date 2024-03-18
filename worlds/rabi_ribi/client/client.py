@@ -50,6 +50,7 @@ class RabiRibiContext(CommonContext):
         self.time_since_main_menu = time.time()
         self.time_since_last_item_obtained = time.time()
         self.time_since_last_warp_menu = time.time()
+        self.time_since_last_costume_menu = time.time()
         
         self.items_received_rabi_ribi_ids = []
         self.obtained_items_queue = asyncio.Queue()
@@ -303,11 +304,18 @@ class RabiRibiContext(CommonContext):
             self.time_since_last_warp_menu = time.time()
         return in_warp_menu
 
+    def is_player_in_costume_menu(self):
+        in_costume_menu = self.rr_interface.is_in_costume_menu()
+        if in_costume_menu:
+            self.time_since_last_costume_menu = time.time()
+        return in_costume_menu
+
     def in_state_where_can_give_items(self):
         cur_time = time.time()
         if (
             (cur_time - self.time_since_last_paused >= 2) and
             (cur_time - self.time_since_last_warp_menu >= 5.5) and
+            (cur_time - self.time_since_last_costume_menu >= 2) and
             not self.rr_interface.is_player_frozen() and
             self.is_item_queued()
         ):
@@ -323,6 +331,7 @@ class RabiRibiContext(CommonContext):
         while self.rr_interface.is_connected() and not self.exit_event.is_set():
             self.is_player_paused()
             self.is_player_in_warp_menu()
+            self.is_player_in_costume_menu()
             await asyncio.sleep(0.1)
 
     def is_on_main_menu(self):
@@ -392,6 +401,7 @@ class RabiRibiContext(CommonContext):
         self.time_since_main_menu = time.time()
         self.time_since_last_item_obtained = time.time()
         self.time_since_last_warp_menu = time.time()
+        self.time_since_last_costume_menu = time.time()
 
         self.items_received_rabi_ribi_ids = []
         self.obtained_items_queue = asyncio.Queue()

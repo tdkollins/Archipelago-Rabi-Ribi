@@ -29,6 +29,7 @@ OFFSET_PLAYER_PAUSED = int(0x16E5C40)
 OFFSET_SCENERIO_INDICATOR = int(0xE30880)
 OFFSET_IN_ITEM_GET_ANIMATION = int(0x1682ACA)
 OFFSET_IN_WARP_MENU = int(0x16E5BBB)
+OFFSET_IN_COSTUME_MENU = int(0x16E6B20)
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -280,3 +281,9 @@ class RabiRibiMemoryIO():
         True if the player is currently selecting a warp
         """
         return self._read_4_byte_bool(OFFSET_IN_WARP_MENU)
+
+    def is_in_costume_menu(self) -> bool:
+        """
+        True if the player is currently selecting a costume
+        """
+        return self._read_4_byte_bool(OFFSET_IN_COSTUME_MENU)
