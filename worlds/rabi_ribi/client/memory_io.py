@@ -279,4 +279,4 @@ class RabiRibiMemoryIO():
         """
         True if the player is currently selecting a warp
         """
-        return not self._read_4_byte_bool(OFFSET_IN_WARP_MENU)
+        return self._read_4_byte_bool(OFFSET_IN_WARP_MENU)
