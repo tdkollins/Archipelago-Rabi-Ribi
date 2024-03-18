@@ -366,6 +366,35 @@ class RabiRibiContext(CommonContext):
         while self.rr_interface.is_in_item_receive_animation() and not self.exit_event.is_set():
             await asyncio.sleep(0.1)
 
+    def reset_client_state(self):
+        """
+        Reset client back to default values
+        """
+        self.locations_checked = set()
+        self.location_ids = None
+        self.location_name_to_ap_id = None
+        self.location_ap_id_to_name = None
+        self.item_name_to_ap_id = None
+        self.item_ap_id_to_name = None
+        self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
+            self.read_location_coordinates_and_rr_item_ids()
+
+        self.state_giving_item = False
+        self.egg_incremented_flag = False
+        self.current_egg_count = 0
+        self.seed_name = None
+
+        self.custom_seed_subdir = None
+        self.seed_player = None
+        self.seed_player_id = None
+
+        self.time_since_last_paused = time.time()
+        self.time_since_main_menu = time.time()
+        self.time_since_last_item_obtained = time.time()
+        self.time_since_last_warp_menu = time.time()
+
+        self.items_received_rabi_ribi_ids = []
+        self.obtained_items_queue = asyncio.Queue()
 
 async def rabi_ribi_watcher(ctx: RabiRibiContext):
     """
@@ -378,12 +407,18 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
     await ctx.wait_for_initial_connection_info()
     while not ctx.exit_event.is_set():
+        if not ctx.server:
+            # client disconnected from server
+            ctx.reset_client_state()
+            await ctx.wait_for_initial_connection_info()
         if not ctx.rr_interface.is_connected():
             logger.info("Waiting for connection to Rabi Ribi")
             await ctx.rr_interface.connect(ctx.exit_event)
             asyncio.create_task(ctx.watch_for_menus())
         try:
             while True:
+                if not ctx.server:
+                    break
                 await asyncio.sleep(0.5)
                 if ctx.exit_event.is_set():
                     break
@@ -396,6 +431,8 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 break
             if ctx.exit_event.is_set():
                 break
+            if not ctx.server:
+                continue
             await ctx.wait_until_out_of_shaft()
 
             cur_time = time.time()
