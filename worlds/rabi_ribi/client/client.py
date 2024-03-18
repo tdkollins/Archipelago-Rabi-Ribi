@@ -116,8 +116,6 @@ class RabiRibiContext(CommonContext):
             self.location_ids = set(args["missing_locations"] + args["checked_locations"])
             asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
 
-            # self.patch_if_recieved_all_data()
-
             # if we dont have the seed name from the RoomInfo packet, wait until we do.
             while not self.seed_name:
                 time.sleep(1)
@@ -132,6 +130,9 @@ class RabiRibiContext(CommonContext):
             self.seed_name = args['seed_name']
 
         elif cmd == "DataPackage":
+            if not self.location_ids:
+                # Connected package not recieved yet, wait for datapackage request after connected package
+                return
             self.location_name_to_ap_id = args["data"]["games"]["Rabi-Ribi"]["location_name_to_id"]
             self.location_name_to_ap_id = {
                 name: loc_id for name, loc_id in 
