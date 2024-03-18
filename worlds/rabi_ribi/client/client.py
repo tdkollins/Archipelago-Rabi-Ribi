@@ -49,6 +49,7 @@ class RabiRibiContext(CommonContext):
         self.time_since_last_paused = time.time()
         self.time_since_main_menu = time.time()
         self.time_since_last_item_obtained = time.time()
+        self.time_since_last_warp_menu = time.time()
         
         self.items_received_rabi_ribi_ids = []
         self.obtained_items_queue = asyncio.Queue()
@@ -226,6 +227,7 @@ class RabiRibiContext(CommonContext):
         await self.wait_until_out_of_item_receive_animation()
 
     async def set_received_rabi_ribi_item_ids(self):
+        # TODO: lock this method.
         self.items_received_rabi_ribi_ids = []
         potion_ids = {
             "Attack Up": 223,
@@ -294,7 +296,24 @@ class RabiRibiContext(CommonContext):
             self.time_since_last_paused = time.time()
         return paused
     
-    async def watch_for_pauses(self):
+    def is_player_in_warp_menu(self):
+        in_warp_menu = self.rr_interface.is_in_warp_menu()
+        if in_warp_menu:
+            self.time_since_last_warp_menu = time.time()
+        return in_warp_menu
+
+    def in_state_where_can_give_items(self):
+        cur_time = time.time()
+        if (
+            (cur_time - self.time_since_last_paused >= 2) and
+            (cur_time - self.time_since_last_warp_menu >= 5.5) and
+            not self.rr_interface.is_player_frozen() and
+            self.is_item_queued()
+        ):
+            return True
+        return False
+
+    async def watch_for_menus(self):
         """
         run this on a faster loop. We want to detect pauses really fast since players
           can reload a save really fast with quick save reload. We want to make sure that
@@ -302,6 +321,7 @@ class RabiRibiContext(CommonContext):
         """
         while self.rr_interface.is_connected() and not self.exit_event.is_set():
             self.is_player_paused()
+            self.is_player_in_warp_menu()
             await asyncio.sleep(0.1)
 
     def is_on_main_menu(self):
@@ -360,7 +380,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
         if not ctx.rr_interface.is_connected():
             logger.info("Waiting for connection to Rabi Ribi")
             await ctx.rr_interface.connect(ctx.exit_event)
-            asyncio.create_task(ctx.watch_for_pauses())
+            asyncio.create_task(ctx.watch_for_menus())
         try:
             while True:
                 await asyncio.sleep(0.5)
@@ -377,15 +397,12 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 break
             await ctx.wait_until_out_of_shaft()
 
+            cur_time = time.time()
+
             ctx.handle_egg_changes()
             await check_for_locations(ctx)
 
-            cur_time = time.time()
-            if (
-                (cur_time - ctx.time_since_last_paused >= 2) and
-                not ctx.rr_interface.is_player_frozen() and
-                ctx.is_item_queued()
-            ):
+            if ctx.in_state_where_can_give_items():
                 await ctx.give_item()
 
             # Fallback if player collected items while the client was disconnected.

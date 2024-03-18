@@ -28,6 +28,7 @@ OFFSET_EGG_COUNT = int(0x1675CCC)
 OFFSET_PLAYER_PAUSED = int(0x16E5C40)
 OFFSET_SCENERIO_INDICATOR = int(0xE30880)
 OFFSET_IN_ITEM_GET_ANIMATION = int(0x1682ACA)
+OFFSET_IN_WARP_MENU = int(0x16E5BBB)
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -273,3 +274,9 @@ class RabiRibiMemoryIO():
         True if the player isnt loaded into a game.
         """
         return not self._read_4_byte_bool(OFFSET_MAX_HEALTH)
+
+    def is_in_warp_menu(self) -> bool:
+        """
+        True if the player is currently selecting a warp
+        """
+        return not self._read_4_byte_bool(OFFSET_IN_WARP_MENU)
