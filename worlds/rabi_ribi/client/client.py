@@ -55,6 +55,8 @@ class RabiRibiContext(CommonContext):
         self.items_received_rabi_ribi_ids = []
         self.obtained_items_queue = asyncio.Queue()
 
+        self.critical_section_lock = asyncio.Lock()
+
     def read_location_coordinates_and_rr_item_ids(self):
         """
         This method retrieves the location coordinates of each item from
@@ -229,29 +231,29 @@ class RabiRibiContext(CommonContext):
         await self.wait_until_out_of_item_receive_animation()
 
     async def set_received_rabi_ribi_item_ids(self):
-        # TODO: lock this method.
-        self.items_received_rabi_ribi_ids = []
-        potion_ids = {
-            "Attack Up": 223,
-            "MP Up": 287,
-            "Regen Up": 351,
-            "HP Up": 159,
-            "Pack Up": 415
-        }
+        async with self.critical_section_lock:
+            self.items_received_rabi_ribi_ids = []
+            potion_ids = {
+                "Attack Up": 223,
+                "MP Up": 287,
+                "Regen Up": 351,
+                "HP Up": 159,
+                "Pack Up": 415
+            }
 
-        if not self.item_ap_id_to_name:
-            await self.wait_for_initial_connection_info()
+            if not self.item_ap_id_to_name:
+                await self.wait_for_initial_connection_info()
 
-        for network_item in self.items_received:
-            item_name = self.item_ap_id_to_name[network_item.item]
-            if item_name == "Nothing":
-                self.items_received_rabi_ribi_ids.append(-1)
-            elif item_name in potion_ids:
-                self.items_received_rabi_ribi_ids.append(potion_ids[item_name])
-                potion_ids[item_name] -= 1
-            else:
-                self.items_received_rabi_ribi_ids.append(
-                    int(self.item_name_to_rabi_ribi_item_id[item_name]))
+            for network_item in self.items_received:
+                item_name = self.item_ap_id_to_name[network_item.item]
+                if item_name == "Nothing":
+                    self.items_received_rabi_ribi_ids.append(-1)
+                elif item_name in potion_ids:
+                    self.items_received_rabi_ribi_ids.append(potion_ids[item_name])
+                    potion_ids[item_name] -= 1
+                else:
+                    self.items_received_rabi_ribi_ids.append(
+                        int(self.item_name_to_rabi_ribi_item_id[item_name]))
 
     def is_item_queued(self):
         """
@@ -413,8 +415,6 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
     :RabiRibiContext ctx: The Rabi Ribi Client context instance.
     """
-    # TODO: on disonnect reload the context and watcher. Will break if player was changed.
-
     await ctx.wait_for_initial_connection_info()
     while not ctx.exit_event.is_set():
         if not ctx.server:
