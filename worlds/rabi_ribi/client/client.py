@@ -40,6 +40,7 @@ class RabiRibiContext(CommonContext):
         self.egg_incremented_flag = False
         self.current_egg_count = 0
         self.seed_name = None
+        self.options = None
 
         # populated when we have the unique seed ID
         self.custom_seed_subdir = None
@@ -117,6 +118,8 @@ class RabiRibiContext(CommonContext):
     def on_package(self, cmd: str, args: dict):
         if cmd == "Connected":
             self.location_ids = set(args["missing_locations"] + args["checked_locations"])
+            self.options = args["slot_data"]
+
             asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
 
             # if we dont have the seed name from the RoomInfo packet, wait until we do.
@@ -394,6 +397,7 @@ class RabiRibiContext(CommonContext):
         self.egg_incremented_flag = False
         self.current_egg_count = 0
         self.seed_name = None
+        self.options = None
 
         self.custom_seed_subdir = None
         self.seed_player = None

@@ -2,8 +2,8 @@
 from BaseClasses import Location, Region, MultiWorld, ItemClassification
 from worlds.generic.Rules import add_rule
 from worlds.rabi_ribi.items import RabiRibiItem
-from worlds.rabi_ribi.existing_randomizer.randomizer import parse_args
 from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
+from worlds.rabi_ribi.existing_randomizer.randomizer import parse_args
 from worlds.rabi_ribi.logic_helpers import (
     convert_existing_rando_name_to_ap_name,
     convert_existing_rando_rule_to_ap_rule,
@@ -19,12 +19,18 @@ class RegionDef:
     This class provides methods associated with defining and connecting regions, locations,
     and the access rules for those regions and locations.
     """
-    def __init__(self, multiworld: MultiWorld, player: int):
-        # Use default args for now.
-        args = parse_args()
-        self.randomizer_data = RandomizerData(args)
+
+    def __init__(self, multiworld: MultiWorld, player: int, options):
+        existing_randomizer_args = self._convert_options_to_existing_randomizer_args(options)
+        self.randomizer_data = RandomizerData(existing_randomizer_args)
         self.player = player
         self.multiworld = multiworld
+        self.options = options
+
+    def _convert_options_to_existing_randomizer_args(self, options):
+        args = parse_args()
+        args.open_mode = options.open_mode.value
+        return args
 
     def set_regions(self):
         """
@@ -51,7 +57,7 @@ class RegionDef:
         regions["Menu"].connect(regions["Forest Start"])
         edge_constraints = self.randomizer_data.edge_constraints
         for edge in edge_constraints:
-            rule = convert_existing_rando_rule_to_ap_rule(edge.prereq_expression, self.player)
+            rule = convert_existing_rando_rule_to_ap_rule(edge.prereq_expression, self.player, self.options)
             from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
             to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
             regions[from_location].add_exits([to_location], {
@@ -128,8 +134,8 @@ class RegionDef:
             if "EVENT_WARPS_REQUIRED" in prereq_expr:
                 continue
 
-            entry_rule = convert_existing_rando_rule_to_ap_rule(location.entry_prereq_expr, self.player)
-            exit_rule = convert_existing_rando_rule_to_ap_rule(location.exit_prereq_expr, self.player)
+            entry_rule = convert_existing_rando_rule_to_ap_rule(location.entry_prereq_expr, self.player, self.options)
+            exit_rule = convert_existing_rando_rule_to_ap_rule(location.exit_prereq_expr, self.player, self.options)
             location_name = convert_existing_rando_name_to_ap_name(location.item)
             region_name = convert_existing_rando_name_to_ap_name(location.from_location)
             ap_location = RabiRibiLocation(

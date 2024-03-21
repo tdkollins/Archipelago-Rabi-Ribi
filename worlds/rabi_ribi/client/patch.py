@@ -58,7 +58,8 @@ def patch_map_files(ctx: RabiRibiContext):
     """
     map_source_dir = f"{RabiRibiWorld.settings.game_installation_path}/data/area"
     grab_original_maps(map_source_dir, ctx.custom_seed_subdir)
-    settings = parse_args() # this should be done through slot data later
+    settings = parse_args()
+    settings.open_mode = ctx.options["openMode"]
     area_ids = get_default_areaids()
     randomizer_data = RandomizerData(settings)
     item_modifier = ItemModifier(

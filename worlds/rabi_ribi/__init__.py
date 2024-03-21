@@ -76,8 +76,13 @@ class RabiRibiWorld(World):
 
     def __init__(self, multiworld, player):
         super().__init__(multiworld, player)
-        self.region_def = RegionDef(multiworld, player)
         self.total_locations = 0
+
+    def generate_early(self) -> None:
+        """Set world specific generation properties"""
+
+        # Will be configurable later, but for now always force eggs to be local.
+        self.multiworld.local_items[self.player].value.add("Easter Egg")
 
     def create_item(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
@@ -95,10 +100,11 @@ class RabiRibiWorld(World):
         Define regions and locations.
         This also defines access rules for the regions and locations.
         """
-        self.region_def.set_regions()
-        self.region_def.connect_regions()
-        self.total_locations = self.region_def.set_locations(self.location_name_to_id)
-        self.region_def.set_events()
+        region_def = RegionDef(self.multiworld, self.player, self.options)
+        region_def.set_regions()
+        region_def.connect_regions()
+        self.total_locations = region_def.set_locations(self.location_name_to_id)
+        region_def.set_events()
 
     def create_items(self) -> None:
         base_item_list = get_base_item_list()
@@ -109,11 +115,10 @@ class RabiRibiWorld(World):
         junk = self.total_locations - len(base_item_list)
         self.multiworld.itempool += [self.create_item("Nothing") for _ in range(junk)]
 
-    def generate_early(self) -> None:
-        """Set world specific generation properties"""
-
-        # Will be configurable later, but for now always force eggs to be local.
-        self.multiworld.local_items[self.player].value.add("Easter Egg")
+    def fill_slot_data(self) -> dict:
+        return {
+            "openMode": self.options.open_mode.value
+        }
 
     def set_rules(self) -> None:
         """
