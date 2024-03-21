@@ -110,6 +110,8 @@ class RabiRibiWorld(World):
         base_item_list = get_base_item_list()
 
         for item in map(self.create_item, base_item_list):
+            if (not self.options.randomize_hammer.value) and (item.name == "Piko Hammer"):
+                continue
             self.multiworld.itempool.append(item)
 
         junk = self.total_locations - len(base_item_list)
@@ -126,3 +128,7 @@ class RabiRibiWorld(World):
         """
         self.multiworld.completion_condition[self.player] = \
             lambda state: state.has("Easter Egg", self.player, 5)
+
+    def pre_fill(self) -> None:
+        if not self.options.randomize_hammer.value:
+            self.multiworld.get_location("Piko Hammer", self.player).place_locked_item(self.create_item("Piko Hammer"))
