@@ -106,8 +106,9 @@ class RegionDef:
         existing randomizer.
 
         :dict[str, int] location_name_to_id: Map for location name -> id number
-        :returns: None
+        :returns int: The total number of locations
         """
+        total_locations = 0
         locations = self.randomizer_data.item_constraints
         regions = self.multiworld.regions.region_cache[self.player]
         for location in locations:
@@ -137,6 +138,8 @@ class RegionDef:
                 location_name_to_id[location_name],
                 regions[region_name]
             )
+            total_locations += 1
+
             regions[region_name].locations.append(ap_location)
 
             # If this should be done during the set_rules function call, just comment on the PR or @phie_
@@ -144,6 +147,8 @@ class RegionDef:
             #   (the existing randomizer defines the locations and location rules on the same object)
             add_rule(ap_location, entry_rule)
             add_rule(ap_location, exit_rule)
+
+        return total_locations
 
     def set_events(self):
         regions = self.multiworld.regions.region_cache[self.player]
@@ -273,7 +278,6 @@ class RegionDef:
         add_rule(chapter_5,
                  lambda state: logic.can_reach_chapter_5(state, self.player) and
                     state.has("Chapter 4", self.player))
-
 
     def _get_region_name_list(self):
         return [

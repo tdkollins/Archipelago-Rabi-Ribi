@@ -77,6 +77,7 @@ class RabiRibiWorld(World):
     def __init__(self, multiworld, player):
         super().__init__(multiworld, player)
         self.region_def = RegionDef(multiworld, player)
+        self.total_locations = 0
 
     def create_item(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
@@ -89,24 +90,24 @@ class RabiRibiWorld(World):
         """Create a Rabi-Ribi event to help logic"""
         return RabiRibiItem(name, True, None, self.player)
 
+    def create_regions(self) -> None:
+        """
+        Define regions and locations.
+        This also defines access rules for the regions and locations.
+        """
+        self.region_def.set_regions()
+        self.region_def.connect_regions()
+        self.total_locations = self.region_def.set_locations(self.location_name_to_id)
+        self.region_def.set_events()
+
     def create_items(self) -> None:
         base_item_list = get_base_item_list()
 
         for item in map(self.create_item, base_item_list):
             self.multiworld.itempool.append(item)
 
-        junk = len(self.location_name_to_id) - len(base_item_list)
+        junk = self.total_locations - len(base_item_list)
         self.multiworld.itempool += [self.create_item("Nothing") for _ in range(junk)]
-
-    def create_regions(self) -> None:
-        """
-        Define regions and locations. 
-        This also defines access rules for the regions and locations.
-        """
-        self.region_def.set_regions()
-        self.region_def.connect_regions()
-        self.region_def.set_locations(self.location_name_to_id)
-        self.region_def.set_events()
 
     def generate_early(self) -> None:
         """Set world specific generation properties"""
