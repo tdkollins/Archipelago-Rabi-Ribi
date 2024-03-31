@@ -57,7 +57,15 @@ class RegionDef:
         regions["Menu"].connect(regions["Forest Start"])
         edge_constraints = self.randomizer_data.edge_constraints
         for edge in edge_constraints:
-            rule = convert_existing_rando_rule_to_ap_rule(edge.prereq_expression, self.player, self.options)
+            rule = convert_existing_rando_rule_to_ap_rule(edge.prereq_expression, self.player, regions, self.options)
+            from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
+            to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
+            regions[from_location].add_exits([to_location], {
+                to_location: rule
+            })
+        edge_constraints_2 = self.randomizer_data.initial_edges
+        for edge in edge_constraints_2:
+            rule = convert_existing_rando_rule_to_ap_rule(edge.satisfied_expr, self.player, regions, self.options)
             from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
             to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
             regions[from_location].add_exits([to_location], {
@@ -134,26 +142,21 @@ class RegionDef:
             if "EVENT_WARPS_REQUIRED" in prereq_expr:
                 continue
 
-            entry_rule = convert_existing_rando_rule_to_ap_rule(location.entry_prereq_expr, self.player, self.options)
-            exit_rule = convert_existing_rando_rule_to_ap_rule(location.exit_prereq_expr, self.player, self.options)
+            # Note that location rules are always baked into the entry / exit requirements of the region.
+            # Its done this way because this is the way the original randomizer did it.
+            # Items which have an access requirement specific to that region have their own region node.
             location_name = convert_existing_rando_name_to_ap_name(location.item)
-            region_name = convert_existing_rando_name_to_ap_name(location.from_location)
+            region_name = f"Item {location_name}" if f"Item {location_name}" in regions else \
+                convert_existing_rando_name_to_ap_name(location.from_location)
+            location_name = convert_existing_rando_name_to_ap_name(location.item)
             ap_location = RabiRibiLocation(
                 self.player,
                 location_name,
                 location_name_to_id[location_name],
                 regions[region_name]
             )
-            total_locations += 1
-
             regions[region_name].locations.append(ap_location)
-
-            # If this should be done during the set_rules function call, just comment on the PR or @phie_
-            #   on the AP discord. I did it here because its easier to only go through the locations once
-            #   (the existing randomizer defines the locations and location rules on the same object)
-            add_rule(ap_location, entry_rule)
-            add_rule(ap_location, exit_rule)
-
+            total_locations += 1
         return total_locations
 
     def set_events(self):
@@ -288,7 +291,7 @@ class RegionDef:
     def _get_region_name_list(self):
         return [
             convert_existing_rando_name_to_ap_name(name) for \
-            name in self.randomizer_data.locations.keys()
+            name in self.randomizer_data.graph_vertices
         ]
   
 def get_all_possible_locations():

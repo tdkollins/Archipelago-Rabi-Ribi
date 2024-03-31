@@ -3,8 +3,9 @@ This module defines helper methods used for evaluating rule lambdas.
 Its probably a little haphazardly sorted.. but the method names are descriptive
 enough for it not to be confusing.
 """
-from BaseClasses import CollectionState
+from BaseClasses import CollectionState, Region
 from worlds.rabi_ribi.existing_randomizer.utility import OpLit, OpNot, OpOr, OpAnd
+from typing import Dict
 
 def has_3_magic_types(state: CollectionState, player: int):
     """Player has at least 3 types of magic"""
@@ -268,6 +269,10 @@ def can_move_out_of_prologue_areas(state: CollectionState, player: int, options)
     """Player can reach areas not locked to prologue"""
     return state.has("Chapter 1", player) or (options.open_mode.value)
 
+def can_reach_ashuri_2(state: CollectionState, player: int):
+    """Player can reacha Ashuri 2"""
+    return state.can_reach("Riverbank Level3", "Region", player)
+
 
 ####################################################
 #           Utility used by other modules
@@ -297,7 +302,7 @@ def convert_ap_name_to_existing_rando_name(name):
     existing_rando_name = "_".join(existing_rando_name).upper()
     return existing_rando_name
 
-def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, options):
+def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, regions: Dict[int, Dict[str, Region]], options):
     """
     This method converts a rule from the existing randomizer to a lambda which can be passed to AP.
     The existing randomizer evaluates a defined logic expression, which it seperates into 5 classes:
@@ -378,23 +383,26 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, o
             "Boost Many": lambda state: can_use_boost(state, player),
             "Darkness": lambda state: can_navigate_darkness(state, player),
             "Underwater": lambda state: can_navigate_underwater(state, player),
-            "Prologue Trigger": lambda state: can_move_out_of_prologue_areas(state, player, options)
+            "Prologue Trigger": lambda state: can_move_out_of_prologue_areas(state, player, options),
+            "Ashuri 2": lambda state: can_reach_ashuri_2(state, player)
         }
         if literal in literal_eval_map:
             return literal_eval_map[literal]
         elif literal.endswith("tm"):
             num_town_members = int(literal[:-2:])
             return lambda state: can_recruit_n_town_members(state, num_town_members, player)
+        elif literal in regions:
+            return lambda state: state.can_reach(literal, "Region", player)
         return lambda state: state.has(literal, player)
     elif isinstance(existing_rule, OpNot):
-        expr = convert_existing_rando_rule_to_ap_rule(existing_rule.expr, player, options)
+        expr = convert_existing_rando_rule_to_ap_rule(existing_rule.expr, player, regions, options)
         return lambda state: not expr(state)
     elif isinstance(existing_rule, OpOr):
-        expr_l = convert_existing_rando_rule_to_ap_rule(existing_rule.exprL, player, options)
-        expr_r = convert_existing_rando_rule_to_ap_rule(existing_rule.exprR, player, options)
+        expr_l = convert_existing_rando_rule_to_ap_rule(existing_rule.exprL, player, regions, options)
+        expr_r = convert_existing_rando_rule_to_ap_rule(existing_rule.exprR, player, regions, options)
         return lambda state: expr_l(state) or expr_r(state)
     elif isinstance(existing_rule, OpAnd):
-        expr_l = convert_existing_rando_rule_to_ap_rule(existing_rule.exprL, player, options)
-        expr_r = convert_existing_rando_rule_to_ap_rule(existing_rule.exprR, player, options)
+        expr_l = convert_existing_rando_rule_to_ap_rule(existing_rule.exprL, player, regions, options)
+        expr_r = convert_existing_rando_rule_to_ap_rule(existing_rule.exprR, player, regions, options)
         return lambda state: expr_l(state) and expr_r(state)
     raise ValueError("Invalid Expression recieved.")

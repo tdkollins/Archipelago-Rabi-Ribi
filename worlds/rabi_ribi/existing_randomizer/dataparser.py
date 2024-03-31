@@ -384,6 +384,11 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
         return dict((name, parse_expression_lambda(constraint, variable_names_set, default_expressions))
             for name, constraint in alts.items())
 
+    def parse_alternate_exprs(alts):
+        if alts == None: return {}
+        return dict((name, parse_expression(constraint, variable_names_set, default_expressions))
+            for name, constraint in alts.items())
+
     item_constraints = []
 
     valid_keys = set(('item','from_location','to_location','entry_prereq','exit_prereq','alternate_entries','alternate_exits'))
@@ -402,7 +407,9 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
             exit_prereq = parse_expression_lambda(cdict['exit_prereq'], variable_names_set, default_expressions),
             exit_prereq_expr = parse_expression(cdict['exit_prereq'], variable_names_set, default_expressions),
             alternate_entries = parse_alternates(cdict.get('alternate_entries')),
+            alternate_entry_exprs = parse_alternate_exprs(cdict.get('alternate_entries')),
             alternate_exits = parse_alternates(cdict.get('alternate_exits')),
+            alternate_exit_exprs = parse_alternate_exprs(cdict.get('alternate_exits'))
         ))
 
     # Validate that there are no duplicate items defined
@@ -847,6 +854,7 @@ class RandomizerData(object):
                     from_location=item_constraint.from_location,
                     to_location=item_node_name,
                     constraint=item_constraint.entry_prereq,
+                    constraint_expr=item_constraint.entry_prereq_expr,
                     backtrack_cost=0,
                 ))
 
@@ -855,6 +863,7 @@ class RandomizerData(object):
                     from_location=item_node_name,
                     to_location=item_constraint.from_location,
                     constraint=item_constraint.exit_prereq,
+                    constraint_expr=item_constraint.exit_prereq_expr,
                     backtrack_cost=0,
                 ))
 
@@ -864,6 +873,7 @@ class RandomizerData(object):
                         from_location=entry_node,
                         to_location=item_node_name,
                         constraint=prereq,
+                        constraint_expr=item_constraint.alternate_entry_exprs[entry_node],
                         backtrack_cost=1,
                     ))
 
@@ -873,6 +883,7 @@ class RandomizerData(object):
                         from_location=item_node_name,
                         to_location=exit_node,
                         constraint=prereq,
+                        constraint_expr=item_constraint.alternate_exit_exprs[exit_node],
                         backtrack_cost=1,
                     ))
 

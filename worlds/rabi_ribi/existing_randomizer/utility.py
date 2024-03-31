@@ -80,7 +80,7 @@ class EdgeConstraintData(object):
         ])
 
 class ItemConstraintData(object):
-    def __init__(self, item, from_location, entry_prereq, entry_prereq_expr, exit_prereq, exit_prereq_expr, alternate_entries, alternate_exits):
+    def __init__(self, item, from_location, entry_prereq, entry_prereq_expr, exit_prereq, exit_prereq_expr, alternate_entries, alternate_entry_exprs, alternate_exits, alternate_exit_exprs):
         self.item = item
         self.from_location = from_location
         self.entry_prereq = entry_prereq
@@ -88,7 +88,9 @@ class ItemConstraintData(object):
         self.exit_prereq_expr = exit_prereq_expr
         self.exit_prereq = exit_prereq
         self.alternate_entries = alternate_entries
+        self.alternate_entry_exprs = alternate_entry_exprs
         self.alternate_exits = alternate_exits
+        self.alternate_exit_exprs = alternate_exit_exprs
         self.no_alternate_paths = (len(self.alternate_entries) + len(self.alternate_exits) == 0)
 
 class TemplateConstraintData(object):
@@ -105,11 +107,12 @@ class TemplateConstraintData(object):
         return bool(self.change_edge_set.intersection(other.change_edge_set))
 
 class GraphEdge(object):
-    def __init__(self, edge_id, from_location, to_location, constraint, backtrack_cost):
+    def __init__(self, edge_id, from_location, to_location, constraint, constraint_expr, backtrack_cost):
         self.edge_id = edge_id
         self.from_location = from_location
         self.to_location = to_location
         self.satisfied = constraint
+        self.satisfied_expr = constraint_expr
         self.backtrack_cost = backtrack_cost
 
     def __str__(self):
