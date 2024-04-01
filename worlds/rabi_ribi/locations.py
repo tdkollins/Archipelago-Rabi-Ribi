@@ -288,6 +288,14 @@ class RegionDef:
                  lambda state: logic.can_reach_chapter_5(state, self.player) and
                     state.has("Chapter 4", self.player))
 
+        bunny_strike = RabiRibiLocation(self.player, "Bunny Strike", None, regions["Town Main"])
+        bunny_strike.place_locked_item(RabiRibiItem("Bunny Strike", ItemClassification.progression, None, self.player))
+        regions["Town Main"].locations.append(bunny_strike)
+
+        speed_boost = RabiRibiLocation(self.player, "Speed Boost", None, regions["Town Main"])
+        speed_boost.place_locked_item(RabiRibiItem("Speed Boost", ItemClassification.progression, None, self.player))
+        regions["Town Main"].locations.append(speed_boost)
+
     def _get_region_name_list(self):
         return [
             convert_existing_rando_name_to_ap_name(name) for \

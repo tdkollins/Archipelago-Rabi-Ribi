@@ -5,6 +5,7 @@ enough for it not to be confusing.
 """
 from BaseClasses import CollectionState, Region
 from worlds.rabi_ribi.existing_randomizer.utility import OpLit, OpNot, OpOr, OpAnd
+from worlds.rabi_ribi.options import TrickDifficulty, Knowledge
 from typing import Dict
 
 def has_3_magic_types(state: CollectionState, player: int):
@@ -270,9 +271,51 @@ def can_move_out_of_prologue_areas(state: CollectionState, player: int, options)
     return state.has("Chapter 1", player) or (options.open_mode.value)
 
 def can_reach_ashuri_2(state: CollectionState, player: int):
-    """Player can reacha Ashuri 2"""
+    """Player can reach Ashuri 2"""
     return state.can_reach("Riverbank Level3", "Region", player)
 
+def can_reach_cocoa_1(state: CollectionState, player: int):
+    """Player can reach Cocoa 1"""
+    return state.can_reach("Forest Cocoa Room", "Region", player)
+
+def can_reach_kotri_1(state: CollectionState, player: int):
+    """Player can reach Kotri 1"""
+    return state.can_reach("Park Kotri", "Region", player)
+
+def can_reach_ribbon(state: CollectionState, player: int):
+    """Player can reach ribbon"""
+    return state.can_reach("Spectral Warp", "Region", player)
+
+def is_at_least_hard_difficulty(options):
+    """Trick difficulty is at least hard"""
+    return options.trick_difficulty >= TrickDifficulty.option_hard
+
+def is_at_least_v_hard_difficulty(options):
+    """Trick difficulty is at least hard"""
+    return options.trick_difficulty >= TrickDifficulty.option_v_hard
+
+def is_at_least_stupid_difficulty(options):
+    """Trick difficulty is at least hard"""
+    return options.trick_difficulty >= TrickDifficulty.option_stupid
+
+def is_at_least_intermediate_knowledge(options):
+    """Knowledge is at least intermediate"""
+    return options.knowledge >= Knowledge.option_intermediate
+
+def is_at_least_advanced_knowledge(options):
+    """Knowledge is at least advanced"""
+    return options.knowledge >= Knowledge.option_advanced
+
+def has_enough_amulet_food(state: CollectionState, player: int, num_amulet_food: int):
+    return state.can_reach("Town Shop", "Region", player) or \
+        (num_amulet_food == 1 and can_bunny_amulet(state, player)) or \
+        (num_amulet_food == 2 and can_bunny_amulet_2(state, player)) or \
+        (num_amulet_food == 3 and can_bunny_amulet_3(state, player)) or \
+        (num_amulet_food >= 4 and (
+            state.can_reach("Town Shop", "Region", player) and \
+            has_item_menu(state, player) and \
+            can_bunny_amulet(state, player)
+        ))
 
 ####################################################
 #           Utility used by other modules
@@ -384,7 +427,25 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Darkness": lambda state: can_navigate_darkness(state, player),
             "Underwater": lambda state: can_navigate_underwater(state, player),
             "Prologue Trigger": lambda state: can_move_out_of_prologue_areas(state, player, options),
-            "Ashuri 2": lambda state: can_reach_ashuri_2(state, player)
+            "Cocoa 1": lambda state: can_reach_cocoa_1(state, player),
+            "Kotri 1": lambda state: can_reach_kotri_1(state, player),
+            "Ashuri 2": lambda state: can_reach_ashuri_2(state, player),
+            "Boss Ribbon": lambda state: can_reach_ribbon(state, player),
+            "Difficulty Hard": lambda _: is_at_least_hard_difficulty(options),
+            "Difficulty Stupid": lambda _: is_at_least_stupid_difficulty(options),
+            "Difficulty V Hard": lambda _: is_at_least_v_hard_difficulty(options),
+            "Knowledge Intermediate": lambda _: is_at_least_intermediate_knowledge(options),
+            "Knowledge Advanced": lambda _: is_at_least_advanced_knowledge(options),
+            "Amulet Food": lambda state: has_enough_amulet_food(state, player, 1),
+            "2 Amulet Food": lambda state: has_enough_amulet_food(state, player, 2),
+            "3 Amulet Food": lambda state: has_enough_amulet_food(state, player, 3),
+            "Many Amulet Food": lambda state: has_enough_amulet_food(state, player, 4),
+            "Open Mode": lambda _: options.open_mode.value,
+            "Block Clips Required": lambda _: options.block_clips_required.value,
+            "Semisolid Clips Required": lambda _: options.semi_solid_clips_required.value,
+            "Zip Required": lambda _: options.zips_required.value,
+            "Darkness Without Light Orb": lambda _: options.darkness_without_light_orb.value,
+            "Underwater Without Water Orb": lambda _: options.underwater_without_water_orb.value
         }
         if literal in literal_eval_map:
             return literal_eval_map[literal]
