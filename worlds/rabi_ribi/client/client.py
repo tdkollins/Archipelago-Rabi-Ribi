@@ -237,7 +237,7 @@ class RabiRibiContext(CommonContext):
         async with self.critical_section_lock:
             self.items_received_rabi_ribi_ids = []
             potion_ids = {
-                "Attack Up": 223,
+                "Attack Up": 193, # sub 30 since those are reserved for super / hyper attack modes
                 "MP Up": 287,
                 "Regen Up": 351,
                 "HP Up": 159,
@@ -488,7 +488,7 @@ async def check_for_locations(ctx: RabiRibiContext):
     if ctx.rr_interface.is_in_item_receive_animation():
         ap_location_id, coordinates = ctx.find_closest_item_location()
         if not ap_location_id:
-            logger.warning("Detected item obtained, but unable to find location.")
+            # logger.warning("Detected item obtained, but unable to find location.")
             return
         if ap_location_id not in ctx.locations_checked:
             ctx.locations_checked.add(ap_location_id)
