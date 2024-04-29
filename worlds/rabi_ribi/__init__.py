@@ -119,7 +119,8 @@ class RabiRibiWorld(World):
 
     def fill_slot_data(self) -> dict:
         return {
-            "openMode": self.options.open_mode.value
+            "openMode": self.options.open_mode.value,
+            "attackMode": self.options.attack_mode.value
         }
 
     def set_rules(self) -> None:

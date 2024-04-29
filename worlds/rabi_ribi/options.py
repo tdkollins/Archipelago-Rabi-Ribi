@@ -87,6 +87,22 @@ class UnderwaterWithoutWaterOrb(Toggle):
     display_name = "Underwater Without Water Orb"
 
 
+class AttackMode(Choice):
+    """
+    Normal attack mode starts you with 0 attack ups.
+    Super attack mode starts you with 20 attack ups.
+    Hyper attack mode starts you with 30 attack ups.
+
+    This gives you a lot more damage, which is especially useful because you often don’t get
+    the hammer early in randomizer games. (Ribbon does about 20 damage per shot in super attack mode)
+    """
+    display_name = "Attack Mode"
+    option_normal = 0
+    option_super = 1
+    option_hyper = 2
+    default = option_normal
+
+
 @dataclass
 class RabiRibiOptions(PerGameCommonOptions):
     """Rabi Ribi Options Definition"""
@@ -99,3 +115,4 @@ class RabiRibiOptions(PerGameCommonOptions):
     zips_required: ZipsRequired
     darkness_without_light_orb: DarknessWithoutLightOrb
     underwater_without_water_orb: UnderwaterWithoutWaterOrb
+    attack_mode: AttackMode

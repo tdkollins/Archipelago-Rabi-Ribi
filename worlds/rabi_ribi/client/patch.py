@@ -5,6 +5,7 @@ This is done on the client side upon connect to allow for a smoother setup exper
 import struct
 
 from worlds.rabi_ribi import RabiRibiWorld
+from worlds.rabi_ribi.options import AttackMode
 from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
 from worlds.rabi_ribi.existing_randomizer.mapfileio import (
     ItemModifier,
@@ -60,6 +61,11 @@ def patch_map_files(ctx: RabiRibiContext):
     grab_original_maps(map_source_dir, ctx.custom_seed_subdir)
     settings = parse_args()
     settings.open_mode = ctx.options["openMode"]
+    attack_mode = ctx.options["attackMode"]
+    if attack_mode == AttackMode.option_hyper:
+        settings.hyper_attack_mode = True
+    elif attack_mode == AttackMode.option_super:
+        settings.super_attack_mode = True
     area_ids = get_default_areaids()
     randomizer_data = RandomizerData(settings)
     item_modifier = ItemModifier(
