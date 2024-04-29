@@ -237,7 +237,7 @@ class RabiRibiContext(CommonContext):
         async with self.critical_section_lock:
             self.items_received_rabi_ribi_ids = []
             potion_ids = {
-                "Attack Up": 193, # sub 30 since those are reserved for super / hyper attack modes
+                "Attack Up": 193, #  sub 30 since those are reserved for super / hyper attack modes
                 "MP Up": 287,
                 "Regen Up": 351,
                 "HP Up": 159,
