@@ -44,18 +44,15 @@ def explosives_enemy(state: CollectionState, player: int):
     """Player has explosives or can explode an enemy nearby."""
     return state.has("Carrot Bomb", player) or state.has("Carrot Shooter", player)
 
-def can_navigate_darkness(state: CollectionState, player: int):
+def can_navigate_darkness(state: CollectionState, player: int, options):
     """
-    Player has light orb or has option for darkness 
-    without light orb turned on
+    Player has light orb or has option for darkness without light orb turned on
     """
-    # TODO: navigate without light orb option
-    return state.has("Light Orb", player)
+    return state.has("Light Orb", player) or options.darkness_without_light_orb.value
 
-def can_navigate_underwater(state: CollectionState, player: int):
+def can_navigate_underwater(state: CollectionState, player: int, options):
     """Player has water orb or has option for water without water orb turned on"""
-    # TODO: navigate without water orb option
-    return state.has("Water Orb", player)
+    return state.has("Water Orb", player) or options.underwater_without_water_orb.value
 
 def can_bunny_strike(state: CollectionState, player: int):
     """Player can use the bunny strike skill"""
@@ -259,7 +256,7 @@ def can_reach_chapter_3(state: CollectionState, player: int):
 def can_reach_chapter_4(state: CollectionState, player: int):
     """Player can reach chapter 4"""
     return state.can_reach("Town Main", "Region", player) and \
-        can_recruit_n_town_members(state, 6, player)
+        can_recruit_n_town_members(state, 7, player)
 
 def can_reach_chapter_5(state: CollectionState, player: int):
     """Player can reach chapter 5"""
@@ -424,8 +421,8 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Chapter 5": lambda state: state.has("Chapter 5", player),
             "Boost": lambda state: can_use_boost(state, player),
             "Boost Many": lambda state: can_use_boost(state, player),
-            "Darkness": lambda state: can_navigate_darkness(state, player),
-            "Underwater": lambda state: can_navigate_underwater(state, player),
+            "Darkness": lambda state: can_navigate_darkness(state, player, options),
+            "Underwater": lambda state: can_navigate_underwater(state, player, options),
             "Prologue Trigger": lambda state: can_move_out_of_prologue_areas(state, player, options),
             "Cocoa 1": lambda state: can_reach_cocoa_1(state, player),
             "Kotri 1": lambda state: can_reach_kotri_1(state, player),
@@ -443,9 +440,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Open Mode": lambda _: options.open_mode.value,
             "Block Clips Required": lambda _: options.block_clips_required.value,
             "Semisolid Clips Required": lambda _: options.semi_solid_clips_required.value,
-            "Zip Required": lambda _: options.zips_required.value,
-            "Darkness Without Light Orb": lambda _: options.darkness_without_light_orb.value,
-            "Underwater Without Water Orb": lambda _: options.underwater_without_water_orb.value
+            "Zip Required": lambda _: options.zips_required.value
         }
         if literal in literal_eval_map:
             return literal_eval_map[literal]

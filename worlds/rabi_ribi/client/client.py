@@ -209,7 +209,6 @@ class RabiRibiContext(CommonContext):
             self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_name}-{self.auth}"
             if not os.path.isdir(self.custom_seed_subdir):
                 os.mkdir(self.custom_seed_subdir)
-                Path(self.custom_seed_subdir + "/items_received.txt").touch()
             if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
                 from worlds.rabi_ribi.client.patch import patch_map_files
                 patch_map_files(self)
