@@ -60,6 +60,9 @@ class RegionDef:
             rule = convert_existing_rando_rule_to_ap_rule(edge.prereq_expression, self.player, regions, self.options)
             from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
             to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
+            if from_location == "Forest Start" and to_location == "Beach Forest Entrance":
+                # add this later manually, this rule is for event_warp rando which isnt implemented yet.
+                continue
             regions[from_location].add_exits([to_location], {
                 to_location: rule
             })
