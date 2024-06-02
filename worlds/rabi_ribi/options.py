@@ -11,6 +11,13 @@ class RandomizeHammer(Toggle):
     """If set to false, the hammer is at the default location"""
     display_name = "Randomize Hammer"
 
+class EncourageEggsInLateSpheres(Toggle):
+    """
+    If set to true, the randomizer logic will attempt to place eggs in later spheres
+    resulting in harder to get to eggs.
+    """
+    display_name = "Encourage Eggs In Late Spheres"
+
 class Knowledge(Choice):
     """
     Knowledge can be BASIC, INTERMEDIATE or ADVANCED.
@@ -116,3 +123,4 @@ class RabiRibiOptions(PerGameCommonOptions):
     darkness_without_light_orb: DarknessWithoutLightOrb
     underwater_without_water_orb: UnderwaterWithoutWaterOrb
     attack_mode: AttackMode
+    encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres

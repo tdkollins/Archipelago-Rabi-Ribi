@@ -1,9 +1,11 @@
 """
 This module serves as an entrypoint into the Rabi-Ribi AP world.
 """
+from collections import defaultdict
 from typing import ClassVar, Dict, Set
 
 from BaseClasses import ItemClassification
+from Fill import swap_location_item
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, components, launch_subprocess, Type
 from .items import item_set, RabiRibiItem, get_base_item_list
@@ -133,3 +135,39 @@ class RabiRibiWorld(World):
     def pre_fill(self) -> None:
         if not self.options.randomize_hammer.value:
             self.multiworld.get_location("Piko Hammer", self.player).place_locked_item(self.create_item("Piko Hammer"))
+
+    @staticmethod
+    def _handle_encourage_eggs_in_late_spheres(multiworld):
+        worlds_with_option_enabled = set([
+            world.player for world in multiworld.get_game_worlds("Rabi-Ribi")
+            if world.options.encourage_eggs_in_late_spheres.value
+        ])
+        rr_player_spheres = defaultdict(lambda: [])
+        for sphere in multiworld.get_spheres():
+            new_player_spheres = defaultdict(lambda: [])
+            for location in sphere:
+                if location.game == "Rabi-Ribi" and location.player in worlds_with_option_enabled:
+                    new_player_spheres[location.player].append(location)
+            for player, sphere in new_player_spheres.items():
+                rr_player_spheres[player].append(sphere)
+        for player, spheres in rr_player_spheres.items():
+            first_half_of_spheres = spheres[:len(spheres)//2]
+            second_half_of_spheres = spheres[len(spheres)//2:]
+            egg_locations_to_swap = []
+            swappable_pool = []
+            for sphere in first_half_of_spheres:
+                for location in sphere:
+                    if location.item.name == "Easter Egg":
+                        egg_locations_to_swap.append(location)
+            for sphere in second_half_of_spheres:
+                for location in sphere:
+                    if location.item.classification == ItemClassification.filler:
+                        swappable_pool.append(location)
+            idx = 0
+            for new_egg_location in multiworld.random.sample(swappable_pool, min(len(egg_locations_to_swap), len(swappable_pool))):
+                swap_location_item(egg_locations_to_swap[idx], new_egg_location, check_locked=False)
+                idx += 1
+
+    @classmethod
+    def stage_post_fill(cls, multiworld) -> None:
+        cls._handle_encourage_eggs_in_late_spheres(multiworld)
