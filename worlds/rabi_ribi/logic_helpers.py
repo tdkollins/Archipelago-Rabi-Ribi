@@ -32,17 +32,9 @@ def can_use_boost(state: CollectionState, player: int):
             has_item_menu(state, player)
         )
 
-def explosives(state: CollectionState, player: int):
-    """Player has explosives they can use anywhere"""
-    return state.has("Carrot Bomb", player) or \
-        (
-            state.has("Carrot Shooter", player) and
-            can_use_boost(state, player)
-        )
-
-def explosives_enemy(state: CollectionState, player: int):
-    """Player has explosives or can explode an enemy nearby."""
-    return state.has("Carrot Bomb", player) or state.has("Carrot Shooter", player)
+def carrot_shooter_in_logic(state: CollectionState, player: int, options):
+    """Player has carrot shooter and its not out of logic by options"""
+    return (options.carrot_shooter_in_logic.value) and state.has("Carrot Shooter", player)
 
 def can_navigate_darkness(state: CollectionState, player: int, options):
     """
@@ -376,7 +368,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "None": lambda _: True,
             "False": lambda _: False,
             "Impossible": lambda _: False,
-            "Explosives Enemy": lambda state: explosives_enemy(state, player),
+            "Carrot Shooter": lambda state: carrot_shooter_in_logic(state, player, options),
             "Bunny Strike": lambda state: can_bunny_strike(state, player), 
             "Bunny Whirl": lambda state: can_bunny_whirl(state, player), 
             "Wall Jump Lv2": lambda state: wall_jump_2(state, player),
@@ -422,7 +414,9 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Boost": lambda state: can_use_boost(state, player),
             "Boost Many": lambda state: can_use_boost(state, player),
             "Darkness": lambda state: can_navigate_darkness(state, player, options),
+            "Darkness Without Light Orb": lambda _: options.darkness_without_light_orb.value,
             "Underwater": lambda state: can_navigate_underwater(state, player, options),
+            "Underwater Without Water Orb": lambda _: options.underwater_without_water_orb.value,
             "Prologue Trigger": lambda state: can_move_out_of_prologue_areas(state, player, options),
             "Cocoa 1": lambda state: can_reach_cocoa_1(state, player),
             "Kotri 1": lambda state: can_reach_kotri_1(state, player),

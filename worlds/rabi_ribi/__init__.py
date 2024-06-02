@@ -88,7 +88,8 @@ class RabiRibiWorld(World):
 
     def create_item(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
-        is_progression = RabiRibiItem.is_progression_item(name)
+        options = self.options
+        is_progression = RabiRibiItem.is_progression_item(name, options)
         classification = ItemClassification.progression if is_progression else \
             ItemClassification.filler
         return RabiRibiItem(name, classification, self.item_name_to_id[name], self.player)

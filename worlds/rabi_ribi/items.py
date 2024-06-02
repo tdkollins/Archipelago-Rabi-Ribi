@@ -9,14 +9,14 @@ class RabiRibiItem(Item):
     game: str = "Rabi-Ribi"
 
     @staticmethod
-    def is_progression_item(name: str):
+    def is_progression_item(name: str, options):
         """
         Defines if an item is considered a progression item.
 
         This will likely be updated as future logic changes happen.
         For now im porting the logic from the existing rando as is.
         """
-        return name in {
+        progression_items = {
             "Fire Orb",
             "Water Orb",
             "Light Orb",
@@ -30,10 +30,12 @@ class RabiRibiItem(Item):
             "Air Dash",
             "Bunny Whirl",
             "Hammer Roll",
-            "Carrot Shooter",
             "Charge Ring",
             "Easter Egg"
         }
+        if options.carrot_shooter_in_logic.value:
+            progression_items.add("Carrot Shooter")
+        return name in progression_items
 
 def get_base_item_list() -> List[str]:
     """

@@ -11,6 +11,13 @@ class RandomizeHammer(Toggle):
     """If set to false, the hammer is at the default location"""
     display_name = "Randomize Hammer"
 
+class CarrotShooterInLogic(Toggle):
+    """
+    If set to false, carrot shooter will not be required to bomb locations.
+    These locations will be locked behind carrot bomb instead.
+    """
+    display_name = "Carrot Shooter In Logic"
+
 class EncourageEggsInLateSpheres(Toggle):
     """
     If set to true, the randomizer logic will attempt to place eggs in later spheres
@@ -124,3 +131,4 @@ class RabiRibiOptions(PerGameCommonOptions):
     underwater_without_water_orb: UnderwaterWithoutWaterOrb
     attack_mode: AttackMode
     encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
+    carrot_shooter_in_logic: CarrotShooterInLogic
