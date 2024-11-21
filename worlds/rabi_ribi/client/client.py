@@ -77,7 +77,7 @@ class RabiRibiContext(CommonContext):
             "HP Up": 159,
             "Pack Up": 415
         }
-        locations_items_file = os.path.join(get_world_directory(), 'existing_randomizer', 'locations_items.txt')
+        locations_items_file = os.path.join('existing_randomizer', 'locations_items.txt')
         f = load_text_file(locations_items_file)
         reading = False
         for line in f.splitlines():

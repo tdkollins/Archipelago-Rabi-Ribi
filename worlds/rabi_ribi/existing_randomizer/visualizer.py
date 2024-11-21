@@ -241,7 +241,7 @@ def get_item_coords(x, y, areaid, name):
 
 def load_item_locs():
     d = {}
-    locations_items = os.path.join(get_world_directory(), 'existing_randomizer', 'locations_items.txt')
+    locations_items = os.path.join('existing_randomizer', 'locations_items.txt')
     f = load_text_file(locations_items)
     reading = False
     for line in f.splitlines():

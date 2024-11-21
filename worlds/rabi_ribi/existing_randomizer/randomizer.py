@@ -243,9 +243,9 @@ def pre_modify_map_data(mod, settings, diff_patch_files):
         for areaid, data in mod.stored_datas.items():
             apply_fixes_for_randomizer(areaid, data)
         diff_patch_files += [
-            os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'event_warps', 'ew_cicini_to_ravine.txt'),
-            os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'event_warps', 'ew_forest_to_beach.txt'),
-            os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'event_warps', 'ew_town_to_riverbank.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_cicini_to_ravine.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_forest_to_beach.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_town_to_riverbank.txt'),
         ]
         print_ln('Map fixes applied')
 

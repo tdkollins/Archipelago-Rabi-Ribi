@@ -257,7 +257,7 @@ def parse_locations_and_items():
     additional_items = {}
     map_transitions = []
 
-    locations_items_file = os.path.join(get_world_directory(), 'existing_randomizer', 'locations_items.txt')
+    locations_items_file = os.path.join('existing_randomizer', 'locations_items.txt')
     lines = read_file_and_strip_comments(locations_items_file)
 
     type_map = {
@@ -344,7 +344,7 @@ def parse_locations_and_items():
 
 # throws errors for invalid formats.
 def parse_edge_constraints(locations_set, variable_names_set, default_expressions):
-    constraints_graph = os.path.join(get_world_directory(), 'existing_randomizer', 'constraints_graph.txt')
+    constraints_graph = os.path.join('existing_randomizer', 'constraints_graph.txt')
     lines = read_file_and_strip_comments(constraints_graph)
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
@@ -371,7 +371,7 @@ def parse_edge_constraints(locations_set, variable_names_set, default_expression
     return constraints
 
 def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locations_set, variable_names_set, default_expressions):
-    constraints = os.path.join(get_world_directory(), 'existing_randomizer', 'constraints.txt')
+    constraints = os.path.join('existing_randomizer', 'constraints.txt')
     lines = read_file_and_strip_comments(constraints)
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
@@ -555,7 +555,7 @@ def parse_template_constraints(locations_set, variable_names_set, default_expres
         'CS_volcanic_west_nostupid.txt',
     ]
 
-    template_constraints = os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'template_constraints.txt')
+    template_constraints = os.path.join('existing_randomizer', 'maptemplates', 'template_constraints.txt')
     lines = read_file_and_strip_comments(template_constraints)
     jsondata = ' '.join(lines)
     jsondata = re.sub(',\s*}', '}', jsondata)
@@ -591,7 +591,7 @@ def parse_template_constraints(locations_set, variable_names_set, default_expres
             name=name,
             weight=weight,
             template_file=os.path.join(
-                get_world_directory(), 'existing_randomizer', 'maptemplates',
+                'existing_randomizer', 'maptemplates',
                 'constraint_shuffle', name_to_patch_file[name]),
             changes=changes,
         ))
