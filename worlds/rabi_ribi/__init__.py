@@ -7,8 +7,8 @@ from typing import ClassVar, Dict, Set
 from BaseClasses import ItemClassification
 from Fill import swap_location_item
 from worlds.AutoWorld import World, WebWorld
-from worlds.LauncherComponents import Component, components, launch_subprocess, Type
-from .items import item_set, RabiRibiItem, get_base_item_list
+from worlds.LauncherComponents import Component, Type, components, launch_subprocess
+from .items import RabiRibiItem, RabiRibiItemData, rabi_ribi_base_id, item_table, item_groups, get_base_item_list
 from .locations import RegionDef, get_all_possible_locations
 from .options import RabiRibiOptions
 from .settings import RabiRibiSettings
@@ -38,40 +38,15 @@ class RabiRibiWorld(World):
     topology_present: bool = False
     web: WebWorld = RabiRibiWeb()
 
-    base_id: int = 8350438193300
+    base_id: int = rabi_ribi_base_id
 
-    item_name_groups: Dict[str, Set[str]] = {}
+    item_name_groups = item_groups
     location_name_groups: Dict[str, Set[str]] = {}
 
-    item_name_to_id: Dict[str, int] = {
-        name: id_num for
-        id_num, name in enumerate(item_set, base_id)
-    }
-    item_name_to_id["Nothing"] = base_id + len(item_name_to_id)
+    item_name_to_id = {name: data.code for name, data in item_table.items()}
     location_name_to_id: Dict[str, int] = {
         name: id_num for
         id_num, name in enumerate(get_all_possible_locations(), base_id)
-    }
-
-    item_name_groups = {
-        "Town Members": {
-            "Cocoa Recruit",
-            "Ashuri Recruit",
-            "Rita Recruit",
-            "Cicini Recruit",
-            "Saya Recruit",
-            "Syaro Recruit",
-            "Pandora Recruit",
-            "Nieve Recruit",
-            "Nixie Recruit",
-            "Aruraune Recruit",
-            "Seana Recruit",
-            "Lilith Recruit",
-            "Vanilla Recruit",
-            "Chocolate Recruit",
-            "Kotri Recruit",
-            "Keke Bunny Recruit"
-        }
     }
 
     settings: ClassVar[RabiRibiSettings]
@@ -84,19 +59,17 @@ class RabiRibiWorld(World):
         """Set world specific generation properties"""
 
         # Will be configurable later, but for now always force eggs to be local.
-        self.multiworld.local_items[self.player].value.add("Easter Egg")
+        self.options.local_items.value.add("Easter Egg")
 
     def create_item(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
-        options = self.options
-        is_progression = RabiRibiItem.is_progression_item(name, options)
-        classification = ItemClassification.progression if is_progression else \
-            ItemClassification.filler
-        return RabiRibiItem(name, classification, self.item_name_to_id[name], self.player)
+
+        data: RabiRibiItemData = item_table[name]
+        return RabiRibiItem(name, data.classification, data.code, self.player)
 
     def create_event(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi event to help logic"""
-        return RabiRibiItem(name, True, None, self.player)
+        return RabiRibiItem(name, ItemClassification.progression, None, self.player)
 
     def create_regions(self) -> None:
         """
