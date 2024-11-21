@@ -18,7 +18,7 @@ from CommonClient import (
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
 from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
-from worlds.rabi_ribi.utility import get_world_directory, load_text_file
+from worlds.rabi_ribi.utility import load_text_file
 from NetUtils import NetworkItem, ClientStatus
 
 class RabiRibiContext(CommonContext):

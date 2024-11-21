@@ -1,7 +1,7 @@
 import ast
 import os
 
-from worlds.rabi_ribi.utility import get_world_directory, load_text_file
+from worlds.rabi_ribi.utility import load_text_file
 # Visualisation primarily used for debugging
 
 class Visualization(object):

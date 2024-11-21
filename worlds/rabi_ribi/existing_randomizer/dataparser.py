@@ -1,6 +1,5 @@
 import ast, re, os
 from worlds.rabi_ribi.existing_randomizer.utility import *
-from worlds.rabi_ribi.utility import get_world_directory, load_text_file
 
 """
 Knowledge levels:

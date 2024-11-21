@@ -7,7 +7,6 @@ import worlds.rabi_ribi.existing_randomizer.musicrandomizer as musicrandomizer
 import worlds.rabi_ribi.existing_randomizer.backgroundrandomizer as backgroundrandomizer
 import worlds.rabi_ribi.existing_randomizer.converter.diffgenerator as diffgenerator
 import worlds.rabi_ribi.existing_randomizer.versioncheck as versioncheck
-from worlds.rabi_ribi.utility import get_world_directory
 
 def parse_args():
     args = argparse.ArgumentParser(description='Rabi-Ribi Randomizer - %s' % versioncheck.VERSION_STRING)
