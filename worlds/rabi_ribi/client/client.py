@@ -18,6 +18,7 @@ from CommonClient import (
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
 from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
+from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.utility import load_text_file
 from NetUtils import NetworkItem, ClientStatus
 
@@ -71,11 +72,11 @@ class RabiRibiContext(CommonContext):
         """
         coordinate_to_location_name = {}
         item_name_to_rabi_ribi_item_id = {
-            "Attack Up": 223,
-            "MP Up": 287,
-            "Regen Up": 351,
-            "HP Up": 159,
-            "Pack Up": 415
+            ItemName.attack_up: 223,
+            ItemName.mp_up: 287,
+            ItemName.regen_up: 351,
+            ItemName.hp_up: 159,
+            ItemName.pack_up: 415
         }
         locations_items_file = os.path.join('existing_randomizer', 'locations_items.txt')
         f = load_text_file(locations_items_file)
@@ -236,11 +237,11 @@ class RabiRibiContext(CommonContext):
         async with self.critical_section_lock:
             self.items_received_rabi_ribi_ids = []
             potion_ids = {
-                "Attack Up": 193, #  sub 30 since those are reserved for super / hyper attack modes
-                "MP Up": 287,
-                "Regen Up": 351,
-                "HP Up": 159,
-                "Pack Up": 415
+                ItemName.attack_up: 193, #  sub 30 since those are reserved for super / hyper attack modes
+                ItemName.mp_up: 287,
+                ItemName.regen_up: 351,
+                ItemName.hp_up: 159,
+                ItemName.pack_up: 415
             }
 
             if not self.item_ap_id_to_name:
@@ -248,7 +249,7 @@ class RabiRibiContext(CommonContext):
 
             for network_item in self.items_received:
                 item_name = self.item_ap_id_to_name[network_item.item]
-                if item_name == "Nothing":
+                if item_name == ItemName.nothing:
                     self.items_received_rabi_ribi_ids.append(-1)
                 elif item_name in potion_ids:
                     self.items_received_rabi_ribi_ids.append(potion_ids[item_name])
