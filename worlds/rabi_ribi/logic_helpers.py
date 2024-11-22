@@ -377,7 +377,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Bunny Amulet Lv3": lambda state: can_bunny_amulet_3(state, player),
             "Piko Hammer Leveled": lambda state: state.has(ItemName.piko_hammer, player),
             "Carrot Bomb Entry": lambda state: state.has(ItemName.carrot_bomb, player),
-            "Carrot Shooter Entry": lambda state: state.has(ItemName.carrot_shooter, player),
+            "Carrot Shooter Entry": lambda state: carrot_shooter_in_logic(state, player, options),
             "Tm Cocoa": lambda state: state.has(ItemName.cocoa_recruit, player),
             "Tm Ashuri": lambda state: state.has(ItemName.ashuri_recruit, player),
             "Tm Rita": lambda state: state.has(ItemName.rita_recruit, player),
