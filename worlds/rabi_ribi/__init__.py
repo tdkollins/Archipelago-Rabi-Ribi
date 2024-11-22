@@ -8,10 +8,12 @@ from BaseClasses import ItemClassification
 from Fill import swap_location_item
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, Type, components, launch_subprocess
-from .items import RabiRibiItem, RabiRibiItemData, rabi_ribi_base_id, item_table, item_groups, get_base_item_list
+from .items import RabiRibiItem, RabiRibiItemData, item_table, item_groups, get_base_item_list
 from .locations import RegionDef, get_all_possible_locations
+from .names import ItemName, LocationName
 from .options import RabiRibiOptions
 from .settings import RabiRibiSettings
+from .utility import get_rabi_ribi_base_id
 from .web import RabiRibiWeb
 
 def launch_client():
@@ -38,7 +40,7 @@ class RabiRibiWorld(World):
     topology_present: bool = False
     web: WebWorld = RabiRibiWeb()
 
-    base_id: int = rabi_ribi_base_id
+    base_id: int = get_rabi_ribi_base_id()
 
     item_name_groups = item_groups
     location_name_groups: Dict[str, Set[str]] = {}
@@ -59,7 +61,7 @@ class RabiRibiWorld(World):
         """Set world specific generation properties"""
 
         # Will be configurable later, but for now always force eggs to be local.
-        self.options.local_items.value.add("Easter Egg")
+        self.options.local_items.value.add(ItemName.easter_egg)
 
     def create_item(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
@@ -86,12 +88,12 @@ class RabiRibiWorld(World):
         base_item_list = get_base_item_list()
 
         for item in map(self.create_item, base_item_list):
-            if (not self.options.randomize_hammer.value) and (item.name == "Piko Hammer"):
+            if (not self.options.randomize_hammer.value) and (item.name == ItemName.piko_hammer):
                 continue
             self.multiworld.itempool.append(item)
 
         junk = self.total_locations - len(base_item_list)
-        self.multiworld.itempool += [self.create_item("Nothing") for _ in range(junk)]
+        self.multiworld.itempool += [self.create_item(ItemName.nothing) for _ in range(junk)]
 
     def fill_slot_data(self) -> dict:
         return {
@@ -104,11 +106,11 @@ class RabiRibiWorld(World):
         Set remaining rules (for now this is just the win condition). 
         """
         self.multiworld.completion_condition[self.player] = \
-            lambda state: state.has("Easter Egg", self.player, 5)
+            lambda state: state.has(ItemName.easter_egg, self.player, 5)
 
     def pre_fill(self) -> None:
         if not self.options.randomize_hammer.value:
-            self.multiworld.get_location("Piko Hammer", self.player).place_locked_item(self.create_item("Piko Hammer"))
+            self.multiworld.get_location(LocationName.piko_hammer, self.player).place_locked_item(self.create_item(ItemName.piko_hammer))
 
     @staticmethod
     def _handle_encourage_eggs_in_late_spheres(multiworld):
@@ -131,7 +133,7 @@ class RabiRibiWorld(World):
             swappable_pool = []
             for sphere in first_half_of_spheres:
                 for location in sphere:
-                    if location.item.name == "Easter Egg":
+                    if location.item.name == ItemName.easter_egg:
                         egg_locations_to_swap.append(location)
             for sphere in second_half_of_spheres:
                 for location in sphere:

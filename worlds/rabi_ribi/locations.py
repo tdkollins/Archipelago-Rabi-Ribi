@@ -1,13 +1,15 @@
 """This module represents location definitions for Rabi-Ribi"""
 from BaseClasses import Location, Region, MultiWorld, ItemClassification
 from worlds.generic.Rules import add_rule
-from worlds.rabi_ribi.items import RabiRibiItem
-from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
-from worlds.rabi_ribi.existing_randomizer.randomizer import parse_args
-from worlds.rabi_ribi.logic_helpers import (
+from .names import ItemName
+from .items import RabiRibiItem
+from .existing_randomizer.dataparser import RandomizerData
+from .existing_randomizer.randomizer import parse_args
+from .logic_helpers import (
     convert_existing_rando_name_to_ap_name,
     convert_existing_rando_rule_to_ap_rule,
 )
+from .names import LocationName
 import worlds.rabi_ribi.logic_helpers as logic
 
 class RabiRibiLocation(Location):
@@ -54,13 +56,13 @@ class RegionDef:
         :returns: None
         """
         regions = self.multiworld.regions.region_cache[self.player]
-        regions["Menu"].connect(regions["Forest Start"])
+        regions["Menu"].connect(regions[LocationName.forest_start])
         edge_constraints = self.randomizer_data.edge_constraints
         for edge in edge_constraints:
             rule = convert_existing_rando_rule_to_ap_rule(edge.prereq_expression, self.player, regions, self.options)
             from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
             to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
-            if from_location == "Forest Start" and to_location == "Beach Forest Entrance":
+            if from_location == LocationName.forest_start and to_location == LocationName.beach_forest_entrance:
                 # add this later manually, this rule is for event_warp rando which isnt implemented yet.
                 continue
             regions[from_location].add_exits([to_location], {
@@ -77,44 +79,44 @@ class RegionDef:
 
         # Set map transitions manually, since these are defined in a
         #   non-AP-translatable way in the existing randomizer.
-        regions["Forest Start"].connect(regions["Beach Forest Entrance"])
-        regions["Beach Forest Entrance"].connect(regions["Forest Start"])
+        regions[LocationName.forest_start].connect(regions[LocationName.beach_forest_entrance])
+        regions[LocationName.beach_forest_entrance].connect(regions[LocationName.forest_start])
 
-        regions["Forest Upper Riverbank Exit"].connect(regions["Riverbank Main Level1"])
-        regions["Riverbank Main Level1"].connect(regions["Forest Upper Riverbank Exit"])
+        regions[LocationName.forest_upper_riverbank_exit].connect(regions[LocationName.riverbank_main_level1])
+        regions[LocationName.riverbank_main_level1].connect(regions[LocationName.forest_upper_riverbank_exit])
 
-        regions["Forest Lower Riverbank Exit"].connect(regions["Riverbank Lower Forest Entrance"])
-        regions["Riverbank Lower Forest Entrance"].connect(regions["Forest Lower Riverbank Exit"])
+        regions[LocationName.forest_lower_riverbank_exit].connect(regions[LocationName.riverbank_lower_forest_entrance])
+        regions[LocationName.riverbank_lower_forest_entrance].connect(regions[LocationName.forest_lower_riverbank_exit])
 
-        regions["Spectral West"].connect(regions["Volcanic Main"])
-        regions["Volcanic Main"].connect(regions["Spectral West"])
+        regions[LocationName.spectral_west].connect(regions[LocationName.volcanic_main])
+        regions[LocationName.volcanic_main].connect(regions[LocationName.spectral_west])
 
-        regions["Graveyard Top Of Bridge"].connect(regions["Sky Bridge East"])
-        regions["Sky Bridge East"].connect(regions["Graveyard Top Of Bridge"])
+        regions[LocationName.graveyard_top_of_bridge].connect(regions[LocationName.sky_bridge_east])
+        regions[LocationName.sky_bridge_east].connect(regions[LocationName.graveyard_top_of_bridge])
 
-        regions["Graveyard Main"].connect(regions["Sky Bridge East Lower"])
-        regions["Sky Bridge East Lower"].connect(regions["Graveyard Main"])
+        regions[LocationName.graveyard_main].connect(regions[LocationName.sky_bridge_east_lower])
+        regions[LocationName.sky_bridge_east_lower].connect(regions[LocationName.graveyard_main])
 
-        regions["Beach Main"].connect(regions["Ravine Beach Entrance"])
-        regions["Ravine Beach Entrance"].connect(regions["Beach Main"])
+        regions[LocationName.beach_main].connect(regions[LocationName.ravine_beach_entrance])
+        regions[LocationName.ravine_beach_entrance].connect(regions[LocationName.beach_main])
 
-        regions["Beach Volcanic Entrance"].connect(regions["Volcanic Beach Entrance"])
-        regions["Volcanic Beach Entrance"].connect(regions["Beach Volcanic Entrance"])
+        regions[LocationName.beach_volcanic_entrance].connect(regions[LocationName.volcanic_beach_entrance])
+        regions[LocationName.volcanic_beach_entrance].connect(regions[LocationName.beach_volcanic_entrance])
 
-        regions["Beach Underwater Entrance"].connect(regions["Aquarium Beach Entrance"])
-        regions["Aquarium Beach Entrance"].connect(regions["Beach Underwater Entrance"])
+        regions[LocationName.beach_underwater_entrance].connect(regions[LocationName.aquarium_beach_entrance])
+        regions[LocationName.aquarium_beach_entrance].connect(regions[LocationName.beach_underwater_entrance])
 
-        regions["Park Main"].connect(regions["Snowland East"])
-        regions["Snowland East"].connect(regions["Park Main"])
+        regions[LocationName.park_main].connect(regions[LocationName.snowland_east])
+        regions[LocationName.snowland_east].connect(regions[LocationName.park_main])
 
-        regions["Park Town Entrance"].connect(regions["Town Main"])
-        regions["Town Main"].connect(regions["Park Town Entrance"])
+        regions[LocationName.park_town_entrance].connect(regions[LocationName.town_main])
+        regions[LocationName.town_main].connect(regions[LocationName.park_town_entrance])
 
-        regions["Ravine Town Entrance"].connect(regions["Town Main"])
-        regions["Town Main"].connect(regions["Ravine Town Entrance"])
+        regions[LocationName.ravine_town_entrance].connect(regions[LocationName.town_main])
+        regions[LocationName.town_main].connect(regions[LocationName.ravine_town_entrance])
 
-        regions["Snowland Evernight Entrance"].connect(regions["Evernight Lower"])
-        regions["Evernight Lower"].connect(regions["Snowland Evernight Entrance"])
+        regions[LocationName.snowland_evernight_entrance].connect(regions[LocationName.evernight_lower])
+        regions[LocationName.evernight_lower].connect(regions[LocationName.snowland_evernight_entrance])
 
     def set_locations(self, location_name_to_id):
         """
@@ -165,146 +167,146 @@ class RegionDef:
     def set_events(self):
         regions = self.multiworld.regions.region_cache[self.player]
 
-        cocoa_1 = RabiRibiLocation(self.player, "Cocoa 1", None, regions["Forest Cocoa Room"])
-        cocoa_1.place_locked_item(RabiRibiItem("Cocoa 1", ItemClassification.progression, None, self.player))
-        regions["Forest Cocoa Room"].locations.append(cocoa_1)
+        cocoa_1 = RabiRibiLocation(self.player, ItemName.cocoa_1, None, regions[LocationName.forest_cocoa_room])
+        cocoa_1.place_locked_item(RabiRibiItem(ItemName.cocoa_1, ItemClassification.progression, None, self.player))
+        regions[LocationName.forest_cocoa_room].locations.append(cocoa_1)
 
-        kotri_1 = RabiRibiLocation(self.player, "Kotri 1", None, regions["Park Kotri"])
-        kotri_1.place_locked_item(RabiRibiItem("Kotri 1", ItemClassification.progression, None, self.player))
-        regions["Park Kotri"].locations.append(kotri_1)
+        kotri_1 = RabiRibiLocation(self.player, ItemName.kotri_1, None, regions[LocationName.park_kotri])
+        kotri_1.place_locked_item(RabiRibiItem(ItemName.kotri_1, ItemClassification.progression, None, self.player))
+        regions[LocationName.park_kotri].locations.append(kotri_1)
 
-        kotri_2 = RabiRibiLocation(self.player, "Kotri 2", None, regions["Graveyard Kotri"])
-        kotri_2.place_locked_item(RabiRibiItem("Kotri 2", ItemClassification.progression, None, self.player))
-        regions["Graveyard Kotri"].locations.append(kotri_2)
-        add_rule(kotri_2, lambda state: state.has("Kotri 1"), self.player)
+        kotri_2 = RabiRibiLocation(self.player, ItemName.kotri_2, None, regions[LocationName.graveyard_kotri])
+        kotri_2.place_locked_item(RabiRibiItem(ItemName.kotri_2, ItemClassification.progression, None, self.player))
+        regions[LocationName.graveyard_kotri].locations.append(kotri_2)
+        add_rule(kotri_2, lambda state: state.has(ItemName.kotri_1, self.player))
 
-        cocoa_recruit = RabiRibiLocation(self.player, "Cocoa Recruit", None, regions["Cave Cocoa"])
-        cocoa_recruit.place_locked_item(RabiRibiItem("Cocoa Recruit", ItemClassification.progression, None, self.player))
-        regions["Cave Cocoa"].locations.append(cocoa_recruit)
+        cocoa_recruit = RabiRibiLocation(self.player, ItemName.cocoa_recruit, None, regions[LocationName.cave_cocoa])
+        cocoa_recruit.place_locked_item(RabiRibiItem(ItemName.cocoa_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.cave_cocoa].locations.append(cocoa_recruit)
         add_rule(cocoa_recruit, lambda state: logic.can_recruit_cocoa(state, self.player))
 
-        ashuri_recruit = RabiRibiLocation(self.player, "Ashuri Recruit", None, regions["Spectral West"])
-        ashuri_recruit.place_locked_item(RabiRibiItem("Ashuri Recruit", ItemClassification.progression, None, self.player))
-        regions["Spectral West"].locations.append(ashuri_recruit)
+        ashuri_recruit = RabiRibiLocation(self.player, ItemName.ashuri_recruit, None, regions[LocationName.spectral_west])
+        ashuri_recruit.place_locked_item(RabiRibiItem(ItemName.ashuri_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.spectral_west].locations.append(ashuri_recruit)
         add_rule(ashuri_recruit, lambda state: logic.can_recruit_ashuri(state, self.player))
 
-        rita_recruit = RabiRibiLocation(self.player, "Rita Recruit", None, regions["Snowland Rita"])
-        rita_recruit.place_locked_item(RabiRibiItem("Rita Recruit", ItemClassification.progression, None, self.player))
-        regions["Spectral West"].locations.append(rita_recruit)
+        rita_recruit = RabiRibiLocation(self.player, ItemName.rita_recruit, None, regions[LocationName.snowland_rita])
+        rita_recruit.place_locked_item(RabiRibiItem(ItemName.rita_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.snowland_rita].locations.append(rita_recruit)
         add_rule(rita_recruit, lambda state: logic.can_recruit_rita(state, self.player))
 
-        cicini_recruit = RabiRibiLocation(self.player, "Cicini Recruit", None, regions["Spectral Cicini Room"])
-        cicini_recruit.place_locked_item(RabiRibiItem("Cicini Recruit", ItemClassification.progression, None, self.player))
-        regions["Spectral Cicini Room"].locations.append(cicini_recruit)
+        cicini_recruit = RabiRibiLocation(self.player, ItemName.cicini_recruit, None, regions[LocationName.spectral_cicini_room])
+        cicini_recruit.place_locked_item(RabiRibiItem(ItemName.cicini_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.spectral_cicini_room].locations.append(cicini_recruit)
         add_rule(cicini_recruit, lambda state: logic.can_recruit_cicini(state, self.player))
 
-        saya_recruit = RabiRibiLocation(self.player, "Saya Recruit", None, regions["Evernight Saya"])
-        saya_recruit.place_locked_item(RabiRibiItem("Saya Recruit", ItemClassification.progression, None, self.player))
-        regions["Evernight Saya"].locations.append(saya_recruit)
+        saya_recruit = RabiRibiLocation(self.player, ItemName.saya_recruit, None, regions[LocationName.evernight_saya])
+        saya_recruit.place_locked_item(RabiRibiItem(ItemName.saya_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.evernight_saya].locations.append(saya_recruit)
         add_rule(saya_recruit, lambda state: logic.can_recruit_saya(state, self.player))
 
-        syaro_recruit = RabiRibiLocation(self.player, "Syaro Recruit", None, regions["System Interior Main"])
-        syaro_recruit.place_locked_item(RabiRibiItem("Syaro Recruit", ItemClassification.progression, None, self.player))
-        regions["System Interior Main"].locations.append(syaro_recruit)
+        syaro_recruit = RabiRibiLocation(self.player, ItemName.syaro_recruit, None, regions[LocationName.system_interior_main])
+        syaro_recruit.place_locked_item(RabiRibiItem(ItemName.syaro_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.system_interior_main].locations.append(syaro_recruit)
         add_rule(syaro_recruit, lambda state: logic.can_recruit_syaro(state, self.player))
 
-        pandora_recruit = RabiRibiLocation(self.player, "Pandora Recruit", None, regions["Pyramid Main"])
-        pandora_recruit.place_locked_item(RabiRibiItem("Pandora Recruit", ItemClassification.progression, None, self.player))
-        regions["Pyramid Main"].locations.append(pandora_recruit)
+        pandora_recruit = RabiRibiLocation(self.player, ItemName.pandora_recruit, None, regions[LocationName.pyramid_main])
+        pandora_recruit.place_locked_item(RabiRibiItem(ItemName.pandora_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.pyramid_main].locations.append(pandora_recruit)
         add_rule(pandora_recruit, lambda state: logic.can_recruit_pandora(state, self.player))
 
-        nieve_recruit = RabiRibiLocation(self.player, "Nieve Recruit", None, regions["Palace Level 5"])
-        nieve_recruit.place_locked_item(RabiRibiItem("Nieve Recruit", ItemClassification.progression, None, self.player))
-        regions["Palace Level 5"].locations.append(nieve_recruit)
+        nieve_recruit = RabiRibiLocation(self.player, ItemName.nieve_recruit, None, regions[LocationName.palace_level_5])
+        nieve_recruit.place_locked_item(RabiRibiItem(ItemName.nieve_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.palace_level_5].locations.append(nieve_recruit)
         add_rule(nieve_recruit, lambda state: logic.can_recruit_nieve(state, self.player))
 
-        nixie_recruit = RabiRibiLocation(self.player, "Nixie Recruit", None, regions["Icy Summit Main"])
-        nixie_recruit.place_locked_item(RabiRibiItem("Nixie Recruit", ItemClassification.progression, None, self.player))
-        regions["Icy Summit Main"].locations.append(nixie_recruit)
+        nixie_recruit = RabiRibiLocation(self.player, ItemName.nixie_recruit, None, regions[LocationName.icy_summit_nixie])
+        nixie_recruit.place_locked_item(RabiRibiItem(ItemName.nixie_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.icy_summit_nixie].locations.append(nixie_recruit)
         add_rule(nixie_recruit, lambda state: logic.can_recruit_nixie(state, self.player))
 
-        aruraune_recruit = RabiRibiLocation(self.player, "Aruraune Recruit", None, regions["Forest Night West"])
-        aruraune_recruit.place_locked_item(RabiRibiItem("Aruraune Recruit", ItemClassification.progression, None, self.player))
-        regions["Forest Night West"].locations.append(aruraune_recruit)
+        aruraune_recruit = RabiRibiLocation(self.player, ItemName.aruraune_recruit, None, regions[LocationName.forest_night_west])
+        aruraune_recruit.place_locked_item(RabiRibiItem(ItemName.aruraune_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.forest_night_west].locations.append(aruraune_recruit)
         add_rule(aruraune_recruit, lambda state: logic.can_recruit_aruraune(state, self.player))
 
-        seana_recruit = RabiRibiLocation(self.player, "Seana Recruit", None, regions["Park Town Entrance"])
-        seana_recruit.place_locked_item(RabiRibiItem("Seana Recruit", ItemClassification.progression, None, self.player))
-        regions["Park Town Entrance"].locations.append(seana_recruit)
+        seana_recruit = RabiRibiLocation(self.player, ItemName.seana_recruit, None, regions[LocationName.park_town_entrance])
+        seana_recruit.place_locked_item(RabiRibiItem(ItemName.seana_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.park_town_entrance].locations.append(seana_recruit)
         add_rule(seana_recruit, lambda state: logic.can_recruit_seana(state, self.player))
 
-        lilith_recruit = RabiRibiLocation(self.player, "Lilith Recruit", None, regions["Sky Island Main"])
-        lilith_recruit.place_locked_item(RabiRibiItem("Lilith Recruit", ItemClassification.progression, None, self.player))
-        regions["Sky Island Main"].locations.append(lilith_recruit)
+        lilith_recruit = RabiRibiLocation(self.player, ItemName.lilith_recruit, None, regions[LocationName.sky_island_main])
+        lilith_recruit.place_locked_item(RabiRibiItem(ItemName.lilith_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.sky_island_main].locations.append(lilith_recruit)
         add_rule(lilith_recruit, lambda state: logic.can_recruit_lilith(state, self.player))
 
-        vanilla_recruit = RabiRibiLocation(self.player, "Vanilla Recruit", None, regions["Sky Bridge East Lower"])
-        vanilla_recruit.place_locked_item(RabiRibiItem("Vanilla Recruit", ItemClassification.progression, None, self.player))
-        regions["Sky Bridge East Lower"].locations.append(vanilla_recruit)
+        vanilla_recruit = RabiRibiLocation(self.player, ItemName.vanilla_recruit, None, regions[LocationName.sky_bridge_east_lower])
+        vanilla_recruit.place_locked_item(RabiRibiItem(ItemName.vanilla_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.sky_bridge_east_lower].locations.append(vanilla_recruit)
         add_rule(vanilla_recruit, lambda state: logic.can_recruit_chocolate(state, self.player))
 
-        chocolate_recruit = RabiRibiLocation(self.player, "Chocolate Recruit", None, regions["Ravine Chocolate"])
-        chocolate_recruit.place_locked_item(RabiRibiItem("Chocolate Recruit", ItemClassification.progression, None, self.player))
-        regions["Ravine Chocolate"].locations.append(chocolate_recruit)
+        chocolate_recruit = RabiRibiLocation(self.player, ItemName.chocolate_recruit, None, regions[LocationName.ravine_chocolate])
+        chocolate_recruit.place_locked_item(RabiRibiItem(ItemName.chocolate_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.ravine_chocolate].locations.append(chocolate_recruit)
         add_rule(chocolate_recruit, lambda state: logic.can_recruit_chocolate(state, self.player))
 
-        kotri_recruit = RabiRibiLocation(self.player, "Kotri Recruit", None, regions["Volcanic Main"])
-        kotri_recruit.place_locked_item(RabiRibiItem("Kotri Recruit", ItemClassification.progression, None, self.player))
-        regions["Volcanic Main"].locations.append(kotri_recruit)
+        kotri_recruit = RabiRibiLocation(self.player, ItemName.kotri_recruit, None, regions[LocationName.volcanic_main])
+        kotri_recruit.place_locked_item(RabiRibiItem(ItemName.kotri_recruit, ItemClassification.progression, None, self.player))
+        regions[LocationName.volcanic_main].locations.append(kotri_recruit)
         add_rule(kotri_recruit, lambda state: logic.can_recruit_kotri(state, self.player))
 
-        # keke_bunny_recruit = RabiRibiLocation(self.player, "Keke Bunny Recruit", None, regions["Plurkwood Main"])
-        # keke_bunny_recruit.place_locked_item(RabiRibiItem("Keke Bunny Recruit", ItemClassification.progression, None, self.player))
-        # regions["Plurkwood Main"].locations.append(keke_bunny_recruit)
+        # keke_bunny_recruit = RabiRibiLocation(self.player, ItemName.keke_bunny_recruit, None, regions[LocationName.plurkwood_main])
+        # keke_bunny_recruit.place_locked_item(RabiRibiItem(ItemName.keke_bunny_recruit, ItemClassification.progression, None, self.player))
+        # regions[LocationName.plurkwood_main].locations.append(keke_bunny_recruit)
         # add_rule(keke_bunny_recruit, lambda state: logic.can_recruit_keke_bunny(state, self.player))
 
-        chapter_1 = RabiRibiLocation(self.player, "Chapter 1", None, regions["Town Main"])
+        chapter_1 = RabiRibiLocation(self.player, "Chapter 1", None, regions[LocationName.town_main])
         chapter_1.place_locked_item(RabiRibiItem("Chapter 1", ItemClassification.progression, None, self.player))
-        regions["Town Main"].locations.append(chapter_1)
+        regions[LocationName.town_main].locations.append(chapter_1)
         add_rule(chapter_1, lambda state: logic.can_reach_chapter_1(state, self.player))
 
-        chapter_2 = RabiRibiLocation(self.player, "Chapter 2", None, regions["Town Main"])
+        chapter_2 = RabiRibiLocation(self.player, "Chapter 2", None, regions[LocationName.town_main])
         chapter_2.place_locked_item(RabiRibiItem("Chapter 2", ItemClassification.progression, None, self.player))
-        regions["Town Main"].locations.append(chapter_2)
+        regions[LocationName.town_main].locations.append(chapter_2)
         add_rule(chapter_2,
-                 lambda state: logic.can_reach_chapter_5(state, self.player) and
+                 lambda state: logic.can_reach_chapter_2(state, self.player) and
                     state.has("Chapter 1", self.player))
 
-        chapter_3 = RabiRibiLocation(self.player, "Chapter 3", None, regions["Town Main"])
+        chapter_3 = RabiRibiLocation(self.player, "Chapter 3", None, regions[LocationName.town_main])
         chapter_3.place_locked_item(RabiRibiItem("Chapter 3", ItemClassification.progression, None, self.player))
-        regions["Town Main"].locations.append(chapter_3)
+        regions[LocationName.town_main].locations.append(chapter_3)
         add_rule(chapter_3,
-                 lambda state: logic.can_reach_chapter_5(state, self.player) and
+                 lambda state: logic.can_reach_chapter_3(state, self.player) and
                     state.has("Chapter 2", self.player))
 
-        chapter_4 = RabiRibiLocation(self.player, "Chapter 4", None, regions["Town Main"])
+        chapter_4 = RabiRibiLocation(self.player, "Chapter 4", None, regions[LocationName.town_main])
         chapter_4.place_locked_item(RabiRibiItem("Chapter 4", ItemClassification.progression, None, self.player))
-        regions["Town Main"].locations.append(chapter_4)
+        regions[LocationName.town_main].locations.append(chapter_4)
         add_rule(chapter_4,
-                 lambda state: logic.can_reach_chapter_5(state, self.player) and
+                 lambda state: logic.can_reach_chapter_4(state, self.player) and
                     state.has("Chapter 3", self.player))
 
-        chapter_5 = RabiRibiLocation(self.player, "Chapter 5", None, regions["Town Main"])
+        chapter_5 = RabiRibiLocation(self.player, "Chapter 5", None, regions[LocationName.town_main])
         chapter_5.place_locked_item(RabiRibiItem("Chapter 5", ItemClassification.progression, None, self.player))
-        regions["Town Main"].locations.append(chapter_5)
+        regions[LocationName.town_main].locations.append(chapter_5)
         add_rule(chapter_5,
                  lambda state: logic.can_reach_chapter_5(state, self.player) and
                     state.has("Chapter 4", self.player))
 
-        bunny_strike = RabiRibiLocation(self.player, "Bunny Strike", None, regions["Town Main"])
-        bunny_strike.place_locked_item(RabiRibiItem("Bunny Strike", ItemClassification.progression, None, self.player))
-        regions["Town Main"].locations.append(bunny_strike)
+        bunny_strike = RabiRibiLocation(self.player, ItemName.bunny_strike, None, regions[LocationName.town_main])
+        bunny_strike.place_locked_item(RabiRibiItem(ItemName.bunny_strike, ItemClassification.progression, None, self.player))
+        regions[LocationName.town_main].locations.append(bunny_strike)
 
-        speed_boost = RabiRibiLocation(self.player, "Speed Boost", None, regions["Town Main"])
-        speed_boost.place_locked_item(RabiRibiItem("Speed Boost", ItemClassification.progression, None, self.player))
-        regions["Town Main"].locations.append(speed_boost)
+        speed_boost = RabiRibiLocation(self.player, ItemName.speed_boost, None, regions[LocationName.town_main])
+        speed_boost.place_locked_item(RabiRibiItem(ItemName.speed_boost, ItemClassification.progression, None, self.player))
+        regions[LocationName.town_main].locations.append(speed_boost)
 
     def _get_region_name_list(self):
         return [
             convert_existing_rando_name_to_ap_name(name) for \
             name in self.randomizer_data.graph_vertices
         ]
-  
+
 def get_all_possible_locations():
     """
     This method retrieves a list of all locations in Rabi-Ribi. This is needed when instantiating the world.

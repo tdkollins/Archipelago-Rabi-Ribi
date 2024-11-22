@@ -2,9 +2,9 @@
 from typing import Dict, List, NamedTuple, Optional, Set
 
 from BaseClasses import Item, ItemClassification
+from worlds.rabi_ribi.utility import get_rabi_ribi_base_id
 from .existing_randomizer.visualizer import load_item_locs
-
-rabi_ribi_base_id: int = 8350438193300
+from .names import ItemName
 
 class RabiRibiItem(Item):
     """Rabi Ribi Item Definition"""
@@ -19,102 +19,102 @@ class RabiRibiItemData(NamedTuple):
     classification: ItemClassification = ItemClassification.filler
 
 upgrades_table: Dict[str, RabiRibiItemData] = {
-    "Air Dash"          : RabiRibiItemData(rabi_ribi_base_id + 0x01, ItemClassification.progression),
-    "Air Jump"          : RabiRibiItemData(rabi_ribi_base_id + 0x02, ItemClassification.progression),
-    "Auto Earrings"     : RabiRibiItemData(rabi_ribi_base_id + 0x03, ItemClassification.filler),
-    "Bunny Strike"      : RabiRibiItemData(rabi_ribi_base_id + 0x04, ItemClassification.progression),
-    "Bunny Whirl"       : RabiRibiItemData(rabi_ribi_base_id + 0x05, ItemClassification.progression),
-    "Carrot Bomb"       : RabiRibiItemData(rabi_ribi_base_id + 0x06, ItemClassification.progression),
-    "Charge Ring"       : RabiRibiItemData(rabi_ribi_base_id + 0x07, ItemClassification.progression),
-    "Cyber Flower"      : RabiRibiItemData(rabi_ribi_base_id + 0x08, ItemClassification.filler),
-    "Fire Orb"          : RabiRibiItemData(rabi_ribi_base_id + 0x09, ItemClassification.progression),
-    "Hammer Roll"       : RabiRibiItemData(rabi_ribi_base_id + 0x0A, ItemClassification.progression),
-    "Hammer Wave"       : RabiRibiItemData(rabi_ribi_base_id + 0x0B, ItemClassification.filler),
-    "Hourglass"         : RabiRibiItemData(rabi_ribi_base_id + 0x0C, ItemClassification.filler),
-    "Light Orb"         : RabiRibiItemData(rabi_ribi_base_id + 0x0D, ItemClassification.progression),
-    "Nature Orb"        : RabiRibiItemData(rabi_ribi_base_id + 0x0E, ItemClassification.filler),
-    "P Hairpin"         : RabiRibiItemData(rabi_ribi_base_id + 0x0F, ItemClassification.filler),
-    "Piko Hammer"       : RabiRibiItemData(rabi_ribi_base_id + 0x10, ItemClassification.progression),
-    "Quick Barrette"    : RabiRibiItemData(rabi_ribi_base_id + 0x11, ItemClassification.filler),
-    "Plus Necklace"     : RabiRibiItemData(rabi_ribi_base_id + 0x12, ItemClassification.filler),
-    "Rabi Slippers"     : RabiRibiItemData(rabi_ribi_base_id + 0x13, ItemClassification.progression),
-    "Sliding Powder"    : RabiRibiItemData(rabi_ribi_base_id + 0x14, ItemClassification.progression),
-    "Speed Boost"       : RabiRibiItemData(rabi_ribi_base_id + 0x15, ItemClassification.progression),
-    "Spike Barrier"     : RabiRibiItemData(rabi_ribi_base_id + 0x16, ItemClassification.filler),
-    "Super Carrot"      : RabiRibiItemData(rabi_ribi_base_id + 0x17, ItemClassification.filler),
-    "Wall Jump"         : RabiRibiItemData(rabi_ribi_base_id + 0x18, ItemClassification.progression),
-    "Water Orb"         : RabiRibiItemData(rabi_ribi_base_id + 0x19, ItemClassification.progression)
+    ItemName.air_dash           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x01, ItemClassification.progression),
+    ItemName.air_jump           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x02, ItemClassification.progression),
+    ItemName.auto_earrings      : RabiRibiItemData(get_rabi_ribi_base_id() + 0x03, ItemClassification.filler),
+    ItemName.bunny_strike       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x04, ItemClassification.progression),
+    ItemName.bunny_whirl        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x05, ItemClassification.progression),
+    ItemName.carrot_bomb        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x06, ItemClassification.progression),
+    ItemName.charge_ring        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x07, ItemClassification.progression),
+    ItemName.cyber_flower       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x08, ItemClassification.filler),
+    ItemName.fire_orb           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x09, ItemClassification.progression),
+    ItemName.hammer_roll        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x0A, ItemClassification.progression),
+    ItemName.hammer_wave        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x0B, ItemClassification.filler),
+    ItemName.hourglass          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x0C, ItemClassification.filler),
+    ItemName.light_orb          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x0D, ItemClassification.progression),
+    ItemName.nature_orb         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x0E, ItemClassification.filler),
+    ItemName.p_hairpin          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x0F, ItemClassification.filler),
+    ItemName.piko_hammer        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x10, ItemClassification.progression),
+    ItemName.quick_barrette     : RabiRibiItemData(get_rabi_ribi_base_id() + 0x11, ItemClassification.filler),
+    ItemName.plus_necklace      : RabiRibiItemData(get_rabi_ribi_base_id() + 0x12, ItemClassification.filler),
+    ItemName.rabi_slippers      : RabiRibiItemData(get_rabi_ribi_base_id() + 0x13, ItemClassification.progression),
+    ItemName.sliding_powder     : RabiRibiItemData(get_rabi_ribi_base_id() + 0x14, ItemClassification.progression),
+    ItemName.speed_boost        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x15, ItemClassification.progression),
+    ItemName.spike_barrier      : RabiRibiItemData(get_rabi_ribi_base_id() + 0x16, ItemClassification.filler),
+    ItemName.super_carrot       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x17, ItemClassification.filler),
+    ItemName.wall_jump          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x18, ItemClassification.progression),
+    ItemName.water_orb          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x19, ItemClassification.progression)
 }
 
 magic_table: Dict[str, RabiRibiItemData] = {
-    "Carrot Shooter"    : RabiRibiItemData(rabi_ribi_base_id + 0x1A, ItemClassification.progression),
-    "Chaos Rod"         : RabiRibiItemData(rabi_ribi_base_id + 0x1B, ItemClassification.progression_skip_balancing),
-    "Explode Shot"      : RabiRibiItemData(rabi_ribi_base_id + 0x1C, ItemClassification.progression_skip_balancing),
-    "Sunny Beam"        : RabiRibiItemData(rabi_ribi_base_id + 0x1D, ItemClassification.progression_skip_balancing)
+    ItemName.carrot_shooter     : RabiRibiItemData(get_rabi_ribi_base_id() + 0x1A, ItemClassification.progression),
+    ItemName.chaos_rod          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x1B, ItemClassification.progression_skip_balancing),
+    ItemName.explode_shot       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x1C, ItemClassification.progression_skip_balancing),
+    ItemName.sunny_beam         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x1D, ItemClassification.progression_skip_balancing)
 }
 
 badges_table: Dict[str, RabiRibiItemData] = {
-    "Arm Strength"      : RabiRibiItemData(rabi_ribi_base_id + 0x1E, ItemClassification.filler),
-    "Armored"           : RabiRibiItemData(rabi_ribi_base_id + 0x1F, ItemClassification.filler),
-    "Atk Grow"          : RabiRibiItemData(rabi_ribi_base_id + 0x20, ItemClassification.filler),
-    "Atk Trade"         : RabiRibiItemData(rabi_ribi_base_id + 0x21, ItemClassification.filler),
-    "Auto Trigger"      : RabiRibiItemData(rabi_ribi_base_id + 0x22, ItemClassification.filler),
-    "Blessed"           : RabiRibiItemData(rabi_ribi_base_id + 0x23, ItemClassification.filler),
-    "Carrot Boost"      : RabiRibiItemData(rabi_ribi_base_id + 0x24, ItemClassification.filler),
-    "Cashback"          : RabiRibiItemData(rabi_ribi_base_id + 0x25, ItemClassification.filler),
-    "Crisis Boost"      : RabiRibiItemData(rabi_ribi_base_id + 0x26, ItemClassification.filler),
-    "Def Grow"          : RabiRibiItemData(rabi_ribi_base_id + 0x27, ItemClassification.filler),
-    "Def Trade"         : RabiRibiItemData(rabi_ribi_base_id + 0x28, ItemClassification.filler),
-    "Erina Badge"       : RabiRibiItemData(rabi_ribi_base_id + 0x29, ItemClassification.filler),
-    "Frame Cancel"      : RabiRibiItemData(rabi_ribi_base_id + 0x2A, ItemClassification.filler),
-    "Health Plus"       : RabiRibiItemData(rabi_ribi_base_id + 0x2B, ItemClassification.filler),
-    "Health Surge"      : RabiRibiItemData(rabi_ribi_base_id + 0x2C, ItemClassification.filler),
-    "Health Wager"      : RabiRibiItemData(rabi_ribi_base_id + 0x2D, ItemClassification.filler),
-    "Hex Cancel"        : RabiRibiItemData(rabi_ribi_base_id + 0x2E, ItemClassification.filler),
-    "Hitbox Down"       : RabiRibiItemData(rabi_ribi_base_id + 0x2F, ItemClassification.filler),
-    "Lucky Seven"       : RabiRibiItemData(rabi_ribi_base_id + 0x30, ItemClassification.filler),
-    "Mana Plus"         : RabiRibiItemData(rabi_ribi_base_id + 0x31, ItemClassification.filler),
-    "Mana Surge"        : RabiRibiItemData(rabi_ribi_base_id + 0x32, ItemClassification.filler),
-    "Mana Wager"        : RabiRibiItemData(rabi_ribi_base_id + 0x33, ItemClassification.filler),
-    "Pure Love"         : RabiRibiItemData(rabi_ribi_base_id + 0x34, ItemClassification.filler),
-    "Ribbon Badge"      : RabiRibiItemData(rabi_ribi_base_id + 0x35, ItemClassification.filler),
-    "Self Defense"      : RabiRibiItemData(rabi_ribi_base_id + 0x36, ItemClassification.filler),
-    "Stamina Plus"      : RabiRibiItemData(rabi_ribi_base_id + 0x37, ItemClassification.filler),
-    "Survival"          : RabiRibiItemData(rabi_ribi_base_id + 0x38, ItemClassification.filler),
-    "Top Form"          : RabiRibiItemData(rabi_ribi_base_id + 0x39, ItemClassification.filler),
-    "Tough Skin"        : RabiRibiItemData(rabi_ribi_base_id + 0x3A, ItemClassification.filler),
-    "Toxic Strike"      : RabiRibiItemData(rabi_ribi_base_id + 0x3B, ItemClassification.filler),
-    "Weaken"            : RabiRibiItemData(rabi_ribi_base_id + 0x3C, ItemClassification.filler)
+    ItemName.arm_strength       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x1E, ItemClassification.filler),
+    ItemName.armored            : RabiRibiItemData(get_rabi_ribi_base_id() + 0x1F, ItemClassification.filler),
+    ItemName.atk_grow           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x20, ItemClassification.filler),
+    ItemName.atk_trade          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x21, ItemClassification.filler),
+    ItemName.auto_trigger       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x22, ItemClassification.filler),
+    ItemName.blessed            : RabiRibiItemData(get_rabi_ribi_base_id() + 0x23, ItemClassification.filler),
+    ItemName.carrot_boost       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x24, ItemClassification.filler),
+    ItemName.cashback           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x25, ItemClassification.filler),
+    ItemName.crisis_boost       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x26, ItemClassification.filler),
+    ItemName.def_grow           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x27, ItemClassification.filler),
+    ItemName.def_trade          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x28, ItemClassification.filler),
+    ItemName.erina_badge        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x29, ItemClassification.filler),
+    ItemName.frame_cancel       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x2A, ItemClassification.filler),
+    ItemName.health_plus        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x2B, ItemClassification.filler),
+    ItemName.health_surge       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x2C, ItemClassification.filler),
+    ItemName.health_wager       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x2D, ItemClassification.filler),
+    ItemName.hex_cancel         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x2E, ItemClassification.filler),
+    ItemName.hitbox_down        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x2F, ItemClassification.filler),
+    ItemName.lucky_seven        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x30, ItemClassification.filler),
+    ItemName.mana_plus          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x31, ItemClassification.filler),
+    ItemName.mana_surge         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x32, ItemClassification.filler),
+    ItemName.mana_wager         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x33, ItemClassification.filler),
+    ItemName.pure_love          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x34, ItemClassification.filler),
+    ItemName.ribbon_badge       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x35, ItemClassification.filler),
+    ItemName.self_defense       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x36, ItemClassification.filler),
+    ItemName.stamina_plus       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x37, ItemClassification.filler),
+    ItemName.survival           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x38, ItemClassification.filler),
+    ItemName.top_form           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x39, ItemClassification.filler),
+    ItemName.tough_skin         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x3A, ItemClassification.filler),
+    ItemName.toxic_strike       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x3B, ItemClassification.filler),
+    ItemName.weaken             : RabiRibiItemData(get_rabi_ribi_base_id() + 0x3C, ItemClassification.filler)
 }
 
 collectables_table: Dict[str, RabiRibiItemData] = {
-    "Attack Up"         : RabiRibiItemData(rabi_ribi_base_id + 0x3D, ItemClassification.filler),
-    "Easter Egg"        : RabiRibiItemData(rabi_ribi_base_id + 0x3E, ItemClassification.progression_skip_balancing),
-    "Gold Carrot"       : RabiRibiItemData(rabi_ribi_base_id + 0x3F, ItemClassification.filler),
-    "HP Up"             : RabiRibiItemData(rabi_ribi_base_id + 0x40, ItemClassification.filler),
-    "MP Up"             : RabiRibiItemData(rabi_ribi_base_id + 0x41, ItemClassification.filler),
-    "Nothing"           : RabiRibiItemData(rabi_ribi_base_id + 0x42, ItemClassification.filler),
-    "Pack Up"           : RabiRibiItemData(rabi_ribi_base_id + 0x43, ItemClassification.filler),
-    "Regen Up"          : RabiRibiItemData(rabi_ribi_base_id + 0x44, ItemClassification.filler)
+     ItemName.attack_up         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x3D, ItemClassification.filler),
+     ItemName.easter_egg        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x3E, ItemClassification.progression_skip_balancing),
+     ItemName.gold_carrot       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x3F, ItemClassification.filler),
+     ItemName.hp_up             : RabiRibiItemData(get_rabi_ribi_base_id() + 0x40, ItemClassification.filler),
+     ItemName.mp_up             : RabiRibiItemData(get_rabi_ribi_base_id() + 0x41, ItemClassification.filler),
+     ItemName.nothing           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x42, ItemClassification.filler),
+     ItemName.pack_up           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x43, ItemClassification.filler),
+     ItemName.regen_up          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x44, ItemClassification.filler)
 }
 
 recruit_table: Dict[str, RabiRibiItemData] = {
-    "Cocoa Recruit"         : RabiRibiItemData(None, ItemClassification.progression),
-    "Ashuri Recruit"        : RabiRibiItemData(None, ItemClassification.progression),
-    "Rita Recruit"          : RabiRibiItemData(None, ItemClassification.progression),
-    "Cicini Recruit"        : RabiRibiItemData(None, ItemClassification.progression),
-    "Saya Recruit"          : RabiRibiItemData(None, ItemClassification.progression),
-    "Syaro Recruit"         : RabiRibiItemData(None, ItemClassification.progression),
-    "Pandora Recruit"       : RabiRibiItemData(None, ItemClassification.progression),
-    "Nieve Recruit"         : RabiRibiItemData(None, ItemClassification.progression),
-    "Nixie Recruit"         : RabiRibiItemData(None, ItemClassification.progression),
-    "Aruraune Recruit"      : RabiRibiItemData(None, ItemClassification.progression),
-    "Seana Recruit"         : RabiRibiItemData(None, ItemClassification.progression),
-    "Lilith Recruit"        : RabiRibiItemData(None, ItemClassification.progression),
-    "Vanilla Recruit"       : RabiRibiItemData(None, ItemClassification.progression),
-    "Chocolate Recruit"     : RabiRibiItemData(None, ItemClassification.progression),
-    "Kotri Recruit"         : RabiRibiItemData(None, ItemClassification.progression),
-    "Keke Bunny Recruit"    : RabiRibiItemData(None, ItemClassification.progression)
+    ItemName.cocoa_recruit      : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.ashuri_recruit     : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.rita_recruit       : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.cicini_recruit     : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.saya_recruit       : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.syaro_recruit      : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.pandora_recruit    : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.nieve_recruit      : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.nixie_recruit      : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.aruraune_recruit   : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.seana_recruit      : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.lilith_recruit     : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.vanilla_recruit    : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.chocolate_recruit  : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.kotri_recruit      : RabiRibiItemData(None, ItemClassification.progression),
+    ItemName.keke_bunny_recruit : RabiRibiItemData(None, ItemClassification.progression)
 }
 
 item_table : Dict[str, RabiRibiItemData] = {
