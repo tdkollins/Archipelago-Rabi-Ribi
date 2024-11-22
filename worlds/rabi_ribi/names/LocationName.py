@@ -241,12 +241,10 @@ hammer_wave                  = "Hammer Wave"
 atk_up_west_ravine           = "Atk Up West Ravine"
 hp_up_south_ravine           = "Hp Up South Ravine"
 atk_up_north_ravine          = "Atk Up North Ravine"
-unknown_item_1               = "Unknown Item 1"
 hp_up_mid_ravine             = "Hp Up Mid Ravine"
 mp_up_ravine                 = "Mp Up Ravine"
 regen_up_ravine              = "Regen Up Ravine"
 mana_surge                   = "Mana Surge"
-unknown_item_2               = "Unknown Item 2"
 
 # Area 3: Northern Tundra
 hp_up_palace                 = "Hp Up Palace"
@@ -320,7 +318,6 @@ erina_badge                  = "Erina Badge"
 # Area 7: Subterranean Area
 hp_up_volcanic               = "Hp Up Volcanic"
 carrot_shooter               = "Carrot Shooter"
-unknown_item_3               = "Unknown Item 3"
 fire_orb                     = "Fire Orb"
 pack_up_volcanic             = "Pack Up Volcanic"
 
