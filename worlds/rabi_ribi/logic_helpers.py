@@ -7,18 +7,12 @@ from BaseClasses import CollectionState, Region
 from .existing_randomizer.utility import OpLit, OpNot, OpOr, OpAnd
 from .options import TrickDifficulty, Knowledge
 from .names import ItemName, LocationName
+from .items import magic_table, recruit_table
 from typing import Dict
 
 def has_3_magic_types(state: CollectionState, player: int):
     """Player has at least 3 types of magic"""
-    total_magic = sum(1 for magic in [
-        ItemName.sunny_beam,
-        ItemName.chaos_rod,
-        ItemName.healing_staff,
-        ItemName.explode_shot,
-        ItemName.carrot_shooter
-    ] if state.has(magic, player)) + 1
-    return total_magic >= 3
+    return state.count_group_unique("Magic", player) + 1 >= 3
 
 def has_item_menu(state: CollectionState, player: int):
     """Player has access to the item menu"""
@@ -197,7 +191,7 @@ def can_recruit_n_town_members(state: CollectionState, num_town_members: int, pl
     
     :int num_town_members: the number of town members to satisfy the condition
     """
-    return state.count_group("Town Members", player) > num_town_members
+    return state.count_from_list_unique(recruit_table, player) > num_town_members
 
 def can_be_speedy(state: CollectionState, player: int):
     """Player can buy the speed up buff"""
