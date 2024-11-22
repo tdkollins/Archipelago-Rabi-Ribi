@@ -9,9 +9,10 @@ from Fill import swap_location_item
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, Type, components, launch_subprocess
 from .items import RabiRibiItem, RabiRibiItemData, item_table, item_groups, get_base_item_list
-from .locations import RegionDef, get_all_possible_locations
+from .locations import location_table, location_groups
 from .names import ItemName, LocationName
 from .options import RabiRibiOptions
+from .regions import RegionDef
 from .settings import RabiRibiSettings
 from .utility import get_rabi_ribi_base_id
 from .web import RabiRibiWeb
@@ -42,14 +43,11 @@ class RabiRibiWorld(World):
 
     base_id: int = get_rabi_ribi_base_id()
 
-    item_name_groups = item_groups
-    location_name_groups: Dict[str, Set[str]] = {}
+    item_name_groups: Dict[str, Set[str]] = item_groups
+    location_name_groups: Dict[str, Set[str]] = location_groups
 
     item_name_to_id = {name: data.code for name, data in item_table.items()}
-    location_name_to_id: Dict[str, int] = {
-        name: id_num for
-        id_num, name in enumerate(get_all_possible_locations(), base_id)
-    }
+    location_name_to_id: Dict[str, int] = {name: code for name, code in location_table.items()}
 
     settings: ClassVar[RabiRibiSettings]
 

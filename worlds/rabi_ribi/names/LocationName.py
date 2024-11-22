@@ -418,6 +418,6 @@ egg_crespirit                = "Egg Crespirit"
 egg_hospital_wall            = "Egg Hospital Wall"
 egg_hospital_box             = "Egg Hospital Box"
 
-# Area 9: System Interior
+# Area 9: System Interior Eggs
 egg_sysint2                  = "Egg Sysint2"
 egg_sysint1                  = "Egg Sysint1"

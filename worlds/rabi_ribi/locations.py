@@ -10,317 +10,371 @@ from .logic_helpers import (
     convert_existing_rando_rule_to_ap_rule,
 )
 from .names import LocationName
+from .utility import get_rabi_ribi_base_id
 import worlds.rabi_ribi.logic_helpers as logic
 
 class RabiRibiLocation(Location):
     """Rabi Ribi Location Definition"""
     game: str = "Rabi-Ribi"
 
-class RegionDef:
-    """
-    This class provides methods associated with defining and connecting regions, locations,
-    and the access rules for those regions and locations.
-    """
+# Item Locations
+southern_woodland_locations = {
+    LocationName.nature_orb                   : get_rabi_ribi_base_id() + 0x01,
+    LocationName.pack_up_forest_night         : get_rabi_ribi_base_id() + 0x02,
+    LocationName.hp_up_west_spectral          : get_rabi_ribi_base_id() + 0x03,
+    LocationName.atk_up_forest_night          : get_rabi_ribi_base_id() + 0x04,
+    LocationName.pack_up_spectral             : get_rabi_ribi_base_id() + 0x05,
+    LocationName.mp_up_cave                   : get_rabi_ribi_base_id() + 0x06,
+    LocationName.hp_up_cave                   : get_rabi_ribi_base_id() + 0x07,
+    LocationName.blessed                      : get_rabi_ribi_base_id() + 0x08,
+    LocationName.toxic_strike                 : get_rabi_ribi_base_id() + 0x09,
+    LocationName.piko_hammer                  : get_rabi_ribi_base_id() + 0x0A,
+    LocationName.mp_up_forest_cave            : get_rabi_ribi_base_id() + 0x0B,
+    LocationName.tough_skin                   : get_rabi_ribi_base_id() + 0x0C,
+    LocationName.regen_up_cave                : get_rabi_ribi_base_id() + 0x0D,
+    LocationName.hp_up_north_forest           : get_rabi_ribi_base_id() + 0x0E,
+    LocationName.wall_jump                    : get_rabi_ribi_base_id() + 0x0F,
+    LocationName.regen_up_mid_forest          : get_rabi_ribi_base_id() + 0x10,
+    LocationName.mp_up_mid_spectral           : get_rabi_ribi_base_id() + 0x11,
+    LocationName.hp_up_mid_spectral           : get_rabi_ribi_base_id() + 0x12,
+    LocationName.carrot_bomb                  : get_rabi_ribi_base_id() + 0x13,
+    LocationName.def_trade                    : get_rabi_ribi_base_id() + 0x14,
+    LocationName.light_orb                    : get_rabi_ribi_base_id() + 0x15,
+    LocationName.hp_up_forest_post_cocoa      : get_rabi_ribi_base_id() + 0x16,
+    LocationName.charge_ring                  : get_rabi_ribi_base_id() + 0x17,
+    LocationName.arm_strength                 : get_rabi_ribi_base_id() + 0x18,
+    LocationName.regen_up_east_forest         : get_rabi_ribi_base_id() + 0x19,
+    LocationName.mana_wager                   : get_rabi_ribi_base_id() + 0x1A,
+    LocationName.mp_up_east_forest            : get_rabi_ribi_base_id() + 0x1B,
+    LocationName.pack_up_east_forest          : get_rabi_ribi_base_id() + 0x1C,
+    LocationName.mp_up_cicini                 : get_rabi_ribi_base_id() + 0x1D,
+    LocationName.mp_up_northeast_forest       : get_rabi_ribi_base_id() + 0x1E,
+}
 
-    def __init__(self, multiworld: MultiWorld, player: int, options):
-        existing_randomizer_args = self._convert_options_to_existing_randomizer_args(options)
-        self.randomizer_data = RandomizerData(existing_randomizer_args)
-        self.player = player
-        self.multiworld = multiworld
-        self.options = options
+western_coast_locations = {
+    LocationName.survival                     : get_rabi_ribi_base_id() + 0x1F,
+    LocationName.health_wager                 : get_rabi_ribi_base_id() + 0x20,
+    LocationName.atk_up_beach_cave            : get_rabi_ribi_base_id() + 0x21,
+    LocationName.mp_up_graveyard_warp         : get_rabi_ribi_base_id() + 0x22,
+    LocationName.hp_up_graveyard              : get_rabi_ribi_base_id() + 0x23,
+    LocationName.sunny_beam                   : get_rabi_ribi_base_id() + 0x24,
+    LocationName.mp_up_upper_graveyard        : get_rabi_ribi_base_id() + 0x25,
+    LocationName.auto_earrings                : get_rabi_ribi_base_id() + 0x26,
+    LocationName.auto_trigger                 : get_rabi_ribi_base_id() + 0x27,
+    LocationName.health_plus                  : get_rabi_ribi_base_id() + 0x28,
+    LocationName.mp_up_pyramid_dark_room      : get_rabi_ribi_base_id() + 0x29,
+    LocationName.crisis_boost                 : get_rabi_ribi_base_id() + 0x2A,
+    LocationName.atk_up_graveyard             : get_rabi_ribi_base_id() + 0x2B,
+    LocationName.hp_up_inner_pyramid          : get_rabi_ribi_base_id() + 0x2C,
+    LocationName.hp_up_beach                  : get_rabi_ribi_base_id() + 0x2D,
+    LocationName.atk_up_pyramid               : get_rabi_ribi_base_id() + 0x2E,
+    LocationName.pack_up_pyramid              : get_rabi_ribi_base_id() + 0x2F,
+    LocationName.armored                      : get_rabi_ribi_base_id() + 0x30,
+    LocationName.chaos_rod                    : get_rabi_ribi_base_id() + 0x31,
+    LocationName.pack_up_beach                : get_rabi_ribi_base_id() + 0x32,
+    LocationName.top_form                     : get_rabi_ribi_base_id() + 0x33,
+    LocationName.hp_up_pyramid_entrance       : get_rabi_ribi_base_id() + 0x34,
+    LocationName.hitbox_down                  : get_rabi_ribi_base_id() + 0x35,
+    LocationName.mp_up_pyramid_bombblock_room : get_rabi_ribi_base_id() + 0x36,
+    LocationName.air_dash                     : get_rabi_ribi_base_id() + 0x37,
+    LocationName.regen_up_pyramid             : get_rabi_ribi_base_id() + 0x38,
+    LocationName.pure_love                    : get_rabi_ribi_base_id() + 0x39,
+    LocationName.mp_up_beach_tunnel           : get_rabi_ribi_base_id() + 0x3A,
+    LocationName.hourglass                    : get_rabi_ribi_base_id() + 0x3B,
+    LocationName.hp_up_sky_island             : get_rabi_ribi_base_id() + 0x3C,
+    LocationName.pack_up_sky_island           : get_rabi_ribi_base_id() + 0x3D,
+    LocationName.regen_up_sky_island          : get_rabi_ribi_base_id() + 0x3E,
+    LocationName.mp_up_beach_pillar           : get_rabi_ribi_base_id() + 0x3F,
+}
 
-    def _convert_options_to_existing_randomizer_args(self, options):
-        args = parse_args()
-        args.open_mode = options.open_mode.value
-        return args
+island_core_locations = {
+    LocationName.def_grow                     : get_rabi_ribi_base_id() + 0x40,
+    LocationName.atk_up_park                  : get_rabi_ribi_base_id() + 0x41,
+    LocationName.atk_trade                    : get_rabi_ribi_base_id() + 0x42,
+    LocationName.hp_up_park                   : get_rabi_ribi_base_id() + 0x43,
+    LocationName.rabi_slippers                : get_rabi_ribi_base_id() + 0x44,
+    LocationName.regen_up_park                : get_rabi_ribi_base_id() + 0x45,
+    LocationName.health_surge                 : get_rabi_ribi_base_id() + 0x46,
+    LocationName.mp_up_sky_bridge             : get_rabi_ribi_base_id() + 0x47,
+    LocationName.mp_up_uprprc_hq              : get_rabi_ribi_base_id() + 0x48,
+    LocationName.mp_up_park                   : get_rabi_ribi_base_id() + 0x49,
+    LocationName.hex_cancel                   : get_rabi_ribi_base_id() + 0x4A,
+    LocationName.hp_up_sky_bridge             : get_rabi_ribi_base_id() + 0x4B,
+    LocationName.pack_up_sky_bridge           : get_rabi_ribi_base_id() + 0x4C,
+    LocationName.regen_up_sky_bridge          : get_rabi_ribi_base_id() + 0x4D,
+    LocationName.lucky_seven                  : get_rabi_ribi_base_id() + 0x4E,
+    LocationName.atk_up_vanilla               : get_rabi_ribi_base_id() + 0x4F,
+    LocationName.hammer_wave                  : get_rabi_ribi_base_id() + 0x50,
+    LocationName.atk_up_west_ravine           : get_rabi_ribi_base_id() + 0x51,
+    LocationName.hp_up_south_ravine           : get_rabi_ribi_base_id() + 0x52,
+    LocationName.atk_up_north_ravine          : get_rabi_ribi_base_id() + 0x53,
+    LocationName.unknown_item_1               : get_rabi_ribi_base_id() + 0x54,
+    LocationName.hp_up_mid_ravine             : get_rabi_ribi_base_id() + 0x55,
+    LocationName.mp_up_ravine                 : get_rabi_ribi_base_id() + 0x56,
+    LocationName.regen_up_ravine              : get_rabi_ribi_base_id() + 0x57,
+    LocationName.mana_surge                   : get_rabi_ribi_base_id() + 0x58,
+    LocationName.unknown_item_2               : get_rabi_ribi_base_id() + 0x59,
+}
 
-    def set_regions(self):
-        """
-        This method defines the regions from the existing randomizer data.
-        It will then add it to the AP world.
+northern_tundra_locations = {
+    LocationName.hp_up_palace                 : get_rabi_ribi_base_id() + 0x5A,
+    LocationName.water_orb                    : get_rabi_ribi_base_id() + 0x5B,
+    LocationName.hp_up_west_aquarium          : get_rabi_ribi_base_id() + 0x5C,
+    LocationName.mana_plus                    : get_rabi_ribi_base_id() + 0x5D,
+    LocationName.atk_up_palace                : get_rabi_ribi_base_id() + 0x5E,
+    LocationName.atk_up_snowland              : get_rabi_ribi_base_id() + 0x5F,
+    LocationName.regen_up_palace              : get_rabi_ribi_base_id() + 0x60,
+    LocationName.stamina_plus                 : get_rabi_ribi_base_id() + 0x61,
+    LocationName.mp_up_palace                 : get_rabi_ribi_base_id() + 0x62,
+    LocationName.self_defense                 : get_rabi_ribi_base_id() + 0x63,
+    LocationName.hp_up_upper_aquarium         : get_rabi_ribi_base_id() + 0x64,
+    LocationName.gold_carrot                  : get_rabi_ribi_base_id() + 0x65,
+    LocationName.atk_up_upper_aquarium        : get_rabi_ribi_base_id() + 0x66,
+    LocationName.pack_up_icy_summit           : get_rabi_ribi_base_id() + 0x67,
+    LocationName.atk_up_icy_summit            : get_rabi_ribi_base_id() + 0x68,
+    LocationName.atk_up_mid_aquarium          : get_rabi_ribi_base_id() + 0x69,
+    LocationName.mp_up_icy_summit             : get_rabi_ribi_base_id() + 0x6A,
+    LocationName.mp_up_snowland               : get_rabi_ribi_base_id() + 0x6B,
+    LocationName.quick_barrette               : get_rabi_ribi_base_id() + 0x6C,
+    LocationName.hp_up_icy_summit             : get_rabi_ribi_base_id() + 0x6D,
+    LocationName.super_carrot                 : get_rabi_ribi_base_id() + 0x6E,
+    LocationName.regen_up_snowland_water      : get_rabi_ribi_base_id() + 0x6F,
+    LocationName.mp_up_aquarium               : get_rabi_ribi_base_id() + 0x70,
+    LocationName.hp_up_snowland               : get_rabi_ribi_base_id() + 0x71,
+    LocationName.carrot_boost                 : get_rabi_ribi_base_id() + 0x72,
+    LocationName.regen_up_aquarium            : get_rabi_ribi_base_id() + 0x73,
+    LocationName.pack_up_aquarium             : get_rabi_ribi_base_id() + 0x74,
+}
 
-        These regions are connected in the connect_region method.
+eastern_highlands_locations = {
+    LocationName.regen_up_northwest_riverbank : get_rabi_ribi_base_id() + 0x75,
+    LocationName.pack_up_riverbank            : get_rabi_ribi_base_id() + 0x76,
+    LocationName.mp_up_southwest_riverbank    : get_rabi_ribi_base_id() + 0x77,
+    LocationName.atk_grow                     : get_rabi_ribi_base_id() + 0x78,
+    LocationName.regen_up_south_riverbank     : get_rabi_ribi_base_id() + 0x79,
+    LocationName.atk_up_riverbank_pit         : get_rabi_ribi_base_id() + 0x7A,
+    LocationName.bunny_whirl                  : get_rabi_ribi_base_id() + 0x7B,
+    LocationName.explode_shot                 : get_rabi_ribi_base_id() + 0x7C,
+    LocationName.mp_up_mid_riverbank          : get_rabi_ribi_base_id() + 0x7D,
+    LocationName.atk_up_east_riverbank        : get_rabi_ribi_base_id() + 0x7E,
+    LocationName.spike_barrier                : get_rabi_ribi_base_id() + 0x7F,
+    LocationName.frame_cancel                 : get_rabi_ribi_base_id() + 0x80,
+    LocationName.hp_up_lab_slide_tunnel       : get_rabi_ribi_base_id() + 0x81,
+    LocationName.mp_up_lab                    : get_rabi_ribi_base_id() + 0x82,
+    LocationName.hp_up_riverbank              : get_rabi_ribi_base_id() + 0x83,
+    LocationName.mp_up_evernight              : get_rabi_ribi_base_id() + 0x84,
+    LocationName.hp_up_evernight              : get_rabi_ribi_base_id() + 0x85,
+    LocationName.hp_up_lab_pit                : get_rabi_ribi_base_id() + 0x86,
+    LocationName.sliding_powder               : get_rabi_ribi_base_id() + 0x87,
+    LocationName.atk_up_evernight_uprprc      : get_rabi_ribi_base_id() + 0x88,
+    LocationName.cashback                     : get_rabi_ribi_base_id() + 0x89,
+    LocationName.plus_necklace                : get_rabi_ribi_base_id() + 0x8A,
+    LocationName.weaken                       : get_rabi_ribi_base_id() + 0x8B,
+    LocationName.atk_up_lab_computer          : get_rabi_ribi_base_id() + 0x8C,
+    LocationName.pack_up_south_evernight      : get_rabi_ribi_base_id() + 0x8D,
+    LocationName.pack_up_north_evernight      : get_rabi_ribi_base_id() + 0x8E,
+    LocationName.regen_up_evernight           : get_rabi_ribi_base_id() + 0x8F,
+    LocationName.atk_up_evernight             : get_rabi_ribi_base_id() + 0x90,
+    LocationName.atk_up_east_lab              : get_rabi_ribi_base_id() + 0x91,
+    LocationName.pack_up_lab                  : get_rabi_ribi_base_id() + 0x92,
+    LocationName.hammer_roll                  : get_rabi_ribi_base_id() + 0x93,
+}
 
-        :returns: None
-        """
-        region_names = self._get_region_name_list()
-        for name in region_names:
-            self.multiworld.regions.append(Region(name, self.player, self.multiworld))
-        self.multiworld.regions.append(Region("Menu", self.player, self.multiworld))
+rabi_rabi_town_locations = {
+    LocationName.ribbon_badge                 : get_rabi_ribi_base_id() + 0x94,
+    LocationName.erina_badge                  : get_rabi_ribi_base_id() + 0x95,
+}
 
-    def connect_regions(self):
-        """
-        This method will connect the regions defined in the set_regions method.
-        That method MUST be called first!
+subterranean_area_locations = {
+    LocationName.hp_up_volcanic               : get_rabi_ribi_base_id() + 0x96,
+    LocationName.carrot_shooter               : get_rabi_ribi_base_id() + 0x97,
+    LocationName.unknown_item_3               : get_rabi_ribi_base_id() + 0x98,
+    LocationName.fire_orb                     : get_rabi_ribi_base_id() + 0x99,
+    LocationName.pack_up_volcanic             : get_rabi_ribi_base_id() + 0x9A,
+}
 
-        :returns: None
-        """
-        regions = self.multiworld.regions.region_cache[self.player]
-        regions["Menu"].connect(regions[LocationName.forest_start])
-        edge_constraints = self.randomizer_data.edge_constraints
-        for edge in edge_constraints:
-            rule = convert_existing_rando_rule_to_ap_rule(edge.prereq_expression, self.player, regions, self.options)
-            from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
-            to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
-            if from_location == LocationName.forest_start and to_location == LocationName.beach_forest_entrance:
-                # add this later manually, this rule is for event_warp rando which isnt implemented yet.
-                continue
-            regions[from_location].add_exits([to_location], {
-                to_location: rule
-            })
-        edge_constraints_2 = self.randomizer_data.initial_edges
-        for edge in edge_constraints_2:
-            rule = convert_existing_rando_rule_to_ap_rule(edge.satisfied_expr, self.player, regions, self.options)
-            from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
-            to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
-            regions[from_location].add_exits([to_location], {
-                to_location: rule
-            })
+warp_destination_locations = {
+    LocationName.regen_up_cyberspace          : get_rabi_ribi_base_id() + 0x9B,
+    LocationName.pack_up_cyberspace           : get_rabi_ribi_base_id() + 0x9C,
+    LocationName.cyber_flower                 : get_rabi_ribi_base_id() + 0x9D,
+    LocationName.air_jump                     : get_rabi_ribi_base_id() + 0x9E,
+    LocationName.hp_up_cyberspace             : get_rabi_ribi_base_id() + 0x9F,
+    LocationName.atk_up_cyberspace            : get_rabi_ribi_base_id() + 0xA0,
+    LocationName.mp_up_cyberspace             : get_rabi_ribi_base_id() + 0xA1,
+}
 
-        # Set map transitions manually, since these are defined in a
-        #   non-AP-translatable way in the existing randomizer.
-        regions[LocationName.forest_start].connect(regions[LocationName.beach_forest_entrance])
-        regions[LocationName.beach_forest_entrance].connect(regions[LocationName.forest_start])
+# Shufflable Gift Item Locations
+shufflable_gift_item_locations = {
+    LocationName.p_hairpin                    : get_rabi_ribi_base_id() + 0xA2,
+    LocationName.speed_boost                  : get_rabi_ribi_base_id() + 0xA3,
+    LocationName.bunny_strike                 : get_rabi_ribi_base_id() + 0xA4,
+}
 
-        regions[LocationName.forest_upper_riverbank_exit].connect(regions[LocationName.riverbank_main_level1])
-        regions[LocationName.riverbank_main_level1].connect(regions[LocationName.forest_upper_riverbank_exit])
+# Egg Locations
+southern_woodland_egg_locations = {
+    LocationName.egg_rumi                     : get_rabi_ribi_base_id() + 0xA5,
+    LocationName.egg_forestnight_aruraune     : get_rabi_ribi_base_id() + 0xA6,
+    LocationName.egg_spectral_west            : get_rabi_ribi_base_id() + 0xA7,
+    LocationName.egg_cave_under_hammer        : get_rabi_ribi_base_id() + 0xA8,
+    LocationName.egg_forestnight_east         : get_rabi_ribi_base_id() + 0xA9,
+    LocationName.egg_spectral_slide           : get_rabi_ribi_base_id() + 0xAA,
+    LocationName.egg_cave_cocoa               : get_rabi_ribi_base_id() + 0xAB,
+    LocationName.egg_forest_ne_ledge          : get_rabi_ribi_base_id() + 0xAC,
+    LocationName.egg_forest_ne_pedestal       : get_rabi_ribi_base_id() + 0xAD,
+}
 
-        regions[LocationName.forest_lower_riverbank_exit].connect(regions[LocationName.riverbank_lower_forest_entrance])
-        regions[LocationName.riverbank_lower_forest_entrance].connect(regions[LocationName.forest_lower_riverbank_exit])
+western_coast_egg_locations = {
+    LocationName.egg_halloween_west           : get_rabi_ribi_base_id() + 0xAE,
+    LocationName.egg_beach_to_aquarium        : get_rabi_ribi_base_id() + 0xAF,
+    LocationName.egg_halloween_mid            : get_rabi_ribi_base_id() + 0xB0,
+    LocationName.egg_halloween_sw_slide       : get_rabi_ribi_base_id() + 0xB1,
+    LocationName.egg_halloween_near_boss      : get_rabi_ribi_base_id() + 0xB2,
+    LocationName.egg_halloween_warp_zone      : get_rabi_ribi_base_id() + 0xB3,
+    LocationName.egg_graveyard_near_library   : get_rabi_ribi_base_id() + 0xB4,
+    LocationName.egg_halloween_cicini_room    : get_rabi_ribi_base_id() + 0xB5,
+    LocationName.egg_library                  : get_rabi_ribi_base_id() + 0xB6,
+    LocationName.egg_pyramid_beach            : get_rabi_ribi_base_id() + 0xB7,
+    LocationName.egg_halloween_left_pillar    : get_rabi_ribi_base_id() + 0xB8,
+    LocationName.egg_halloween_right_pillar   : get_rabi_ribi_base_id() + 0xB9,
+    LocationName.egg_pyramid_lower            : get_rabi_ribi_base_id() + 0xBA,
+    LocationName.egg_halloween_past_pillars1  : get_rabi_ribi_base_id() + 0xBB,
+    LocationName.egg_halloween_past_pillars2  : get_rabi_ribi_base_id() + 0xBC,
+    LocationName.egg_sky_town                 : get_rabi_ribi_base_id() + 0xBD,
+}
 
-        regions[LocationName.spectral_west].connect(regions[LocationName.volcanic_main])
-        regions[LocationName.volcanic_main].connect(regions[LocationName.spectral_west])
+island_core_egg_locations = {
+    LocationName.egg_park_spikes              : get_rabi_ribi_base_id() + 0xBE,
+    LocationName.egg_park_green_kotri         : get_rabi_ribi_base_id() + 0xBF,
+    LocationName.egg_uprprc_base              : get_rabi_ribi_base_id() + 0xC0,
+    LocationName.egg_sky_bridge_warp          : get_rabi_ribi_base_id() + 0xC1,
+    LocationName.egg_sky_bridge_by_vanilla    : get_rabi_ribi_base_id() + 0xC2,
+    LocationName.egg_ravine_above_chocolate   : get_rabi_ribi_base_id() + 0xC3,
+    LocationName.egg_ravine_mid               : get_rabi_ribi_base_id() + 0xC4,
+}
 
-        regions[LocationName.graveyard_top_of_bridge].connect(regions[LocationName.sky_bridge_east])
-        regions[LocationName.sky_bridge_east].connect(regions[LocationName.graveyard_top_of_bridge])
+northern_tundra_egg_locations = {
+    LocationName.egg_snowland_to_evernight    : get_rabi_ribi_base_id() + 0xC5,
+    LocationName.egg_palace_bridge            : get_rabi_ribi_base_id() + 0xC6,
+    LocationName.egg_aquarium                 : get_rabi_ribi_base_id() + 0xC7,
+    LocationName.egg_palace_wall              : get_rabi_ribi_base_id() + 0xC8,
+    LocationName.egg_snowland_warp            : get_rabi_ribi_base_id() + 0xC9,
+    LocationName.egg_icy_summit_nixie         : get_rabi_ribi_base_id() + 0xCA,
+    LocationName.egg_icy_summit_warp          : get_rabi_ribi_base_id() + 0xCB,
+    LocationName.egg_snowland_lake            : get_rabi_ribi_base_id() + 0xCC,
+}
 
-        regions[LocationName.graveyard_main].connect(regions[LocationName.sky_bridge_east_lower])
-        regions[LocationName.sky_bridge_east_lower].connect(regions[LocationName.graveyard_main])
+eastern_highlands_egg_locations = {
+    LocationName.egg_riverbank_spider_spike   : get_rabi_ribi_base_id() + 0xCD,
+    LocationName.egg_riverbank_wall           : get_rabi_ribi_base_id() + 0xCE,
+    LocationName.egg_lab                      : get_rabi_ribi_base_id() + 0xCF,
+    LocationName.egg_evernight_mid            : get_rabi_ribi_base_id() + 0xD0,
+    LocationName.egg_evernight_saya           : get_rabi_ribi_base_id() + 0xD1,
+}
 
-        regions[LocationName.beach_main].connect(regions[LocationName.ravine_beach_entrance])
-        regions[LocationName.ravine_beach_entrance].connect(regions[LocationName.beach_main])
+rabi_rabi_town_egg_locations = {
+    LocationName.egg_town                     : get_rabi_ribi_base_id() + 0xD2,
+}
 
-        regions[LocationName.beach_volcanic_entrance].connect(regions[LocationName.volcanic_beach_entrance])
-        regions[LocationName.volcanic_beach_entrance].connect(regions[LocationName.beach_volcanic_entrance])
+plurkwood_egg_locations = {
+    LocationName.egg_plurk_cats               : get_rabi_ribi_base_id() + 0xD3,
+    LocationName.egg_plurk_cave               : get_rabi_ribi_base_id() + 0xD4,
+    LocationName.egg_plurk_east               : get_rabi_ribi_base_id() + 0xD5,
+}
 
-        regions[LocationName.beach_underwater_entrance].connect(regions[LocationName.aquarium_beach_entrance])
-        regions[LocationName.aquarium_beach_entrance].connect(regions[LocationName.beach_underwater_entrance])
+subterranean_area_egg_locations = {
+    LocationName.egg_volcanic_bomb_bunnies    : get_rabi_ribi_base_id() + 0xD6,
+    LocationName.egg_memories_sysint          : get_rabi_ribi_base_id() + 0xD7,
+    LocationName.egg_memories_ravine          : get_rabi_ribi_base_id() + 0xD8,
+    LocationName.egg_volcanic_fire_orb        : get_rabi_ribi_base_id() + 0xD9,
+    LocationName.egg_volcanic_ne              : get_rabi_ribi_base_id() + 0xDA,
+    LocationName.egg_volcanic_big_drop        : get_rabi_ribi_base_id() + 0xDB,
+}
 
-        regions[LocationName.park_main].connect(regions[LocationName.snowland_east])
-        regions[LocationName.snowland_east].connect(regions[LocationName.park_main])
+warp_destination_egg_locations = {
+    LocationName.egg_crespirit                : get_rabi_ribi_base_id() + 0xDC,
+    LocationName.egg_hospital_wall            : get_rabi_ribi_base_id() + 0xDD,
+    LocationName.egg_hospital_box             : get_rabi_ribi_base_id() + 0xDE,
+}
 
-        regions[LocationName.park_town_entrance].connect(regions[LocationName.town_main])
-        regions[LocationName.town_main].connect(regions[LocationName.park_town_entrance])
+system_interior_egg_locations = {
+    LocationName.egg_sysint2                  : get_rabi_ribi_base_id() + 0xDF,
+    LocationName.egg_sysint1                  : get_rabi_ribi_base_id() + 0xE0,
+}
 
-        regions[LocationName.ravine_town_entrance].connect(regions[LocationName.town_main])
-        regions[LocationName.town_main].connect(regions[LocationName.ravine_town_entrance])
+# Area Location Tables
+southern_woodland_table = {
+    **southern_woodland_locations,
+    **southern_woodland_egg_locations,
+}
 
-        regions[LocationName.snowland_evernight_entrance].connect(regions[LocationName.evernight_lower])
-        regions[LocationName.evernight_lower].connect(regions[LocationName.snowland_evernight_entrance])
+western_coast_table = {
+    **western_coast_locations,
+    **western_coast_egg_locations,
+}
 
-    def set_locations(self, location_name_to_id):
-        """
-        This method creates all of the item locations within the AP world, and appends it to the
-        appropriate region. It will also add the access rule for these locations, sourced from the
-        existing randomizer.
+island_core_table = {
+    **island_core_locations,
+    **island_core_egg_locations,
+}
 
-        :dict[str, int] location_name_to_id: Map for location name -> id number
-        :returns int: The total number of locations
-        """
-        total_locations = 0
-        locations = self.randomizer_data.item_constraints
-        regions = self.multiworld.regions.region_cache[self.player]
-        for location in locations:
+northern_tundra_table = {
+    **northern_tundra_locations,
+    **northern_tundra_egg_locations,
+}
 
-            # exlcude post game
-            prereq_expr = str(location.entry_prereq_expr)
-            if "POST_GAME_ALLOWED" in prereq_expr:
-                continue
-            if "POST_IRISU_ALLOWED" in prereq_expr:
-                continue
-            if "HALLOWEEN_REACHABLE" in prereq_expr:
-                continue
-            if "PLURKWOOD_REACHABLE" in prereq_expr:
-                continue
-            if "WARP_DESTINATION_REACHABLE" in prereq_expr:
-                continue
-            if "EVENT_WARPS_REQUIRED" in prereq_expr:
-                continue
+eastern_highlands_table = {
+    **eastern_highlands_locations,
+    **eastern_highlands_egg_locations,
+}
 
-            # Note that location rules are always baked into the entry / exit requirements of the region.
-            # Its done this way because this is the way the original randomizer did it.
-            # Items which have an access requirement specific to that region have their own region node.
-            location_name = convert_existing_rando_name_to_ap_name(location.item)
-            region_name = f"Item {location_name}" if f"Item {location_name}" in regions else \
-                convert_existing_rando_name_to_ap_name(location.from_location)
-            location_name = convert_existing_rando_name_to_ap_name(location.item)
-            ap_location = RabiRibiLocation(
-                self.player,
-                location_name,
-                location_name_to_id[location_name],
-                regions[region_name]
-            )
-            regions[region_name].locations.append(ap_location)
-            total_locations += 1
-        return total_locations
+rabi_rabi_town_table = {
+    **rabi_rabi_town_locations,
+    **rabi_rabi_town_egg_locations,
+}
 
-    def set_events(self):
-        regions = self.multiworld.regions.region_cache[self.player]
+plurkwood_table = {
+    # No item locations
+    **plurkwood_egg_locations,
+}
 
-        cocoa_1 = RabiRibiLocation(self.player, ItemName.cocoa_1, None, regions[LocationName.forest_cocoa_room])
-        cocoa_1.place_locked_item(RabiRibiItem(ItemName.cocoa_1, ItemClassification.progression, None, self.player))
-        regions[LocationName.forest_cocoa_room].locations.append(cocoa_1)
+subterranean_area_table = {
+    **subterranean_area_locations,
+    **subterranean_area_egg_locations,
+}
 
-        kotri_1 = RabiRibiLocation(self.player, ItemName.kotri_1, None, regions[LocationName.park_kotri])
-        kotri_1.place_locked_item(RabiRibiItem(ItemName.kotri_1, ItemClassification.progression, None, self.player))
-        regions[LocationName.park_kotri].locations.append(kotri_1)
+warp_destination_table = {
+    **warp_destination_locations,
+    **warp_destination_egg_locations,
+}
 
-        kotri_2 = RabiRibiLocation(self.player, ItemName.kotri_2, None, regions[LocationName.graveyard_kotri])
-        kotri_2.place_locked_item(RabiRibiItem(ItemName.kotri_2, ItemClassification.progression, None, self.player))
-        regions[LocationName.graveyard_kotri].locations.append(kotri_2)
-        add_rule(kotri_2, lambda state: state.has(ItemName.kotri_1, self.player))
+system_interior_table = {
+    # No item locations
+    **system_interior_egg_locations,
+}
 
-        cocoa_recruit = RabiRibiLocation(self.player, ItemName.cocoa_recruit, None, regions[LocationName.cave_cocoa])
-        cocoa_recruit.place_locked_item(RabiRibiItem(ItemName.cocoa_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.cave_cocoa].locations.append(cocoa_recruit)
-        add_rule(cocoa_recruit, lambda state: logic.can_recruit_cocoa(state, self.player))
+# Combined Location Table
+location_table = {
+    **southern_woodland_table,
+    **western_coast_table,
+    **island_core_table,
+    **northern_tundra_table,
+    **eastern_highlands_table,
+    **rabi_rabi_town_table,
+    **plurkwood_table,
+    **subterranean_area_table,
+    **warp_destination_table,
+    **system_interior_table,
+}
 
-        ashuri_recruit = RabiRibiLocation(self.player, ItemName.ashuri_recruit, None, regions[LocationName.spectral_west])
-        ashuri_recruit.place_locked_item(RabiRibiItem(ItemName.ashuri_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.spectral_west].locations.append(ashuri_recruit)
-        add_rule(ashuri_recruit, lambda state: logic.can_recruit_ashuri(state, self.player))
-
-        rita_recruit = RabiRibiLocation(self.player, ItemName.rita_recruit, None, regions[LocationName.snowland_rita])
-        rita_recruit.place_locked_item(RabiRibiItem(ItemName.rita_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.snowland_rita].locations.append(rita_recruit)
-        add_rule(rita_recruit, lambda state: logic.can_recruit_rita(state, self.player))
-
-        cicini_recruit = RabiRibiLocation(self.player, ItemName.cicini_recruit, None, regions[LocationName.spectral_cicini_room])
-        cicini_recruit.place_locked_item(RabiRibiItem(ItemName.cicini_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.spectral_cicini_room].locations.append(cicini_recruit)
-        add_rule(cicini_recruit, lambda state: logic.can_recruit_cicini(state, self.player))
-
-        saya_recruit = RabiRibiLocation(self.player, ItemName.saya_recruit, None, regions[LocationName.evernight_saya])
-        saya_recruit.place_locked_item(RabiRibiItem(ItemName.saya_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.evernight_saya].locations.append(saya_recruit)
-        add_rule(saya_recruit, lambda state: logic.can_recruit_saya(state, self.player))
-
-        syaro_recruit = RabiRibiLocation(self.player, ItemName.syaro_recruit, None, regions[LocationName.system_interior_main])
-        syaro_recruit.place_locked_item(RabiRibiItem(ItemName.syaro_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.system_interior_main].locations.append(syaro_recruit)
-        add_rule(syaro_recruit, lambda state: logic.can_recruit_syaro(state, self.player))
-
-        pandora_recruit = RabiRibiLocation(self.player, ItemName.pandora_recruit, None, regions[LocationName.pyramid_main])
-        pandora_recruit.place_locked_item(RabiRibiItem(ItemName.pandora_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.pyramid_main].locations.append(pandora_recruit)
-        add_rule(pandora_recruit, lambda state: logic.can_recruit_pandora(state, self.player))
-
-        nieve_recruit = RabiRibiLocation(self.player, ItemName.nieve_recruit, None, regions[LocationName.palace_level_5])
-        nieve_recruit.place_locked_item(RabiRibiItem(ItemName.nieve_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.palace_level_5].locations.append(nieve_recruit)
-        add_rule(nieve_recruit, lambda state: logic.can_recruit_nieve(state, self.player))
-
-        nixie_recruit = RabiRibiLocation(self.player, ItemName.nixie_recruit, None, regions[LocationName.icy_summit_nixie])
-        nixie_recruit.place_locked_item(RabiRibiItem(ItemName.nixie_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.icy_summit_nixie].locations.append(nixie_recruit)
-        add_rule(nixie_recruit, lambda state: logic.can_recruit_nixie(state, self.player))
-
-        aruraune_recruit = RabiRibiLocation(self.player, ItemName.aruraune_recruit, None, regions[LocationName.forest_night_west])
-        aruraune_recruit.place_locked_item(RabiRibiItem(ItemName.aruraune_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.forest_night_west].locations.append(aruraune_recruit)
-        add_rule(aruraune_recruit, lambda state: logic.can_recruit_aruraune(state, self.player))
-
-        seana_recruit = RabiRibiLocation(self.player, ItemName.seana_recruit, None, regions[LocationName.park_town_entrance])
-        seana_recruit.place_locked_item(RabiRibiItem(ItemName.seana_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.park_town_entrance].locations.append(seana_recruit)
-        add_rule(seana_recruit, lambda state: logic.can_recruit_seana(state, self.player))
-
-        lilith_recruit = RabiRibiLocation(self.player, ItemName.lilith_recruit, None, regions[LocationName.sky_island_main])
-        lilith_recruit.place_locked_item(RabiRibiItem(ItemName.lilith_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.sky_island_main].locations.append(lilith_recruit)
-        add_rule(lilith_recruit, lambda state: logic.can_recruit_lilith(state, self.player))
-
-        vanilla_recruit = RabiRibiLocation(self.player, ItemName.vanilla_recruit, None, regions[LocationName.sky_bridge_east_lower])
-        vanilla_recruit.place_locked_item(RabiRibiItem(ItemName.vanilla_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.sky_bridge_east_lower].locations.append(vanilla_recruit)
-        add_rule(vanilla_recruit, lambda state: logic.can_recruit_chocolate(state, self.player))
-
-        chocolate_recruit = RabiRibiLocation(self.player, ItemName.chocolate_recruit, None, regions[LocationName.ravine_chocolate])
-        chocolate_recruit.place_locked_item(RabiRibiItem(ItemName.chocolate_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.ravine_chocolate].locations.append(chocolate_recruit)
-        add_rule(chocolate_recruit, lambda state: logic.can_recruit_chocolate(state, self.player))
-
-        kotri_recruit = RabiRibiLocation(self.player, ItemName.kotri_recruit, None, regions[LocationName.volcanic_main])
-        kotri_recruit.place_locked_item(RabiRibiItem(ItemName.kotri_recruit, ItemClassification.progression, None, self.player))
-        regions[LocationName.volcanic_main].locations.append(kotri_recruit)
-        add_rule(kotri_recruit, lambda state: logic.can_recruit_kotri(state, self.player))
-
-        # keke_bunny_recruit = RabiRibiLocation(self.player, ItemName.keke_bunny_recruit, None, regions[LocationName.plurkwood_main])
-        # keke_bunny_recruit.place_locked_item(RabiRibiItem(ItemName.keke_bunny_recruit, ItemClassification.progression, None, self.player))
-        # regions[LocationName.plurkwood_main].locations.append(keke_bunny_recruit)
-        # add_rule(keke_bunny_recruit, lambda state: logic.can_recruit_keke_bunny(state, self.player))
-
-        chapter_1 = RabiRibiLocation(self.player, "Chapter 1", None, regions[LocationName.town_main])
-        chapter_1.place_locked_item(RabiRibiItem("Chapter 1", ItemClassification.progression, None, self.player))
-        regions[LocationName.town_main].locations.append(chapter_1)
-        add_rule(chapter_1, lambda state: logic.can_reach_chapter_1(state, self.player))
-
-        chapter_2 = RabiRibiLocation(self.player, "Chapter 2", None, regions[LocationName.town_main])
-        chapter_2.place_locked_item(RabiRibiItem("Chapter 2", ItemClassification.progression, None, self.player))
-        regions[LocationName.town_main].locations.append(chapter_2)
-        add_rule(chapter_2,
-                 lambda state: logic.can_reach_chapter_2(state, self.player) and
-                    state.has("Chapter 1", self.player))
-
-        chapter_3 = RabiRibiLocation(self.player, "Chapter 3", None, regions[LocationName.town_main])
-        chapter_3.place_locked_item(RabiRibiItem("Chapter 3", ItemClassification.progression, None, self.player))
-        regions[LocationName.town_main].locations.append(chapter_3)
-        add_rule(chapter_3,
-                 lambda state: logic.can_reach_chapter_3(state, self.player) and
-                    state.has("Chapter 2", self.player))
-
-        chapter_4 = RabiRibiLocation(self.player, "Chapter 4", None, regions[LocationName.town_main])
-        chapter_4.place_locked_item(RabiRibiItem("Chapter 4", ItemClassification.progression, None, self.player))
-        regions[LocationName.town_main].locations.append(chapter_4)
-        add_rule(chapter_4,
-                 lambda state: logic.can_reach_chapter_4(state, self.player) and
-                    state.has("Chapter 3", self.player))
-
-        chapter_5 = RabiRibiLocation(self.player, "Chapter 5", None, regions[LocationName.town_main])
-        chapter_5.place_locked_item(RabiRibiItem("Chapter 5", ItemClassification.progression, None, self.player))
-        regions[LocationName.town_main].locations.append(chapter_5)
-        add_rule(chapter_5,
-                 lambda state: logic.can_reach_chapter_5(state, self.player) and
-                    state.has("Chapter 4", self.player))
-
-        bunny_strike = RabiRibiLocation(self.player, ItemName.bunny_strike, None, regions[LocationName.town_main])
-        bunny_strike.place_locked_item(RabiRibiItem(ItemName.bunny_strike, ItemClassification.progression, None, self.player))
-        regions[LocationName.town_main].locations.append(bunny_strike)
-
-        speed_boost = RabiRibiLocation(self.player, ItemName.speed_boost, None, regions[LocationName.town_main])
-        speed_boost.place_locked_item(RabiRibiItem(ItemName.speed_boost, ItemClassification.progression, None, self.player))
-        regions[LocationName.town_main].locations.append(speed_boost)
-
-    def _get_region_name_list(self):
-        return [
-            convert_existing_rando_name_to_ap_name(name) for \
-            name in self.randomizer_data.graph_vertices
-        ]
-
-def get_all_possible_locations():
-    """
-    This method retrieves a list of all locations in Rabi-Ribi. This is needed when instantiating the world.
-
-    :returns: A full list of location names.
-    """
-    # Default args for now
-    args = parse_args()
-
-    # Grab items from existing randomizer logic
-    randomizer_data = RandomizerData(args)  # Kind of hacky. I dont really want to instantiate twice but
-                                            #   this needs to be done before the RabiRibiWorld __init__ runs.
-                                            #   This is also instantiated in the RegionDef class above.
-    location_list = randomizer_data.item_constraints
-
-    # convert it to the ap name equivilant and return
-    return [convert_existing_rando_name_to_ap_name(location.item) for location in location_list]
+location_groups = {
+    LocationName.southern_woodland_region   : set(southern_woodland_table.keys()),
+    LocationName.western_coast_region       : set(western_coast_table.keys()),
+    LocationName.island_core_region         : set(island_core_table.keys()),
+    LocationName.northern_tundra_region     : set(northern_tundra_table.keys()),
+    LocationName.eastern_highlands_region   : set(eastern_highlands_table.keys()),
+    LocationName.rabi_rabi_town_region      : set(rabi_rabi_town_table.keys()),
+    LocationName.plurkwood_region           : set(plurkwood_table.keys()),
+    LocationName.subterranean_area_region   : set(subterranean_area_table.keys()),
+    LocationName.warp_destination_region    : set(warp_destination_table.keys()),
+    LocationName.system_interior_region     : set(system_interior_table.keys()),
+}
