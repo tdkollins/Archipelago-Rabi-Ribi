@@ -1,21 +1,19 @@
 """
 This module serves as an entrypoint into the Rabi-Ribi AP world.
 """
+import settings
 from collections import defaultdict
 from typing import ClassVar, Dict, Set
-
-from BaseClasses import ItemClassification
+from BaseClasses import ItemClassification, Tutorial
 from Fill import swap_location_item
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, Type, components, launch_subprocess
-from .items import RabiRibiItem, RabiRibiItemData, item_table, item_groups, get_base_item_list
-from .locations import location_table, location_groups
+from .items import RabiRibiItem, RabiRibiItemData, item_data_table, item_groups, shufflable_gift_items, shufflable_gift_items_plurkwood, item_table, get_base_item_list
+from .locations import all_locations, location_groups, setup_locations
 from .names import ItemName, LocationName
 from .options import RabiRibiOptions
 from .regions import RegionDef
-from .settings import RabiRibiSettings
 from .utility import get_rabi_ribi_base_id
-from .web import RabiRibiWeb
 
 def launch_client():
     """Launch a rabi ribi client instance"""
@@ -29,6 +27,26 @@ components.append(Component(
     component_type=Type.CLIENT
 ))
 
+class RabiRibiSettings(settings.Group):
+    class GameInstallationPath(settings.UserFolderPath):
+        """
+        The installation folder of the game.
+        """
+        description = "Rabi-Ribi Installation Path"
+
+    game_installation_path: GameInstallationPath = GameInstallationPath("C:/Program Files (x86)/Steam/steamapps/common/Rabi-Ribi")
+
+class RabiRibiWeb(WebWorld):
+    """Web integration for Rabi-Ribi"""
+    tutorials = [Tutorial(
+        "Multiworld Setup Guide",
+        "A guide to setting up Rabi-Ribi integration for Archipelago multiworld games.",
+        "English",
+        "setup_en.md",
+        "setup/en",
+        ["Phie", "PsyMarth"]
+    )]
+
 class RabiRibiWorld(World):
     """
     Rabi-Ribi is a hybrid Bullet-Hell Metroidvania developped by CreSpirit and GameYue,
@@ -39,6 +57,7 @@ class RabiRibiWorld(World):
     options_dataclass = RabiRibiOptions
     options: RabiRibiOptions
     topology_present: bool = False
+    settings: ClassVar[RabiRibiSettings]
     web: WebWorld = RabiRibiWeb()
 
     base_id: int = get_rabi_ribi_base_id()
@@ -46,10 +65,8 @@ class RabiRibiWorld(World):
     item_name_groups: Dict[str, Set[str]] = item_groups
     location_name_groups: Dict[str, Set[str]] = location_groups
 
-    item_name_to_id = {name: data.code for name, data in item_table.items()}
-    location_name_to_id: Dict[str, int] = {name: code for name, code in location_table.items()}
-
-    settings: ClassVar[RabiRibiSettings]
+    item_name_to_id = item_table
+    location_name_to_id: Dict[str, int] = {name: code for name, code in all_locations.items()}
 
     def __init__(self, multiworld, player):
         super().__init__(multiworld, player)
@@ -64,7 +81,7 @@ class RabiRibiWorld(World):
     def create_item(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
 
-        data: RabiRibiItemData = item_table[name]
+        data: RabiRibiItemData = item_data_table[name]
         return RabiRibiItem(name, data.classification, data.code, self.player)
 
     def create_event(self, name: str) -> RabiRibiItem:
@@ -79,14 +96,21 @@ class RabiRibiWorld(World):
         region_def = RegionDef(self.multiworld, self.player, self.options)
         region_def.set_regions()
         region_def.connect_regions()
-        self.total_locations = region_def.set_locations(self.location_name_to_id)
+        self.total_locations = region_def.set_locations()
         region_def.set_events()
 
     def create_items(self) -> None:
-        base_item_list = get_base_item_list()
+        base_item_list = get_base_item_list(self.options)
 
+        excluded_items = 0
         for item in map(self.create_item, base_item_list):
             if (not self.options.randomize_hammer.value) and (item.name == ItemName.piko_hammer):
+                continue
+            elif (not self.options.randomize_gift_items.value) and (item.name in shufflable_gift_items):
+                continue
+            elif (not self.options.randomize_gift_items) and \
+                self.options.plurkwood_reachable and \
+                item.name in shufflable_gift_items_plurkwood:
                 continue
             self.multiworld.itempool.append(item)
 
@@ -96,7 +120,9 @@ class RabiRibiWorld(World):
     def fill_slot_data(self) -> dict:
         return {
             "openMode": self.options.open_mode.value,
-            "attackMode": self.options.attack_mode.value
+            "attackMode": self.options.attack_mode.value,
+            "randomize_gift_items": self.options.randomize_gift_items.value,
+            "plurkwood_reachable" : self.options.plurkwood_reachable.value,
         }
 
     def set_rules(self) -> None:
@@ -109,6 +135,13 @@ class RabiRibiWorld(World):
     def pre_fill(self) -> None:
         if not self.options.randomize_hammer.value:
             self.multiworld.get_location(LocationName.piko_hammer, self.player).place_locked_item(self.create_item(ItemName.piko_hammer))
+
+        if not self.options.randomize_gift_items.value:
+            self.multiworld.get_location(LocationName.speed_boost, self.player).place_locked_item(self.create_item(ItemName.speed_boost))
+            self.multiworld.get_location(LocationName.bunny_strike, self.player).place_locked_item(self.create_item(ItemName.bunny_strike))
+
+            if self.options.plurkwood_reachable.value:
+                self.multiworld.get_location(LocationName.p_hairpin, self.player).place_locked_item(self.create_item(ItemName.p_hairpin))
 
     @staticmethod
     def _handle_encourage_eggs_in_late_spheres(multiworld):

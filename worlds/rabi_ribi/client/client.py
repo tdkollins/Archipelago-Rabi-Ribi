@@ -1,6 +1,6 @@
-from typing import Optional
 import ast
 import asyncio
+from typing import Any, Dict, Mapping, Optional, Set
 import colorama
 import os
 import pymem
@@ -17,47 +17,51 @@ from CommonClient import (
 )
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
+from worlds.rabi_ribi.items import lookup_item_id_to_name
 from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
+from worlds.rabi_ribi.locations import all_locations
 from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.utility import load_text_file
 from NetUtils import NetworkItem, ClientStatus
 
 class RabiRibiContext(CommonContext):
     """Rabi Ribi Game Context"""
+    location_ids: Set[int]
+    location_ap_id_to_name = None
+    item_name_to_ap_id = None
+    item_ap_id_to_name = None
+    location_coordinates_to_ap_location_name: Dict[Any, Any] = {}
+    item_name_to_rabi_ribi_item_id: Dict[str, int] = {}
+
+    state_giving_item = False
+    egg_incremented_flag = False
+    current_egg_count: int = 0
+    seed_name: str
+    slot_data: Mapping[str, Any] = {}
+
+    # populated when we have the unique seed ID
+    custom_seed_subdir: str
+    seed_player: str
+    seed_player_id: str
+
+    time_since_last_paused: float = time.time()
+    time_since_main_menu: float = time.time()
+    time_since_last_item_obtained: float = time.time()
+    time_since_last_warp_menu: float = time.time()
+    time_since_last_costume_menu: float = time.time()
+
+    items_received_rabi_ribi_ids = []
+    obtained_items_queue = asyncio.Queue()
+    critical_section_lock = asyncio.Lock()
+
     def __init__(self, server_address: Optional[str], password: Optional[str]) -> None:
         super().__init__(server_address, password)
         self.game = "Rabi-Ribi"
         self.items_handling = 0b001  # only items from other worlds
         self.rr_interface = RabiRibiMemoryIO()
-        self.location_ids = None
-        self.location_name_to_ap_id = None
-        self.location_ap_id_to_name = None
-        self.item_name_to_ap_id = None
-        self.item_ap_id_to_name = None
+
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
-
-        self.state_giving_item = False
-        self.egg_incremented_flag = False
-        self.current_egg_count = 0
-        self.seed_name = None
-        self.options = None
-
-        # populated when we have the unique seed ID
-        self.custom_seed_subdir = None
-        self.seed_player = None
-        self.seed_player_id = None
-
-        self.time_since_last_paused = time.time()
-        self.time_since_main_menu = time.time()
-        self.time_since_last_item_obtained = time.time()
-        self.time_since_last_warp_menu = time.time()
-        self.time_since_last_costume_menu = time.time()
-        
-        self.items_received_rabi_ribi_ids = []
-        self.obtained_items_queue = asyncio.Queue()
-
-        self.critical_section_lock = asyncio.Lock()
 
     def read_location_coordinates_and_rr_item_ids(self):
         """
@@ -94,16 +98,17 @@ class RabiRibiContext(CommonContext):
                 l = l[:l.find('//')]
             l = l.strip()
             if len(l) == 0: continue
-            coords, areaid, rabi_ribi_item_id, name = (x.strip() for x in l.split(':'))
+            coords, area_id, item_id, name = (x.strip() for x in l.split(':'))
 
             # Set location coordinate to location name mapping
-            area_id = int(areaid)
+            rabi_ribi_area_id = int(area_id)
+            rabi_ribi_item_id = int(item_id)
             x, y = ast.literal_eval(coords)
             ap_name = convert_existing_rando_name_to_ap_name(name)
-            if area_id not in coordinate_to_location_name:
-                coordinate_to_location_name[area_id] = {(x, y): ap_name}
+            if rabi_ribi_area_id not in coordinate_to_location_name:
+                coordinate_to_location_name[rabi_ribi_area_id] = {(x, y): ap_name}
             else:
-                coordinate_to_location_name[area_id][(x, y)] = ap_name
+                coordinate_to_location_name[rabi_ribi_area_id][(x, y)] = ap_name
 
             # Set item name to rabi ribi item id mapping
             item_name_to_rabi_ribi_item_id[ap_name] = rabi_ribi_item_id
@@ -119,7 +124,7 @@ class RabiRibiContext(CommonContext):
     def on_package(self, cmd: str, args: dict):
         if cmd == "Connected":
             self.location_ids = set(args["missing_locations"] + args["checked_locations"])
-            self.options = args["slot_data"]
+            self.slot_data = args["slot_data"]
 
             asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
 
@@ -248,7 +253,7 @@ class RabiRibiContext(CommonContext):
                 await self.wait_for_initial_connection_info()
 
             for network_item in self.items_received:
-                item_name = self.item_ap_id_to_name[network_item.item]
+                item_name = lookup_item_id_to_name[network_item.item]
                 if item_name == ItemName.nothing:
                     self.items_received_rabi_ribi_ids.append(-1)
                 elif item_name in potion_ids:
@@ -367,7 +372,7 @@ class RabiRibiContext(CommonContext):
             distance = abs(x - coordinate_entry[0]) + abs(y - coordinate_entry[1])
             if distance < closest_distance:
                 closest_distance = distance
-                closest_location_id = self.location_name_to_ap_id[location_name]
+                closest_location_id = all_locations[location_name]
                 closest_location_coordinates = (area_id, *coordinate_entry)
         if closest_distance < 10:
             return closest_location_id, closest_location_coordinates
@@ -385,7 +390,7 @@ class RabiRibiContext(CommonContext):
         Reset client back to default values
         """
         self.locations_checked = set()
-        self.location_ids = None
+        self.location_ids = set()
         self.location_name_to_ap_id = None
         self.location_ap_id_to_name = None
         self.item_name_to_ap_id = None
@@ -396,12 +401,12 @@ class RabiRibiContext(CommonContext):
         self.state_giving_item = False
         self.egg_incremented_flag = False
         self.current_egg_count = 0
-        self.seed_name = None
-        self.options = None
+        self.seed_name = ""
+        self.slot_data = {}
 
-        self.custom_seed_subdir = None
-        self.seed_player = None
-        self.seed_player_id = None
+        self.custom_seed_subdir = ""
+        self.seed_player = ""
+        self.seed_player_id = ""
 
         self.time_since_last_paused = time.time()
         self.time_since_main_menu = time.time()

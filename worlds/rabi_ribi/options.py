@@ -1,7 +1,7 @@
 """This module represents option defintions for Rabi-Ribi"""
 from dataclasses import dataclass
 
-from Options import PerGameCommonOptions, Choice, Toggle
+from Options import PerGameCommonOptions, Choice, Range, Toggle
 
 class OpenMode(Toggle):
     """Gain access to chapter 1 areas without needing to complete the prologue"""
@@ -10,6 +10,10 @@ class OpenMode(Toggle):
 class RandomizeHammer(Toggle):
     """If set to false, the hammer is at the default location"""
     display_name = "Randomize Hammer"
+
+class RandomizeGiftItems(Toggle):
+    """If set to false, items given by NPCs (Speed Boost, Hammer Strike, P Hairpin) are at their default locations"""
+    display_name = "Randomize Gift Items"
 
 class CarrotShooterInLogic(Toggle):
     """
@@ -100,6 +104,11 @@ class UnderwaterWithoutWaterOrb(Toggle):
     """
     display_name = "Underwater Without Water Orb"
 
+class PlurkwoodReachable(Toggle):
+    """
+    If this flag is true, the game might expect you to go into Plurkwood.
+    """
+    display_name = "Plurkwood Reachable"
 
 class AttackMode(Choice):
     """
@@ -122,6 +131,7 @@ class RabiRibiOptions(PerGameCommonOptions):
     """Rabi Ribi Options Definition"""
     open_mode: OpenMode
     randomize_hammer: RandomizeHammer
+    randomize_gift_items: RandomizeGiftItems
     knowledge: Knowledge
     trick_difficulty: TrickDifficulty
     block_clips_required: BlockClipsRequired
@@ -132,3 +142,4 @@ class RabiRibiOptions(PerGameCommonOptions):
     attack_mode: AttackMode
     encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
     carrot_shooter_in_logic: CarrotShooterInLogic
+    plurkwood_reachable: PlurkwoodReachable

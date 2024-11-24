@@ -41,6 +41,8 @@ class Allocation():
             ctx.location_ap_id_to_name,
             ctx.item_ap_id_to_name,
         )
+
+        self.map_modifications += randomizer_data.default_map_modifications
         self.walking_left_transitions = randomizer_data.walking_left_transitions
 
     def set_location_info(self, slot_num, location_info, location_ap_id_to_name, item_ap_id_to_name):
@@ -60,8 +62,9 @@ def patch_map_files(ctx: RabiRibiContext):
     map_source_dir = f"{RabiRibiWorld.settings.game_installation_path}/data/area"
     grab_original_maps(map_source_dir, ctx.custom_seed_subdir)
     settings = parse_args()
-    settings.open_mode = ctx.options["openMode"]
-    attack_mode = ctx.options["attackMode"]
+    settings.open_mode = ctx.slot_data["openMode"]
+    settings.shuffle_gift_items = ctx.slot_data["randomize_gift_items"]
+    attack_mode = ctx.slot_data["attackMode"]
     if attack_mode == AttackMode.option_hyper:
         settings.hyper_attack_mode = True
     elif attack_mode == AttackMode.option_super:

@@ -1,4 +1,5 @@
 import ast, re, os
+from typing import Dict, List
 from worlds.rabi_ribi.existing_randomizer.utility import *
 
 """
@@ -138,7 +139,7 @@ def define_alternate_conditions(settings, variable_names_set, default_expression
 
     for key in d.keys():
         if type(d[key]) == str:
-            d[key] = parse_expression_lambda(d[key], variable_names_set, default_expressions)
+            d[key] = parse_expression_lambda(d[key], variable_names_set, default_expressions) # type: ignore
     return d
 
 
@@ -216,8 +217,8 @@ def define_default_expressions(variable_names_set):
 
 def shufflable_gift_item_map_modifications():
     return [
-        './maptemplates/shuffle_gift_items/mod_p_hairpin.txt',
-        './maptemplates/shuffle_gift_items/mod_bunstrike_speedboost.txt',
+        os.path.join('existing_randomizer', 'maptemplates', 'shuffle_gift_items', 'mod_p_hairpin.txt'),
+        os.path.join('existing_randomizer', 'maptemplates', 'shuffle_gift_items', 'mod_bunstrike_speedboost.txt')
     ]
 
 def get_default_areaids():
@@ -297,17 +298,17 @@ def parse_locations_and_items():
             item_name, item_id = (x.strip() for x in line.split(':'))
             item_id = int(item_id)
             if item_name in additional_items:
-                fail('Additional Item %s already defined!' % item)
+                fail('Additional Item %s already defined!' % item_name)
             additional_items[item_name] = item_id
         elif currently_reading == READING_SHUFFLABLE_GIFT_ITEMS:
             if len(line) <= 0: continue
             if item_name in shufflable_gift_items:
-                fail('Shufflable Gift Item %s already defined!' % item)
+                fail('Shufflable Gift Item %s already defined!' % item_name)
             shufflable_gift_items.append(parse_item_from_string(line))
         elif currently_reading == READING_ITEMS:
             if len(line) <= 0: continue
             if item_name in items:
-                fail('Item %s already defined!' % item)
+                fail('Item %s already defined!' % item_name)
             items.append(parse_item_from_string(line))
         elif currently_reading == READING_MAP_TRANSITIONS:
             if len(line) <= 0: continue
@@ -346,8 +347,8 @@ def parse_edge_constraints(locations_set, variable_names_set, default_expression
     constraints_graph = os.path.join('existing_randomizer', 'constraints_graph.txt')
     lines = read_file_and_strip_comments(constraints_graph)
     jsondata = ' '.join(lines)
-    jsondata = re.sub(',\s*}', '}', jsondata)
-    jsondata = '},{'.join(re.split('}\s*{', jsondata))
+    jsondata = re.sub(r',\s*}', '}', jsondata)
+    jsondata = '},{'.join(re.split(r'}\s*{', jsondata))
     jsondata = '[' + jsondata + ']'
     cdicts = parse_json(jsondata)
 
@@ -373,8 +374,8 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
     constraints = os.path.join('existing_randomizer', 'constraints.txt')
     lines = read_file_and_strip_comments(constraints)
     jsondata = ' '.join(lines)
-    jsondata = re.sub(',\s*}', '}', jsondata)
-    jsondata = '},{'.join(re.split('}\s*{', jsondata))
+    jsondata = re.sub(r',\s*}', '}', jsondata)
+    jsondata = '},{'.join(re.split(r'}\s*{', jsondata))
     jsondata = '[' + jsondata + ']'
     cdicts = parse_json(jsondata)
 
@@ -388,7 +389,7 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
         return dict((name, parse_expression(constraint, variable_names_set, default_expressions))
             for name, constraint in alts.items())
 
-    item_constraints = []
+    item_constraints: List[ItemConstraintData] = []
 
     valid_keys = set(('item','from_location','to_location','entry_prereq','exit_prereq','alternate_entries','alternate_exits'))
     for cdict in cdicts:
@@ -557,8 +558,8 @@ def parse_template_constraints(locations_set, variable_names_set, default_expres
     template_constraints = os.path.join('existing_randomizer', 'maptemplates', 'template_constraints.txt')
     lines = read_file_and_strip_comments(template_constraints)
     jsondata = ' '.join(lines)
-    jsondata = re.sub(',\s*}', '}', jsondata)
-    jsondata = '},{'.join(re.split('}\s*{', jsondata))
+    jsondata = re.sub(r',\s*}', '}', jsondata)
+    jsondata = '},{'.join(re.split(r'}\s*{', jsondata))
     jsondata = '[' + jsondata + ']'
     cdicts = parse_json(jsondata)
 
@@ -602,8 +603,8 @@ def parse_template_constraints(locations_set, variable_names_set, default_expres
 def read_config(default_setting_flags, item_locations_set, shufflable_gift_items_set, config_flags_set, predefined_additional_items_set, settings):
     lines = read_file_and_strip_comments(settings.config_file)
     jsondata = ' '.join(lines)
-    jsondata = re.sub(',\s*]', ']', jsondata)
-    jsondata = re.sub(',\s*}', '}', jsondata)
+    jsondata = re.sub(r',\s*]', ']', jsondata)
+    jsondata = re.sub(r',\s*}', '}', jsondata)
     config_dict = parse_json('{' + jsondata + '}')
 
     to_shuffle = config_dict['to_shuffle']
@@ -805,7 +806,7 @@ class RandomizerData(object):
 
     def preprocess_variables_with_settings(self, setting_flags, settings):
         # Mark all unconstrained pseudo-items
-        variables = dict((name, False) for name in self.variable_names_list)
+        variables: Dict[str, bool] = dict((name, False) for name in self.variable_names_list)
         variables.update(setting_flags)
 
         to_remove = set()
@@ -817,7 +818,7 @@ class RandomizerData(object):
             for condition, target in unreached_pseudo_items.items():
                 if condition(variables):
                     variables[target] = True
-                    to_remove.append(target)
+                    to_remove.add(target)
                     has_changes = True
 
             for target in to_remove:
@@ -946,8 +947,10 @@ class RandomizerData(object):
             ltr = left_transition_dict.get(key)
             if ltr == None:
                 fail('Matching map transition not found for %s' % rtr.origin_location)
+                break
             if rtr.area_current != ltr.area_target or rtr.entry_current != ltr.entry_target:
                 fail("Map transitions don't match! %s vs %s" % (rtr.origin_location, ltr.origin_location))
+                break
             walking_left_transitions.append(ltr)
             del left_transition_dict[key]
 

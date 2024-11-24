@@ -2,6 +2,7 @@
 from typing import Dict, List, NamedTuple, Optional, Set
 
 from BaseClasses import Item, ItemClassification
+from worlds.rabi_ribi.options import RabiRibiOptions
 from worlds.rabi_ribi.utility import get_rabi_ribi_base_id
 from .existing_randomizer.visualizer import load_item_locs
 from .names import ItemName
@@ -10,7 +11,7 @@ class RabiRibiItem(Item):
     """Rabi Ribi Item Definition"""
     game: str = "Rabi-Ribi"
 
-    def __init__(self, name, classification: ItemClassification, code: int = None, player: int = None):
+    def __init__(self, name, classification: ItemClassification, code: Optional[int], player: int):
         super(RabiRibiItem, self).__init__(name, classification, code, player)
 
 
@@ -99,14 +100,16 @@ collectables_table: Dict[str, RabiRibiItemData] = {
      ItemName.regen_up          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x45, ItemClassification.filler)
 }
 
-item_table : Dict[str, RabiRibiItemData] = {
+item_data_table : Dict[str, RabiRibiItemData] = {
     **upgrades_table,
     **magic_table,
     **badges_table,
     **collectables_table
 }
 
-lookup_id_to_name: Dict[int, str] = {data.code: item_name for item_name, data in item_table.items() if data.code}
+item_table: Dict[str, int] = {name: data.code for name, data in item_data_table.items() if data.code is not None }
+
+lookup_item_id_to_name: Dict[int, str] = {data.code: item_name for item_name, data in item_data_table.items() if data.code}
 
 item_groups: Dict[str, Set[str]] = {
     "Upgrades": set(upgrades_table.keys()),
@@ -134,7 +137,16 @@ recruit_table: Set[str] = {
     ItemName.keke_bunny_recruit
 }
 
-def get_base_item_list() -> List[str]:
+shufflable_gift_items = {
+    ItemName.speed_boost,
+    ItemName.bunny_strike
+}
+
+shufflable_gift_items_plurkwood = {
+    ItemName.p_hairpin
+}
+
+def get_base_item_list(options: RabiRibiOptions) -> List[str]:
     """
     Get the base list of items in the game.
     No options are configurable at the moment.
@@ -169,10 +181,9 @@ def get_base_item_list() -> List[str]:
             "ITEM_UNKNOWN_ITEM_1",
             "ITEM_UNKNOWN_ITEM_2",
             "ITEM_UNKNOWN_ITEM_3",
-            "ITEM_P_HAIRPIN",
-            "ITEM_SPEED_BOOST",
-            "ITEM_BUNNY_STRIKE",
         ]:
+            pass
+        elif not options.plurkwood_reachable and item.startswith("ITEM_P_HAIRPIN"):
             pass
         else:
             # Format the item string and then add to the item list
