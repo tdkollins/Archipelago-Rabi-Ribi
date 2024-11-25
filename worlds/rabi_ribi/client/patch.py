@@ -17,6 +17,8 @@ from worlds.rabi_ribi.existing_randomizer.mapfileio import (
 from worlds.rabi_ribi.existing_randomizer.utility import to_index
 from worlds.rabi_ribi.client.client import RabiRibiContext
 from worlds.rabi_ribi.logic_helpers import convert_ap_name_to_existing_rando_name
+from worlds.rabi_ribi.items import lookup_item_id_to_name
+from worlds.rabi_ribi.locations import lookup_location_id_to_name
 from worlds.rabi_ribi.existing_randomizer.randomizer import (
     get_default_areaids,
     pre_modify_map_data,
@@ -37,18 +39,16 @@ class Allocation():
         self.map_modifications = []
         self.item_at_item_location = self.set_location_info(
             ctx.slot,
-            ctx.locations_info,
-            ctx.location_ap_id_to_name,
-            ctx.item_ap_id_to_name,
+            ctx.locations_info
         )
 
         self.map_modifications += randomizer_data.default_map_modifications
         self.walking_left_transitions = randomizer_data.walking_left_transitions
 
-    def set_location_info(self, slot_num, location_info, location_ap_id_to_name, item_ap_id_to_name):
+    def set_location_info(self, slot_num, location_info):
         return {
-            convert_ap_name_to_existing_rando_name(location_ap_id_to_name[location.location]):
-            convert_ap_name_to_existing_rando_name(item_ap_id_to_name[location.item]) \
+            convert_ap_name_to_existing_rando_name(lookup_location_id_to_name[location.location]):
+            convert_ap_name_to_existing_rando_name(lookup_item_id_to_name[location.item]) \
                 if location.player == slot_num else "ANOTHER_PLAYERS_ITEM"
             for location in location_info.values()
         }

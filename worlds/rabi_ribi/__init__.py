@@ -66,7 +66,7 @@ class RabiRibiWorld(World):
     location_name_groups: Dict[str, Set[str]] = location_groups
 
     item_name_to_id = item_table
-    location_name_to_id: Dict[str, int] = {name: code for name, code in all_locations.items()}
+    location_name_to_id: Dict[str, int] = all_locations
 
     def __init__(self, multiworld, player):
         super().__init__(multiworld, player)

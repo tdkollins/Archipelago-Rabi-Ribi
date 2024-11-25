@@ -3,8 +3,6 @@ import asyncio
 from typing import Any, Dict, Mapping, Optional, Set
 import colorama
 import os
-import pymem
-from pathlib import Path
 import time
 import hashlib
 
@@ -22,16 +20,16 @@ from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_nam
 from worlds.rabi_ribi.locations import all_locations
 from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.utility import load_text_file
-from NetUtils import NetworkItem, ClientStatus
+from NetUtils import ClientStatus
 
 class RabiRibiContext(CommonContext):
     """Rabi Ribi Game Context"""
+    initial_connection_received = False
+    data_package_received = False
+    room_info_package_received = False
+
     location_ids: Set[int]
-    location_ap_id_to_name = None
-    item_name_to_ap_id = None
-    item_ap_id_to_name = None
     location_coordinates_to_ap_location_name: Dict[Any, Any] = {}
-    item_name_to_rabi_ribi_item_id: Dict[str, int] = {}
 
     state_giving_item = False
     egg_incremented_flag = False
@@ -105,6 +103,8 @@ class RabiRibiContext(CommonContext):
             rabi_ribi_item_id = int(item_id)
             x, y = ast.literal_eval(coords)
             ap_name = convert_existing_rando_name_to_ap_name(name)
+            if ap_name not in all_locations:
+                continue
             if rabi_ribi_area_id not in coordinate_to_location_name:
                 coordinate_to_location_name[rabi_ribi_area_id] = {(x, y): ap_name}
             else:
@@ -134,25 +134,19 @@ class RabiRibiContext(CommonContext):
             self.seed_player = f"{self.seed_name}-{self.auth}"
             self.seed_player_id = str(hashlib.sha256(self.seed_player.encode()).hexdigest()[:7])
             self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_player}"
+            self.initial_connection_received = True
 
         if cmd == "ReceivedItems":
             asyncio.create_task(self.set_received_rabi_ribi_item_ids())
 
         if cmd == "RoomInfo":
             self.seed_name = args['seed_name']
+            self.room_info_package_received = True
 
         elif cmd == "DataPackage":
-            if not self.location_ids:
+            if not self.initial_connection_received:
                 # Connected package not recieved yet, wait for datapackage request after connected package
                 return
-            self.location_name_to_ap_id = args["data"]["games"]["Rabi-Ribi"]["location_name_to_id"]
-            self.location_name_to_ap_id = {
-                name: loc_id for name, loc_id in 
-                self.location_name_to_ap_id.items() if loc_id in self.location_ids
-            }
-            self.location_ap_id_to_name = {v: k for k, v in self.location_name_to_ap_id.items()}
-            self.item_name_to_ap_id = args["data"]["games"]["Rabi-Ribi"]["item_name_to_id"]
-            self.item_ap_id_to_name = {v: k for k, v in self.item_name_to_ap_id.items()}
 
             # Only request location data if there doesnt appear to be patched game files already
             if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
@@ -160,6 +154,8 @@ class RabiRibiContext(CommonContext):
                     "cmd": "LocationScouts",
                     "locations": self.location_ids
                 }]))
+
+            self.data_package_received = True
 
         elif cmd == "LocationInfo":
             if len(args["locations"]) > 1:
@@ -178,11 +174,9 @@ class RabiRibiContext(CommonContext):
             - Connection package recieved (slot number populated)
             - RoomInfo package recieved (seed name populated)
         """
-        return (
-            self.custom_seed_subdir and
-            self.slot and
-            self.location_ap_id_to_name
-        )
+        return (self.initial_connection_received and
+                self.data_package_received and
+                self.room_info_package_received)
 
     async def wait_for_initial_connection_info(self):
         """
@@ -249,7 +243,7 @@ class RabiRibiContext(CommonContext):
                 ItemName.pack_up: 415
             }
 
-            if not self.item_ap_id_to_name:
+            if not self.data_package_received:
                 await self.wait_for_initial_connection_info()
 
             for network_item in self.items_received:
@@ -366,9 +360,6 @@ class RabiRibiContext(CommonContext):
         if area_id not in self.location_coordinates_to_ap_location_name:
             return None, None
         for coordinate_entry, location_name in self.location_coordinates_to_ap_location_name[area_id].items():
-            if location_name not in self.location_name_to_ap_id:
-                # location not included with the enabled settings.
-                continue
             distance = abs(x - coordinate_entry[0]) + abs(y - coordinate_entry[1])
             if distance < closest_distance:
                 closest_distance = distance
@@ -389,12 +380,13 @@ class RabiRibiContext(CommonContext):
         """
         Reset client back to default values
         """
+
+        self.initial_connection_received = False
+        self.data_package_received = False
+        self.room_info_package_received = False
+
         self.locations_checked = set()
         self.location_ids = set()
-        self.location_name_to_ap_id = None
-        self.location_ap_id_to_name = None
-        self.item_name_to_ap_id = None
-        self.item_ap_id_to_name = None
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 

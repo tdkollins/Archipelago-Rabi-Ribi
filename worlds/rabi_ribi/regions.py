@@ -1,6 +1,6 @@
 """This module represents region definitions for Rabi-Ribi"""
 from typing import Dict, Set
-from BaseClasses import Location, Region, MultiWorld, ItemClassification
+from BaseClasses import Region, MultiWorld, ItemClassification
 from worlds.generic.Rules import add_rule
 from .options import RabiRibiOptions
 from .names import ItemName

@@ -1,21 +1,9 @@
 """This module represents location definitions for Rabi-Ribi"""
-import worlds.rabi_ribi.logic_helpers as logic
-
 from typing import Dict
-from BaseClasses import Location, Region, MultiWorld, ItemClassification
-from worlds.AutoWorld import World
-from worlds.generic.Rules import add_rule
-from .names import ItemName
-from .items import RabiRibiItem
+from BaseClasses import Location
 from .options import RabiRibiOptions
-from .logic_helpers import (
-    convert_existing_rando_name_to_ap_name,
-    convert_existing_rando_rule_to_ap_rule,
-)
 from .names import LocationName
 from .utility import get_rabi_ribi_base_id
-from .existing_randomizer.dataparser import RandomizerData
-from .existing_randomizer.randomizer import parse_args
 
 class RabiRibiLocation(Location):
     """Rabi Ribi Location Definition"""
@@ -393,6 +381,8 @@ all_locations = {
     **system_interior_table,
     **shufflable_gift_item_table
 }
+
+lookup_location_id_to_name = {code: name for name, code in all_locations.items()}
 
 location_groups = {
     LocationName.southern_woodland_region   : set(southern_woodland_table.keys()),
