@@ -1,7 +1,7 @@
 import ast
 import os
 
-from worlds.rabi_ribi.utility import get_world_directory, load_text_file
+from worlds.rabi_ribi.utility import load_text_file
 # Visualisation primarily used for debugging
 
 class Visualization(object):
@@ -241,7 +241,7 @@ def get_item_coords(x, y, areaid, name):
 
 def load_item_locs():
     d = {}
-    locations_items = os.path.join(get_world_directory(), 'existing_randomizer', 'locations_items.txt')
+    locations_items = os.path.join('existing_randomizer', 'locations_items.txt')
     f = load_text_file(locations_items)
     reading = False
     for line in f.splitlines():

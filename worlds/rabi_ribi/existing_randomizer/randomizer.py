@@ -7,7 +7,6 @@ import worlds.rabi_ribi.existing_randomizer.musicrandomizer as musicrandomizer
 import worlds.rabi_ribi.existing_randomizer.backgroundrandomizer as backgroundrandomizer
 import worlds.rabi_ribi.existing_randomizer.converter.diffgenerator as diffgenerator
 import worlds.rabi_ribi.existing_randomizer.versioncheck as versioncheck
-from worlds.rabi_ribi.utility import get_world_directory
 
 def parse_args():
     args = argparse.ArgumentParser(description='Rabi-Ribi Randomizer - %s' % versioncheck.VERSION_STRING)
@@ -243,9 +242,9 @@ def pre_modify_map_data(mod, settings, diff_patch_files):
         for areaid, data in mod.stored_datas.items():
             apply_fixes_for_randomizer(areaid, data)
         diff_patch_files += [
-            os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'event_warps', 'ew_cicini_to_ravine.txt'),
-            os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'event_warps', 'ew_forest_to_beach.txt'),
-            os.path.join(get_world_directory(), 'existing_randomizer', 'maptemplates', 'event_warps', 'ew_town_to_riverbank.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_cicini_to_ravine.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_forest_to_beach.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_town_to_riverbank.txt'),
         ]
         print_ln('Map fixes applied')
 
