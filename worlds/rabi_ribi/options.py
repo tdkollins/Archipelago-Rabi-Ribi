@@ -125,6 +125,27 @@ class AttackMode(Choice):
     option_hyper = 2
     default = option_normal
 
+class EnableConstraintChanges(Toggle):
+    """
+    If this flag is true, the randomizer will choose a number of predefined map
+    edits to restrict access to areas.
+    """
+    display_name = "Enable Map Constraints"
+
+class NumberOfConstraintChanges(Range):
+    """
+    Sets the total number of map constraint changes to be added.
+    """
+    display_name = "Number of Map Constraint Changes"
+    range_start = 0
+    range_end = 30
+
+class ShuffleMapTransitions(Toggle):
+    """
+    If this flag is true, the randomizer will shuffle the entrances between maps.
+    """
+    display_name = "Shuffle Map Transitions"
+
 
 @dataclass
 class RabiRibiOptions(PerGameCommonOptions):
@@ -143,3 +164,6 @@ class RabiRibiOptions(PerGameCommonOptions):
     encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
     carrot_shooter_in_logic: CarrotShooterInLogic
     plurkwood_reachable: PlurkwoodReachable
+    enable_constraint_changes: EnableConstraintChanges
+    number_of_constraint_changes: NumberOfConstraintChanges
+    shuffle_map_transitions: ShuffleMapTransitions

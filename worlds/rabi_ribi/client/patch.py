@@ -2,7 +2,9 @@
 This module is responsible for patching the game's map files per world.
 This is done on the client side upon connect to allow for a smoother setup experience.
 """
+import os
 import struct
+from typing import List
 
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.options import AttackMode
@@ -42,8 +44,10 @@ class Allocation():
             ctx.locations_info
         )
 
+        map_transition_shuffle_order: List[int] = ctx.slot_data["map_transition_shuffle_order"]
+
         self.map_modifications += randomizer_data.default_map_modifications
-        self.walking_left_transitions = randomizer_data.walking_left_transitions
+        self.walking_left_transitions = [randomizer_data.walking_left_transitions[x] for x in map_transition_shuffle_order]
 
     def set_location_info(self, slot_num, location_info):
         return {
@@ -65,6 +69,7 @@ def patch_map_files(ctx: RabiRibiContext):
     settings.open_mode = ctx.slot_data["openMode"]
     settings.shuffle_gift_items = ctx.slot_data["randomize_gift_items"]
     attack_mode = ctx.slot_data["attackMode"]
+    picked_templates = ctx.slot_data["picked_templates"]
     if attack_mode == AttackMode.option_hyper:
         settings.hyper_attack_mode = True
     elif attack_mode == AttackMode.option_super:
@@ -77,7 +82,11 @@ def patch_map_files(ctx: RabiRibiContext):
         no_load=True
     )
     allocation = Allocation(ctx, randomizer_data)
-    pre_modify_map_data(item_modifier, settings, allocation.map_modifications)
+    map_modifications = allocation.map_modifications
+    for template in picked_templates:
+        map_modifications.append(os.path.join('existing_randomizer', 'maptemplates', 'constraint_shuffle', f'CS_{template}.txt'))
+
+    pre_modify_map_data(item_modifier, settings, map_modifications)
     apply_item_specific_fixes(item_modifier, allocation)
     apply_map_transition_shuffle(item_modifier, randomizer_data, settings, allocation)
     insert_items_into_map(item_modifier, randomizer_data, settings, allocation)

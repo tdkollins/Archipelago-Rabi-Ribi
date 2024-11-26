@@ -1,7 +1,10 @@
 """This module represents region definitions for Rabi-Ribi"""
-from typing import Dict, Set
+import logging
+from typing import Dict, List, Set
 from BaseClasses import Region, MultiWorld, ItemClassification
 from worlds.generic.Rules import add_rule
+from worlds.rabi_ribi.entrance_shuffle import MapGenerator
+from worlds.rabi_ribi.existing_randomizer.utility import GraphEdge
 from .options import RabiRibiOptions
 from .names import ItemName
 from .items import RabiRibiItem
@@ -14,6 +17,8 @@ from .logic_helpers import (
 )
 from .names import LocationName
 import worlds.rabi_ribi.logic_helpers as logic
+
+logger = logging.getLogger("Rabi-Ribi")
 
 plurkwood_regions: Set[str] = {
     "Plurkwood Main",
@@ -74,17 +79,51 @@ class RegionDef:
     unreachable_regions: set[str]
 
     def __init__(self, multiworld: MultiWorld, player: int, options: RabiRibiOptions):
-        existing_randomizer_args = self._convert_options_to_existing_randomizer_args(options)
-        self.randomizer_data = RandomizerData(existing_randomizer_args)
         self.player = player
         self.multiworld = multiworld
         self.options = options
+
+        existing_randomizer_args = self._convert_options_to_existing_randomizer_args(options)
+        self.randomizer_data = RandomizerData(existing_randomizer_args)
+
+        # Assume all items are collectable and all locations reach nothing
+        # for item in self.randomizer_data.items_to_allocate:
+        #     self.randomizer_data.configured_variables[item] = False
+
         self.location_table = setup_locations(self.options)
 
-    def _convert_options_to_existing_randomizer_args(self, options):
+        generator: MapGenerator = MapGenerator(self.randomizer_data, existing_randomizer_args, set(self.location_table.keys()), self.multiworld.random)
+        self.allocation, _ = generator.generate_seed()
+        self.map_transition_shuffle_order = [self.randomizer_data.walking_left_transitions.index(x) for x in self.allocation.walking_left_transitions]
+
+        self.picked_templates = self.allocation.picked_templates
+        self.map_transition_shuffle_order = self.map_transition_shuffle_order
+
+        self.map_transition_shuffle_spoiler: List[str] = []
+        for (idx, x) in enumerate(self.map_transition_shuffle_order):
+            left = self.randomizer_data.walking_left_transitions[x]
+            right = self.randomizer_data.walking_right_transitions[idx]
+            left_name = convert_existing_rando_name_to_ap_name(left.origin_location)
+            right_name = convert_existing_rando_name_to_ap_name(right.origin_location)
+            self.map_transition_shuffle_spoiler.append(f'{left_name} -> {right_name}')
+
+        logger.debug(f'Applied Map Constraints:')
+        for template in self.picked_templates:
+            logger.debug(f'{convert_existing_rando_name_to_ap_name(template.name)}')
+
+        logger.debug(f'Map Transitions:')
+        for entrance in self.map_transition_shuffle_spoiler:
+            logger.debug(f'{entrance}')
+
+    def _convert_options_to_existing_randomizer_args(self, options: RabiRibiOptions):
         args = parse_args()
         args.open_mode = options.open_mode.value
         args.shuffle_gift_items = options.randomize_gift_items.value
+        args.shuffle_map_transitions = options.shuffle_map_transitions.value
+
+        if options.enable_constraint_changes.value:
+            args.constraint_changes = options.number_of_constraint_changes.value
+
         return args
     
     def _get_region(self, region_name: str):
@@ -132,21 +171,11 @@ class RegionDef:
         """
         self.multiworld.get_region("Menu", self.player).connect(self._get_region(LocationName.forest_start))
     
-        edge_constraints = self.randomizer_data.edge_constraints
+        edge_constraints: List[GraphEdge] = self.allocation.edges
+
+        added_exits: Set[str] = set()
+
         for edge in edge_constraints:
-            rule = convert_existing_rando_rule_to_ap_rule(edge.prereq_expression, self.player, self.regions, self.options)
-            from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
-            to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
-
-            if from_location in self.unreachable_regions or to_location in self.unreachable_regions:
-                continue
-
-            self._get_region(from_location).add_exits([to_location], {
-                to_location: rule
-            })
-
-        edge_constraints_2 = self.randomizer_data.initial_edges
-        for edge in edge_constraints_2:
             rule = convert_existing_rando_rule_to_ap_rule(edge.satisfied_expr, self.player, self.regions, self.options)
             from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
             to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
@@ -154,56 +183,18 @@ class RegionDef:
             if from_location in self.unreachable_regions or to_location in self.unreachable_regions:
                 continue
 
-            self._get_region(from_location).add_exits([to_location], {
-                to_location: rule
-            })
+            if from_location == to_location:
+                continue
 
-        # Set map transitions manually, since these are defined in a
-        #   non-AP-translatable way in the existing randomizer.
-        
-        # Update the existing forest to beach entrance from event trigger
-        # Only necessary when map transitions are not shuffled (or if that shuffle leaves this as vanilla)
-        add_rule(self.multiworld.get_entrance(f'{LocationName.forest_start} -> {LocationName.beach_forest_entrance}', self.player),
-            lambda state: state.can_reach(self._get_region(LocationName.forest_start)),
-            combine = "or")
+            entrance_name = f'{from_location} -> {to_location}'
 
-        self._get_region(LocationName.beach_forest_entrance).connect(self._get_region(LocationName.forest_start))
-
-        self._get_region(LocationName.forest_upper_riverbank_exit).connect(self._get_region(LocationName.riverbank_main_level1))
-        self._get_region(LocationName.riverbank_main_level1).connect(self._get_region(LocationName.forest_upper_riverbank_exit))
-
-        self._get_region(LocationName.forest_lower_riverbank_exit).connect(self._get_region(LocationName.riverbank_lower_forest_entrance))
-        self._get_region(LocationName.riverbank_lower_forest_entrance).connect(self._get_region(LocationName.forest_lower_riverbank_exit))
-
-        self._get_region(LocationName.spectral_west).connect(self._get_region(LocationName.volcanic_main))
-        self._get_region(LocationName.volcanic_main).connect(self._get_region(LocationName.spectral_west))
-
-        self._get_region(LocationName.graveyard_top_of_bridge).connect(self._get_region(LocationName.sky_bridge_east))
-        self._get_region(LocationName.sky_bridge_east).connect(self._get_region(LocationName.graveyard_top_of_bridge))
-
-        self._get_region(LocationName.graveyard_main).connect(self._get_region(LocationName.sky_bridge_east_lower))
-        self._get_region(LocationName.sky_bridge_east_lower).connect(self._get_region(LocationName.graveyard_main))
-
-        self._get_region(LocationName.beach_main).connect(self._get_region(LocationName.ravine_beach_entrance))
-        self._get_region(LocationName.ravine_beach_entrance).connect(self._get_region(LocationName.beach_main))
-
-        self._get_region(LocationName.beach_volcanic_entrance).connect(self._get_region(LocationName.volcanic_beach_entrance))
-        self._get_region(LocationName.volcanic_beach_entrance).connect(self._get_region(LocationName.beach_volcanic_entrance))
-
-        self._get_region(LocationName.beach_underwater_entrance).connect(self._get_region(LocationName.aquarium_beach_entrance))
-        self._get_region(LocationName.aquarium_beach_entrance).connect(self._get_region(LocationName.beach_underwater_entrance))
-
-        self._get_region(LocationName.park_main).connect(self._get_region(LocationName.snowland_east))
-        self._get_region(LocationName.snowland_east).connect(self._get_region(LocationName.park_main))
-
-        self._get_region(LocationName.park_town_entrance).connect(self._get_region(LocationName.town_main))
-        self._get_region(LocationName.town_main).connect(self._get_region(LocationName.park_town_entrance))
-
-        self._get_region(LocationName.ravine_town_entrance).connect(self._get_region(LocationName.town_main))
-        self._get_region(LocationName.town_main).connect(self._get_region(LocationName.ravine_town_entrance))
-
-        self._get_region(LocationName.snowland_evernight_entrance).connect(self._get_region(LocationName.evernight_lower))
-        self._get_region(LocationName.evernight_lower).connect(self._get_region(LocationName.snowland_evernight_entrance))
+            if entrance_name in added_exits:
+                add_rule(self.multiworld.get_entrance(entrance_name, self.player), rule, combine = "or")
+            else:
+                self._get_region(from_location).add_exits([to_location], {
+                    to_location: rule
+                })
+                added_exits.add(entrance_name)
 
     def set_locations(self):
         """
@@ -337,7 +328,7 @@ class RegionDef:
         vanilla_recruit = RabiRibiLocation(self.player, ItemName.vanilla_recruit, None, self._get_region(LocationName.sky_bridge_east_lower))
         vanilla_recruit.place_locked_item(RabiRibiItem(ItemName.vanilla_recruit, ItemClassification.progression, None, self.player))
         self._get_region(LocationName.sky_bridge_east_lower).locations.append(vanilla_recruit)
-        add_rule(vanilla_recruit, lambda state: logic.can_recruit_chocolate(state, self.player))
+        add_rule(vanilla_recruit, lambda state: logic.can_recruit_vanilla(state, self.player))
 
         chocolate_recruit = RabiRibiLocation(self.player, ItemName.chocolate_recruit, None, self._get_region(LocationName.ravine_chocolate))
         chocolate_recruit.place_locked_item(RabiRibiItem(ItemName.chocolate_recruit, ItemClassification.progression, None, self.player))
@@ -387,7 +378,7 @@ class RegionDef:
         add_rule(chapter_5,
                  lambda state: logic.can_reach_chapter_5(state, self.player) and
                     state.has("Chapter 4", self.player))
-
+        
     def _get_region_name_list(self):
         return [
             convert_existing_rando_name_to_ap_name(name) for \

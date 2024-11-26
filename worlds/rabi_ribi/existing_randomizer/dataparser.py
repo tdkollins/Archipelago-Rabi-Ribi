@@ -137,10 +137,11 @@ def define_alternate_conditions(settings, variable_names_set, default_expression
             "P_HAIRPIN": "BOSS_KEKE_BUNNY & PLURKWOOD_MAIN",
         })
 
+    callable_d = {}
     for key in d.keys():
         if type(d[key]) == str:
-            d[key] = parse_expression_lambda(d[key], variable_names_set, default_expressions) # type: ignore
-    return d
+            callable_d[key] = parse_expression_lambda(d[key], variable_names_set, default_expressions) # type: ignore
+    return callable_d
 
 
 def define_default_expressions(variable_names_set):

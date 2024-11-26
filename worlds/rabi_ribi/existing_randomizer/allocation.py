@@ -1,5 +1,5 @@
 import random
-from worlds.rabi_ribi.existing_randomizer.utility import GraphEdge, is_egg, print_ln
+from worlds.rabi_ribi.existing_randomizer.utility import GraphEdge, OpLit, is_egg, print_ln
 
 NO_CONDITIONS = lambda v : True
 INFTY = 99999
@@ -20,10 +20,10 @@ class Allocation(object):
     # dict: edge_replacements  [(from_location, to_location) -> template_changes]
     # list: map_modifications  (Paths to diff files)
 
-    def __init__(self, data, settings):
+    def __init__(self, data, settings, random = random.Random()):
         self.items_to_allocate = list(data.items_to_allocate)
         self.walking_left_transitions = list(data.walking_left_transitions)
-
+        self.random = random
 
     def shuffle(self, data, settings):
         self.map_modifications = list(data.default_map_modifications)
@@ -45,7 +45,7 @@ class Allocation(object):
             #self.item_at_item_location = dict(zip(item_slots, item_slots))
             #return
 
-        random.shuffle(self.items_to_allocate)
+        self.random.shuffle(self.items_to_allocate)
 
         # A map of location -> item at location
         self.item_at_item_location = dict(zip(item_slots, self.items_to_allocate))
@@ -59,13 +59,13 @@ class Allocation(object):
             if x <= 0: return 0
             low = int(0.5*x)
             high = int(1.5*x+2)
-            return random.randrange(low, high)
+            return self.random.randrange(low, high)
 
         target_template_count = get_template_count(settings.constraint_changes)
 
         picked_templates = []
         while len(templates) > 0 and len(picked_templates) < target_template_count:
-            index = random.randrange(sum(t.weight for t in templates))
+            index = self.random.randrange(sum(t.weight for t in templates))
             for current_template in templates:
                 if index < current_template.weight: break
                 index -= current_template.weight
@@ -100,12 +100,13 @@ class Allocation(object):
                 from_location=constraint.from_location,
                 to_location=constraint.to_location,
                 constraint=constraint.prereq_lambda,
+                constraint_expr=constraint.prereq_expression,
                 backtrack_cost=1,
             ))
 
         # Map Transitions
         if settings.shuffle_map_transitions:
-            random.shuffle(self.walking_left_transitions)
+            self.random.shuffle(self.walking_left_transitions)
 
         for rtr, ltr in zip(data.walking_right_transitions, self.walking_left_transitions):
             edge1 = GraphEdge(
@@ -113,6 +114,7 @@ class Allocation(object):
                 from_location=rtr.origin_location,
                 to_location=ltr.origin_location,
                 constraint=NO_CONDITIONS,
+                constraint_expr=OpLit('TRUE'),
                 backtrack_cost=INFTY,
             )
             edge2 = GraphEdge(
@@ -120,6 +122,7 @@ class Allocation(object):
                 from_location=ltr.origin_location,
                 to_location=rtr.origin_location,
                 constraint=NO_CONDITIONS,
+                constraint_expr=OpLit('TRUE'),
                 backtrack_cost=INFTY,
             )
             edges.append(edge1)

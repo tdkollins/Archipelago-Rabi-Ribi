@@ -3,13 +3,14 @@ This module serves as an entrypoint into the Rabi-Ribi AP world.
 """
 import settings
 from collections import defaultdict
-from typing import ClassVar, Dict, Set
+from typing import ClassVar, Dict, List, Set, TextIO
 from BaseClasses import ItemClassification, Tutorial
 from Fill import swap_location_item
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, Type, components, launch_subprocess
 from .items import RabiRibiItem, RabiRibiItemData, item_data_table, item_groups, shufflable_gift_items, shufflable_gift_items_plurkwood, item_table, get_base_item_list
-from .locations import all_locations, location_groups, setup_locations
+from .locations import all_locations, location_groups
+from .logic_helpers import convert_existing_rando_name_to_ap_name
 from .names import ItemName, LocationName
 from .options import RabiRibiOptions
 from .regions import RegionDef
@@ -93,16 +94,28 @@ class RabiRibiWorld(World):
         Define regions and locations.
         This also defines access rules for the regions and locations.
         """
+        self.topology_present = bool(self.options.shuffle_map_transitions.value)
+
         region_def = RegionDef(self.multiworld, self.player, self.options)
         region_def.set_regions()
         region_def.connect_regions()
         self.total_locations = region_def.set_locations()
         region_def.set_events()
 
+        self.picked_templates = region_def.allocation.picked_templates
+        self.map_transition_shuffle_order = region_def.map_transition_shuffle_order
+
+        self.map_transition_shuffle_spoiler: List[str] = []
+        for (idx, x) in enumerate(self.map_transition_shuffle_order):
+            left = region_def.randomizer_data.walking_left_transitions[x]
+            right = region_def.randomizer_data.walking_right_transitions[idx]
+            left_name = convert_existing_rando_name_to_ap_name(left.origin_location)
+            right_name = convert_existing_rando_name_to_ap_name(right.origin_location)
+            self.map_transition_shuffle_spoiler.append(f'{left_name} -> {right_name}')
+
     def create_items(self) -> None:
         base_item_list = get_base_item_list(self.options)
 
-        excluded_items = 0
         for item in map(self.create_item, base_item_list):
             if (not self.options.randomize_hammer.value) and (item.name == ItemName.piko_hammer):
                 continue
@@ -122,7 +135,9 @@ class RabiRibiWorld(World):
             "openMode": self.options.open_mode.value,
             "attackMode": self.options.attack_mode.value,
             "randomize_gift_items": self.options.randomize_gift_items.value,
-            "plurkwood_reachable" : self.options.plurkwood_reachable.value,
+            "plurkwood_reachable": self.options.plurkwood_reachable.value,
+            "picked_templates": [template.name for template in self.picked_templates],
+            "map_transition_shuffle_order": self.map_transition_shuffle_order
         }
 
     def set_rules(self) -> None:
@@ -142,6 +157,15 @@ class RabiRibiWorld(World):
 
             if self.options.plurkwood_reachable.value:
                 self.multiworld.get_location(LocationName.p_hairpin, self.player).place_locked_item(self.create_item(ItemName.p_hairpin))
+
+    def write_spoiler(self, spoiler_handle: TextIO) -> None:
+        spoiler_handle.write(f'\nApplied Map Constraints:\n')
+        for template in self.picked_templates:
+            spoiler_handle.write(f'\n{convert_existing_rando_name_to_ap_name(template.name)}')
+
+        spoiler_handle.write(f'\n\nMap Transitions:\n')
+        for entrance in self.map_transition_shuffle_spoiler:
+            spoiler_handle.write(f'\n{entrance}')
 
     @staticmethod
     def _handle_encourage_eggs_in_late_spheres(multiworld):
