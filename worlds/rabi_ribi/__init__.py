@@ -132,12 +132,14 @@ class RabiRibiWorld(World):
 
     def fill_slot_data(self) -> dict:
         return {
-            "openMode": self.options.open_mode.value,
+            "openMode": bool(self.options.open_mode.value),
             "attackMode": self.options.attack_mode.value,
-            "randomize_gift_items": self.options.randomize_gift_items.value,
-            "plurkwood_reachable": self.options.plurkwood_reachable.value,
+            "randomize_gift_items": bool(self.options.randomize_gift_items.value),
+            "plurkwood_reachable": bool(self.options.plurkwood_reachable.value),
             "picked_templates": [template.name for template in self.picked_templates],
-            "map_transition_shuffle_order": self.map_transition_shuffle_order
+            "map_transition_shuffle_order": self.map_transition_shuffle_order,
+            "shuffle_music": bool(self.options.shuffle_music.value),
+            "shuffle_backgrounds": bool(self.options.shuffle_backgrounds.value)
         }
 
     def set_rules(self) -> None:

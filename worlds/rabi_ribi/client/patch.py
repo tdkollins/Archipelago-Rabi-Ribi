@@ -68,6 +68,14 @@ def patch_map_files(ctx: RabiRibiContext):
     settings = parse_args()
     settings.open_mode = ctx.slot_data["openMode"]
     settings.shuffle_gift_items = ctx.slot_data["randomize_gift_items"]
+
+    # Need a unique seed to ensure that the background and music shuffles can be regenerated if needed.
+    settings.random_seed = ctx.seed_player
+    settings.shuffle_music = ctx.slot_data["shuffle_music"]
+    settings.shuffle_backgrounds = ctx.slot_data["shuffle_backgrounds"]
+
+    settings.no_laggy_backgrounds = True
+    settings.no_difficult_backgrounds = True
     attack_mode = ctx.slot_data["attackMode"]
     picked_templates = ctx.slot_data["picked_templates"]
     if attack_mode == AttackMode.option_hyper:

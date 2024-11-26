@@ -146,6 +146,19 @@ class ShuffleMapTransitions(Toggle):
     """
     display_name = "Shuffle Map Transitions"
 
+class ShuffleMusic(Toggle):
+    """
+    If this flag is true, the randomizer will shuffle the music tracks played in each area.
+    """
+    display_name = "Shuffle Music"
+
+class ShuffleBackgrounds(Toggle):
+    """
+    If this flag is true, the randomizer will shuffle the room backgrounds in each area.
+    Note that some backgrounds that introduce lag or make tricks difficult to perform are disabled.
+    """
+    display_name = "Shuffle Backgrounds"
+
 
 @dataclass
 class RabiRibiOptions(PerGameCommonOptions):
@@ -167,3 +180,5 @@ class RabiRibiOptions(PerGameCommonOptions):
     enable_constraint_changes: EnableConstraintChanges
     number_of_constraint_changes: NumberOfConstraintChanges
     shuffle_map_transitions: ShuffleMapTransitions
+    shuffle_music: ShuffleMusic
+    shuffle_backgrounds: ShuffleBackgrounds

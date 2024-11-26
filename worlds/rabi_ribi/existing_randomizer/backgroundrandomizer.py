@@ -8,21 +8,22 @@ DIFFICULT_BACKGROUNDS = set((36, 37, 56, 57, 60, 65, 66, 80, 84, 89, 103, 110))
 def to_tile_index(x, y):
     return x*18 + y
 
-def shuffle_backgrounds(stored_datas, no_laggy_backgrounds, no_difficult_backgrounds):
+def shuffle_backgrounds(stored_datas, no_laggy_backgrounds, no_difficult_backgrounds, random = random.Random()):
     #start_time = time.time()
-    shuffler = BackgroundShuffler(stored_datas, no_laggy_backgrounds, no_difficult_backgrounds)
+    shuffler = BackgroundShuffler(stored_datas, no_laggy_backgrounds, no_difficult_backgrounds, random)
     shuffler.shuffle()
     print_ln('Backgrounds shuffled')
 
-    shuffler = RoomColorShuffler(stored_datas)
+    shuffler = RoomColorShuffler(stored_datas, random)
     shuffler.shuffle()
     print_ln('Tile colors shuffled')
     #print_ln('Backgrounds shuffled in %f seconds' % (time.time()-start_time))
 
 
 class BackgroundShuffler(object):
-    def __init__(self, stored_datas, no_laggy_backgrounds, no_difficult_backgrounds):
+    def __init__(self, stored_datas, no_laggy_backgrounds, no_difficult_backgrounds, random = random.Random()):
         self.stored_datas = stored_datas
+        self.random = random
         original_locations = []
 
         filter_function = self.filter_function
@@ -64,7 +65,7 @@ class BackgroundShuffler(object):
         while len(new_backgrounds) < len(backgrounds):
             new_backgrounds += new_backgrounds
 
-        random.shuffle(new_backgrounds)
+        self.random.shuffle(new_backgrounds)
         allocation = dict(zip(backgrounds, new_backgrounds))
 
         stored_datas = self.stored_datas
@@ -142,8 +143,9 @@ class BackgroundShuffler(object):
 
 
 class RoomColorShuffler(object):
-    def __init__(self, stored_datas):
+    def __init__(self, stored_datas, random = random.Random()):
         self.stored_datas = stored_datas
+        self.random = random
         original_locations = []
 
         filter_function = self.filter_function
@@ -162,7 +164,7 @@ class RoomColorShuffler(object):
     def shuffle(self):
         backgrounds = list(set(val for areaid, posindex, val in self.original_locations))
         new_backgrounds = list(backgrounds)
-        random.shuffle(new_backgrounds)
+        self.random.shuffle(new_backgrounds)
         allocation = dict(zip(backgrounds, new_backgrounds))
 
         stored_datas = self.stored_datas
