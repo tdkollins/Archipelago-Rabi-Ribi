@@ -206,7 +206,7 @@ class RabiRibiContext(CommonContext):
         """
         if self.client_recieved_initial_server_data():
             # Patch the map files if we haven't done so already
-            self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_name}-{self.auth}"
+            self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_player}"
             if not os.path.isdir(self.custom_seed_subdir):
                 os.mkdir(self.custom_seed_subdir)
             if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):

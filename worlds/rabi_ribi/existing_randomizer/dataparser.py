@@ -140,7 +140,7 @@ def define_alternate_conditions(settings, variable_names_set, default_expression
     callable_d = {}
     for key in d.keys():
         if type(d[key]) == str:
-            callable_d[key] = parse_expression_lambda(d[key], variable_names_set, default_expressions) # type: ignore
+            callable_d[key] = parse_expression_lambda(d[key], variable_names_set, default_expressions)
     return callable_d
 
 

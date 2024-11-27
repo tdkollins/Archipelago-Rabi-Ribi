@@ -4,11 +4,11 @@ Its probably a little haphazardly sorted.. but the method names are descriptive
 enough for it not to be confusing.
 """
 from BaseClasses import CollectionState, Region
+from typing import Callable, Dict, Set
 from .existing_randomizer.utility import OpLit, OpNot, OpOr, OpAnd
 from .options import RabiRibiOptions, TrickDifficulty, Knowledge
 from .names import ItemName, LocationName
-from .items import magic_table, recruit_table
-from typing import Callable, Dict, Set
+from .items import recruit_table
 
 def has_3_magic_types(state: CollectionState, player: int):
     """Player has at least 3 types of magic"""

@@ -1,19 +1,16 @@
 import logging
 
 from random import Random
-from typing import Any, List
-
-from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
-
+from typing import Any
 from .existing_randomizer.analyzer import Analyzer
 from .existing_randomizer.dataparser import RandomizerData
-from .existing_randomizer.utility import GraphEdge, fail
 from .existing_randomizer.allocation import Allocation
+from .logic_helpers import convert_existing_rando_name_to_ap_name
 
 logger = logging.getLogger('Rabi-Ribi')
 
 class MapAllocation(Allocation):
-    """"""
+    """An implementation of Allocation that replaces all items in the pool with item locations to obtain."""
     def __init__(self, data: RandomizerData, settings: tuple[str, Any], random: Random):
 
         super().__init__(data, settings, random)
@@ -34,6 +31,8 @@ class MapAllocation(Allocation):
 
 
 class MapGenerator(object):
+    """The MapAnalyzer class is an reimplementation of the Generator class with simplified validation,
+    only ensuring that all locations are reachable if the player has all upgrades."""
     def __init__(self, data: RandomizerData, settings: Any, locations_to_reach: set[str], random: Random):
         self.data = data
         self.settings = settings
@@ -62,17 +61,8 @@ class MapGenerator(object):
         self.allocation.shuffle(self.data, self.settings)
 
 class MapAnalyzer(Analyzer):
-    # -- Results --
-    #
-    # success: bool (True if verification success, False otherwise)
-    # error_message: string (error message if success == False)
-    #
-    # -- The following attributes will only be assigned if success == True. --
-    # reachable
-    # unreachable
-    # levels
-    # hard_to_reach_items
-
+    """The MapAnalyzer class is an extension of the Analyzer class with simplified validation,
+    only ensuring that all locations are reachable if the player has all upgrades."""
     def __init__(self, data: RandomizerData, settings: Any, allocation: MapAllocation, locations_to_reach: set[str]):
         self.data = data
         self.settings = settings

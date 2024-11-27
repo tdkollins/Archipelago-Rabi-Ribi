@@ -1,22 +1,22 @@
 """This module represents region definitions for Rabi-Ribi"""
 import logging
+
 from typing import Dict, List, Set
 from BaseClasses import Region, MultiWorld, ItemClassification
 from worlds.generic.Rules import add_rule
-from worlds.rabi_ribi.entrance_shuffle import MapGenerator
-from worlds.rabi_ribi.existing_randomizer.utility import GraphEdge
-from .options import RabiRibiOptions
-from .names import ItemName
-from .items import RabiRibiItem
+from . import logic_helpers as logic
+from .entrance_shuffle import MapGenerator
 from .existing_randomizer.dataparser import RandomizerData
 from .existing_randomizer.randomizer import parse_args
+from .existing_randomizer.utility import GraphEdge
+from .items import RabiRibiItem
 from .locations import RabiRibiLocation, all_locations, setup_locations
 from .logic_helpers import (
     convert_existing_rando_name_to_ap_name,
     convert_existing_rando_rule_to_ap_rule,
 )
-from .names import LocationName
-import worlds.rabi_ribi.logic_helpers as logic
+from .names import ItemName, LocationName
+from .options import RabiRibiOptions
 
 logger = logging.getLogger("Rabi-Ribi")
 
@@ -85,10 +85,6 @@ class RegionDef:
 
         existing_randomizer_args = self._convert_options_to_existing_randomizer_args(options)
         self.randomizer_data = RandomizerData(existing_randomizer_args)
-
-        # Assume all items are collectable and all locations reach nothing
-        # for item in self.randomizer_data.items_to_allocate:
-        #     self.randomizer_data.configured_variables[item] = False
 
         self.location_table = setup_locations(self.options)
 

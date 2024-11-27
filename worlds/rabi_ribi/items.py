@@ -2,10 +2,10 @@
 from typing import Dict, List, NamedTuple, Optional, Set
 
 from BaseClasses import Item, ItemClassification
-from worlds.rabi_ribi.options import RabiRibiOptions
-from worlds.rabi_ribi.utility import get_rabi_ribi_base_id
 from .existing_randomizer.visualizer import load_item_locs
 from .names import ItemName
+from .options import RabiRibiOptions
+from .utility import get_rabi_ribi_base_id
 
 class RabiRibiItem(Item):
     """Rabi Ribi Item Definition"""
