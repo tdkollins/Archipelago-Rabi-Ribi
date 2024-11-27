@@ -411,9 +411,10 @@ def setup_locations(options: RabiRibiOptions):
 
     if options.randomize_gift_items:
         location_table.update(**shufflable_gift_item_town_locations)
+        if options.plurkwood_reachable:
+            location_table.update(**shufflable_gift_item_plurkwood_locations)
 
     if options.plurkwood_reachable:
         location_table.update(**plurkwood_egg_locations)
-        location_table.update(**shufflable_gift_item_plurkwood_locations)
 
     return location_table
