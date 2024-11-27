@@ -406,9 +406,11 @@ def setup_locations(options: RabiRibiOptions):
         **eastern_highlands_table,
         **rabi_rabi_town_table,
         **subterranean_area_table,
-        **system_interior_table,
-        **shufflable_gift_item_town_locations
+        **system_interior_table
     }
+
+    if options.randomize_gift_items:
+        location_table.update(**shufflable_gift_item_town_locations)
 
     if options.plurkwood_reachable:
         location_table.update(**plurkwood_egg_locations)
