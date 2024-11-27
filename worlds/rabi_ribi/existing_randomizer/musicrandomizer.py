@@ -3,9 +3,9 @@ import time
 from worlds.rabi_ribi.existing_randomizer.utility import to_position, to_index, xy_to_index, print_ln
 
 # NOTE: Music must be shuffled before room colors!
-def shuffle_music(stored_datas):
+def shuffle_music(stored_datas, random = random.Random()):
     #start_time = time.time()
-    shuffler = MusicShuffler(stored_datas)
+    shuffler = MusicShuffler(stored_datas, random)
     shuffler.shuffle()
     print_ln('Music shuffled')
     #print_ln('Music shuffled in %f seconds' % (time.time()-start_time))
@@ -14,8 +14,9 @@ is_bgm = lambda v : 129 <= v and v <= 159
 
 class MusicShuffler(object):
 
-    def __init__(self, stored_datas):
+    def __init__(self, stored_datas, random = random.Random()):
         self.stored_datas = stored_datas
+        self.random = random
         original_locations = []
 
         self.preprocess_tile_music(stored_datas)
@@ -36,7 +37,7 @@ class MusicShuffler(object):
         musics = list(musics)
 
         new_musics = list(musics)
-        random.shuffle(new_musics)
+        self.random.shuffle(new_musics)
         allocation = dict(zip(musics, new_musics))
 
         stored_datas = self.stored_datas

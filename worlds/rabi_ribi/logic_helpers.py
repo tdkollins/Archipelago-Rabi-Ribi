@@ -4,11 +4,11 @@ Its probably a little haphazardly sorted.. but the method names are descriptive
 enough for it not to be confusing.
 """
 from BaseClasses import CollectionState, Region
+from typing import Callable, Dict, Set
 from .existing_randomizer.utility import OpLit, OpNot, OpOr, OpAnd
-from .options import TrickDifficulty, Knowledge
+from .options import RabiRibiOptions, TrickDifficulty, Knowledge
 from .names import ItemName, LocationName
-from .items import magic_table, recruit_table
-from typing import Dict
+from .items import recruit_table
 
 def has_3_magic_types(state: CollectionState, player: int):
     """Player has at least 3 types of magic"""
@@ -267,8 +267,12 @@ def can_reach_kotri_1(state: CollectionState, player: int):
     return state.can_reach(LocationName.park_kotri, "Region", player)
 
 def can_reach_ribbon(state: CollectionState, player: int):
-    """Player can reach ribbon"""
+    """Player can reach Ribbon"""
     return state.can_reach(LocationName.spectral_warp, "Region", player)
+
+def can_reach_keke_bunny(state: CollectionState, player: int):
+    """Player can reach Keke Bunny"""
+    return state.can_reach(LocationName.plurkwood_main, "Region", player)
 
 def is_at_least_hard_difficulty(options):
     """Trick difficulty is at least hard"""
@@ -329,7 +333,7 @@ def convert_ap_name_to_existing_rando_name(name):
     existing_rando_name = "_".join(existing_rando_name).upper()
     return existing_rando_name
 
-def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, regions: Dict[int, Dict[str, Region]], options):
+def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, regions: Set[str], options: RabiRibiOptions) -> Callable[[CollectionState], bool]:
     """
     This method converts a rule from the existing randomizer to a lambda which can be passed to AP.
     The existing randomizer evaluates a defined logic expression, which it seperates into 5 classes:
@@ -429,7 +433,9 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Open Mode": lambda _: options.open_mode.value,
             "Block Clips Required": lambda _: options.block_clips_required.value,
             "Semisolid Clips Required": lambda _: options.semi_solid_clips_required.value,
-            "Zip Required": lambda _: options.zips_required.value
+            "Zip Required": lambda _: options.zips_required.value,
+            "Plurkwood Reachable": lambda _: options.plurkwood_reachable.value,
+            "Boss Keke Bunny" : lambda state: can_reach_keke_bunny(state, player)
         }
         if literal in literal_eval_map:
             return literal_eval_map[literal]

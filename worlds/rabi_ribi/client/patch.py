@@ -2,7 +2,9 @@
 This module is responsible for patching the game's map files per world.
 This is done on the client side upon connect to allow for a smoother setup experience.
 """
+import os
 import struct
+from typing import List
 
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.options import AttackMode
@@ -17,6 +19,8 @@ from worlds.rabi_ribi.existing_randomizer.mapfileio import (
 from worlds.rabi_ribi.existing_randomizer.utility import to_index
 from worlds.rabi_ribi.client.client import RabiRibiContext
 from worlds.rabi_ribi.logic_helpers import convert_ap_name_to_existing_rando_name
+from worlds.rabi_ribi.items import lookup_item_id_to_name
+from worlds.rabi_ribi.locations import lookup_location_id_to_name
 from worlds.rabi_ribi.existing_randomizer.randomizer import (
     get_default_areaids,
     pre_modify_map_data,
@@ -37,16 +41,18 @@ class Allocation():
         self.map_modifications = []
         self.item_at_item_location = self.set_location_info(
             ctx.slot,
-            ctx.locations_info,
-            ctx.location_ap_id_to_name,
-            ctx.item_ap_id_to_name,
+            ctx.locations_info
         )
-        self.walking_left_transitions = randomizer_data.walking_left_transitions
 
-    def set_location_info(self, slot_num, location_info, location_ap_id_to_name, item_ap_id_to_name):
+        map_transition_shuffle_order: List[int] = ctx.slot_data["map_transition_shuffle_order"]
+
+        self.map_modifications += randomizer_data.default_map_modifications
+        self.walking_left_transitions = [randomizer_data.walking_left_transitions[x] for x in map_transition_shuffle_order]
+
+    def set_location_info(self, slot_num, location_info):
         return {
-            convert_ap_name_to_existing_rando_name(location_ap_id_to_name[location.location]):
-            convert_ap_name_to_existing_rando_name(item_ap_id_to_name[location.item]) \
+            convert_ap_name_to_existing_rando_name(lookup_location_id_to_name[location.location]):
+            convert_ap_name_to_existing_rando_name(lookup_item_id_to_name[location.item]) \
                 if location.player == slot_num else "ANOTHER_PLAYERS_ITEM"
             for location in location_info.values()
         }
@@ -60,8 +66,18 @@ def patch_map_files(ctx: RabiRibiContext):
     map_source_dir = f"{RabiRibiWorld.settings.game_installation_path}/data/area"
     grab_original_maps(map_source_dir, ctx.custom_seed_subdir)
     settings = parse_args()
-    settings.open_mode = ctx.options["openMode"]
-    attack_mode = ctx.options["attackMode"]
+    settings.open_mode = ctx.slot_data["openMode"]
+    settings.shuffle_gift_items = ctx.slot_data["randomize_gift_items"]
+
+    # Need a unique seed to ensure that the background and music shuffles can be regenerated if needed.
+    settings.random_seed = ctx.seed_player
+    settings.shuffle_music = ctx.slot_data["shuffle_music"]
+    settings.shuffle_backgrounds = ctx.slot_data["shuffle_backgrounds"]
+
+    settings.no_laggy_backgrounds = True
+    settings.no_difficult_backgrounds = True
+    attack_mode = ctx.slot_data["attackMode"]
+    picked_templates = ctx.slot_data["picked_templates"]
     if attack_mode == AttackMode.option_hyper:
         settings.hyper_attack_mode = True
     elif attack_mode == AttackMode.option_super:
@@ -74,7 +90,11 @@ def patch_map_files(ctx: RabiRibiContext):
         no_load=True
     )
     allocation = Allocation(ctx, randomizer_data)
-    pre_modify_map_data(item_modifier, settings, allocation.map_modifications)
+    map_modifications = allocation.map_modifications
+    for template in picked_templates:
+        map_modifications.append(os.path.join('existing_randomizer', 'maptemplates', 'constraint_shuffle', f'CS_{template}.txt'))
+
+    pre_modify_map_data(item_modifier, settings, map_modifications)
     apply_item_specific_fixes(item_modifier, allocation)
     apply_map_transition_shuffle(item_modifier, randomizer_data, settings, allocation)
     insert_items_into_map(item_modifier, randomizer_data, settings, allocation)

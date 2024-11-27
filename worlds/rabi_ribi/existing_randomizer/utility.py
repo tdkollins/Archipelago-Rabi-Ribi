@@ -5,6 +5,7 @@ import random
 import re
 import ast
 import os
+from typing import Callable
 
 from worlds.rabi_ribi.utility import load_text_file
 
@@ -107,7 +108,7 @@ class TemplateConstraintData(object):
         return bool(self.change_edge_set.intersection(other.change_edge_set))
 
 class GraphEdge(object):
-    def __init__(self, edge_id, from_location, to_location, constraint, constraint_expr, backtrack_cost):
+    def __init__(self, edge_id, from_location, to_location, constraint = None, constraint_expr = None, backtrack_cost = 0):
         self.edge_id = edge_id
         self.from_location = from_location
         self.to_location = to_location
@@ -174,7 +175,7 @@ def to_tile_index(x, y):
 
 # Expression Parsing
 
-def parse_expression_lambda(line, variable_names_set, default_expressions, current_expression=None):
+def parse_expression_lambda(line, variable_names_set, default_expressions, current_expression=None) -> Callable[[str], bool]:
     expression = parse_expression(line, variable_names_set, default_expressions, current_expression)
     return lambda v : expression.evaluate(v)
 
@@ -391,4 +392,7 @@ def hash_maps(output_dir):
     areaids = get_default_areaids()
     hash_digest = hash_map_files(areaids, output_dir)
     print_ln('Hash: %s' % hash_digest)
+
+def get_default_areaids():
+    return list(range(10))
 

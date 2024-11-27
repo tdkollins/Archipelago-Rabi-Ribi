@@ -1,4 +1,5 @@
 import random
+from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
 from worlds.rabi_ribi.existing_randomizer.utility import *
 from worlds.rabi_ribi.existing_randomizer.difficultyanalysis import compute_average_goal_level
 
@@ -16,7 +17,7 @@ class Analyzer(object):
     # levels
     # hard_to_reach_items
 
-    def __init__(self, data, settings, allocation, goals=None, visualize=False):
+    def __init__(self, data: RandomizerData, settings, allocation, goals=None, visualize=False):
         self.data = data
         self.settings = settings
         self.allocation = allocation

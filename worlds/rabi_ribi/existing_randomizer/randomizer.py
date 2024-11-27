@@ -251,11 +251,12 @@ def pre_modify_map_data(mod, settings, diff_patch_files):
     # Note: because musicrandomizer requires room color info, the music
     # must be shuffled before the room colors!
 
+    rng = random.Random(settings.random_seed)
     if settings.shuffle_music:
-        musicrandomizer.shuffle_music(mod.stored_datas)
+        musicrandomizer.shuffle_music(mod.stored_datas, rng)
 
     if settings.shuffle_backgrounds:
-        backgroundrandomizer.shuffle_backgrounds(mod.stored_datas, settings.no_laggy_backgrounds, settings.no_difficult_backgrounds)
+        backgroundrandomizer.shuffle_backgrounds(mod.stored_datas, settings.no_laggy_backgrounds, settings.no_difficult_backgrounds, rng)
 
     # Add shaft if needed
     configure_shaft(mod, settings)

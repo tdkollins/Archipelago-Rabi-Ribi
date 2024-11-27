@@ -1,17 +1,9 @@
 """This module represents location definitions for Rabi-Ribi"""
-from BaseClasses import Location, Region, MultiWorld, ItemClassification
-from worlds.generic.Rules import add_rule
-from .names import ItemName
-from .items import RabiRibiItem
-from .existing_randomizer.dataparser import RandomizerData
-from .existing_randomizer.randomizer import parse_args
-from .logic_helpers import (
-    convert_existing_rando_name_to_ap_name,
-    convert_existing_rando_rule_to_ap_rule,
-)
+from typing import Dict
+from BaseClasses import Location
+from .options import RabiRibiOptions
 from .names import LocationName
 from .utility import get_rabi_ribi_base_id
-import worlds.rabi_ribi.logic_helpers as logic
 
 class RabiRibiLocation(Location):
     """Rabi Ribi Location Definition"""
@@ -191,11 +183,15 @@ system_interior_locations = {
 }
 
 # Shufflable Gift Item Locations
-shufflable_gift_item_locations = {
+shufflable_gift_item_plurkwood_locations = {
     LocationName.p_hairpin                    : get_rabi_ribi_base_id() + 0x98,
+}
+
+shufflable_gift_item_town_locations = {
     LocationName.speed_boost                  : get_rabi_ribi_base_id() + 0x99,
     LocationName.bunny_strike                 : get_rabi_ribi_base_id() + 0x9A,
 }
+
 
 # Egg Locations
 southern_woodland_egg_locations = {
@@ -367,8 +363,13 @@ system_interior_table = {
     **system_interior_egg_locations,
 }
 
+shufflable_gift_item_table = {
+    **shufflable_gift_item_town_locations,
+    **shufflable_gift_item_plurkwood_locations
+}
+
 # Combined Location Table
-location_table = {
+all_locations = {
     **southern_woodland_table,
     **western_coast_table,
     **island_core_table,
@@ -378,7 +379,10 @@ location_table = {
     **plurkwood_table,
     **subterranean_area_table,
     **system_interior_table,
+    **shufflable_gift_item_table
 }
+
+lookup_location_id_to_name = {code: name for name, code in all_locations.items()}
 
 location_groups = {
     LocationName.southern_woodland_region   : set(southern_woodland_table.keys()),
@@ -390,4 +394,27 @@ location_groups = {
     LocationName.plurkwood_region           : set(plurkwood_table.keys()),
     LocationName.subterranean_area_region   : set(subterranean_area_table.keys()),
     LocationName.system_interior_region     : set(system_interior_table.keys()),
+    LocationName.shufflable_gift_items      : set(shufflable_gift_item_table.keys())
 }
+
+def setup_locations(options: RabiRibiOptions):
+    location_table: Dict[str, int] = {
+        **southern_woodland_table,
+        **western_coast_table,
+        **island_core_table,
+        **northern_tundra_table,
+        **eastern_highlands_table,
+        **rabi_rabi_town_table,
+        **subterranean_area_table,
+        **system_interior_table
+    }
+
+    if options.randomize_gift_items:
+        location_table.update(**shufflable_gift_item_town_locations)
+        if options.plurkwood_reachable:
+            location_table.update(**shufflable_gift_item_plurkwood_locations)
+
+    if options.plurkwood_reachable:
+        location_table.update(**plurkwood_egg_locations)
+
+    return location_table

@@ -334,6 +334,7 @@ atk_up_cyberspace            = "Atk Up Cyberspace"
 mp_up_cyberspace             = "Mp Up Cyberspace"
 
 # Shufflable Gift Items
+shufflable_gift_items        = "Gift Items"
 p_hairpin                    = "P Hairpin"
 speed_boost                  = "Speed Boost"
 bunny_strike                 = "Bunny Strike"
