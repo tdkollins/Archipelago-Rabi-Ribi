@@ -20,6 +20,7 @@ from .options import RabiRibiOptions
 
 logger = logging.getLogger("Rabi-Ribi")
 
+# TODO: Move these region names
 plurkwood_regions: Set[str] = {
     "Plurkwood Main",
     "Item Egg Plurk East",
