@@ -1,7 +1,7 @@
 import logging
 
 from random import Random
-from typing import Any
+from typing import Any, List
 from .existing_randomizer.analyzer import Analyzer
 from .existing_randomizer.dataparser import RandomizerData
 from .existing_randomizer.allocation import Allocation
@@ -12,7 +12,6 @@ logger = logging.getLogger('Rabi-Ribi')
 class MapAllocation(Allocation):
     """An implementation of Allocation that replaces all items in the pool with item locations to obtain."""
     def __init__(self, data: RandomizerData, settings: tuple[str, Any], random: Random):
-
         super().__init__(data, settings, random)
 
     def shuffle(self, data, settings):
@@ -27,6 +26,25 @@ class MapAllocation(Allocation):
         self.choose_constraint_templates(data, settings)
 
         # Shuffle Locations
+        self.construct_graph(data, settings)
+
+    def construct_set_seed(self, data, settings, picked_templates:List[str], map_transition_shuffle_order: List[int]):
+        self.map_modifications = list(data.default_map_modifications)
+
+        # Apply the selected templates for the graph
+        template_lookup = {t.name: t for t in data.template_constraints}
+        self.picked_templates = [template_lookup[n] for n in picked_templates]
+        self.edge_replacements = {}
+
+        for template in self.picked_templates:
+            for change in template.changes:
+                self.edge_replacements[(change.from_location, change.to_location)] = change
+            self.map_modifications.append(template.template_file)
+
+        # Disable map transition shuffle and apply the selected shuffle
+        settings.shuffle_map_transitions = False
+        self.walking_left_transitions = [data.walking_left_transitions[i] for i in map_transition_shuffle_order]
+
         self.construct_graph(data, settings)
 
 

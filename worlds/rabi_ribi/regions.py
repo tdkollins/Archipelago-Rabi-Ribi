@@ -1,11 +1,11 @@
 """This module represents region definitions for Rabi-Ribi"""
 import logging
 
-from typing import Dict, List, Set
+from typing import Any, Dict, List, Set
 from BaseClasses import Region, MultiWorld, ItemClassification
 from worlds.generic.Rules import add_rule
 from . import logic_helpers as logic
-from .entrance_shuffle import MapGenerator
+from .entrance_shuffle import MapAllocation, MapGenerator
 from .existing_randomizer.dataparser import RandomizerData
 from .existing_randomizer.randomizer import parse_args
 from .existing_randomizer.utility import GraphEdge
@@ -84,33 +84,24 @@ class RegionDef:
         self.multiworld = multiworld
         self.options = options
 
-        existing_randomizer_args = self._convert_options_to_existing_randomizer_args(options)
-        self.randomizer_data = RandomizerData(existing_randomizer_args)
+        self.existing_randomizer_args: Any = self._convert_options_to_existing_randomizer_args(options)
+        self.randomizer_data = RandomizerData(self.existing_randomizer_args)
 
         self.location_table = setup_locations(self.options)
 
-        generator: MapGenerator = MapGenerator(self.randomizer_data, existing_randomizer_args, set(self.location_table.keys()), self.multiworld.random)
+    def generate_seed(self):
+        generator: MapGenerator = MapGenerator(self.randomizer_data, self.existing_randomizer_args, set(self.location_table.keys()), self.multiworld.random)
         self.allocation, _ = generator.generate_seed()
         self.map_transition_shuffle_order = [self.randomizer_data.walking_left_transitions.index(x) for x in self.allocation.walking_left_transitions]
 
         self.picked_templates = self.allocation.picked_templates
         self.map_transition_shuffle_order = self.map_transition_shuffle_order
 
-        self.map_transition_shuffle_spoiler: List[str] = []
-        for (idx, x) in enumerate(self.map_transition_shuffle_order):
-            left = self.randomizer_data.walking_left_transitions[x]
-            right = self.randomizer_data.walking_right_transitions[idx]
-            left_name = convert_existing_rando_name_to_ap_name(left.origin_location)
-            right_name = convert_existing_rando_name_to_ap_name(right.origin_location)
-            self.map_transition_shuffle_spoiler.append(f'{left_name} -> {right_name}')
-
-        logger.debug(f'Applied Map Constraints:')
-        for template in self.picked_templates:
-            logger.debug(f'{convert_existing_rando_name_to_ap_name(template.name)}')
-
-        logger.debug(f'Map Transitions:')
-        for entrance in self.map_transition_shuffle_spoiler:
-            logger.debug(f'{entrance}')
+    def generate_set_seed(self, picked_templates: List[str], map_transition_shuffle_order: List[int]):
+        self.allocation = MapAllocation(self.randomizer_data, self.existing_randomizer_args, self.multiworld.random)
+        self.allocation.construct_set_seed(self.randomizer_data, self.existing_randomizer_args, picked_templates, map_transition_shuffle_order)
+        self.picked_templates = self.allocation.picked_templates
+        self.map_transition_shuffle_order = map_transition_shuffle_order
 
     def _convert_options_to_existing_randomizer_args(self, options: RabiRibiOptions):
         args = parse_args()

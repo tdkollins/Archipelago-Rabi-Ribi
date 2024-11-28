@@ -2,12 +2,14 @@
 This module serves as an entrypoint into the Rabi-Ribi AP world.
 """
 import settings
+import logging
 from collections import defaultdict
-from typing import ClassVar, Dict, List, Set, TextIO
+from typing import Any, ClassVar, Dict, List, Optional, Set, TextIO
 from BaseClasses import ItemClassification, Tutorial
 from Fill import swap_location_item
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, Type, components, launch_subprocess
+from worlds.rabi_ribi.entrance_shuffle import MapAllocation
 from .items import RabiRibiItem, RabiRibiItemData, item_data_table, item_groups, shufflable_gift_items, shufflable_gift_items_plurkwood, item_table, get_base_item_list
 from .locations import all_locations, location_groups
 from .logic_helpers import convert_existing_rando_name_to_ap_name
@@ -15,6 +17,8 @@ from .names import ItemName, LocationName
 from .options import RabiRibiOptions
 from .regions import RegionDef
 from .utility import get_rabi_ribi_base_id
+
+logger = logging.getLogger('Rabi-Ribi')
 
 def launch_client():
     """Launch a rabi ribi client instance"""
@@ -97,6 +101,17 @@ class RabiRibiWorld(World):
         self.topology_present = bool(self.options.shuffle_map_transitions.value)
 
         region_def = RegionDef(self.multiworld, self.player, self.options)
+
+        # Universal tracker support, can be ignored for standard gen
+        if hasattr(self.multiworld, "re_gen_passthrough") and "Rabi-Ribi" in self.multiworld.re_gen_passthrough: # type: ignore
+            passthrough = self.multiworld.re_gen_passthrough["Rabi-Ribi"] # type: ignore
+            picked_templates = passthrough["picked_templates"]
+            map_transition_shuffle_order = passthrough["map_transition_shuffle_order"]
+            region_def.generate_set_seed(picked_templates, map_transition_shuffle_order)
+        else:
+            # Use standard generation
+            region_def.generate_seed()
+
         region_def.set_regions()
         region_def.connect_regions()
         self.total_locations = region_def.set_locations()
@@ -204,3 +219,9 @@ class RabiRibiWorld(World):
     @classmethod
     def stage_post_fill(cls, multiworld) -> None:
         cls._handle_encourage_eggs_in_late_spheres(multiworld)
+
+    # For the universal tracker, doesn't get called in standard gen
+    @staticmethod
+    def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
+        # Returning slot_data so it regens, giving it back in multiworld.re_gen_passthrough
+        return slot_data
