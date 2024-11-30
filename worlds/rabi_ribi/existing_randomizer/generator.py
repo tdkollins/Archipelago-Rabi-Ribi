@@ -1,3 +1,4 @@
+from typing import Optional
 from worlds.rabi_ribi.existing_randomizer.allocation import Allocation
 from worlds.rabi_ribi.existing_randomizer.analyzer import Analyzer
 from worlds.rabi_ribi.existing_randomizer.difficultyanalysis import DifficultyAnalysis
@@ -30,20 +31,19 @@ class Generator(object):
                             success = True
 
             if success:
-                difficulty_analysis = None
                 if not self.settings.hide_difficulty or self.settings.min_difficulty > 0 or self.settings.max_sequence_breakability != None:
                     # Run difficulty analysis
                     if self.settings.egg_goals: goals = analyzer.goals
                     else: goals = analyzer.hard_to_reach_items
                     difficulty_analysis = DifficultyAnalysis(self.data, analyzer, goals)
 
-                if self.settings.min_difficulty > 0:
-                    if difficulty_analysis.difficulty_score < self.settings.min_difficulty:
-                        success = False
+                    if self.settings.min_difficulty > 0:
+                        if difficulty_analysis.difficulty_score < self.settings.min_difficulty:
+                            success = False
 
-                if self.settings.max_sequence_breakability != None:
-                    if difficulty_analysis.breakability_score > self.settings.max_sequence_breakability:
-                        success = False
+                    if self.settings.max_sequence_breakability != None:
+                        if difficulty_analysis.breakability_score > self.settings.max_sequence_breakability:
+                            success = False
 
             if success:
                 break
