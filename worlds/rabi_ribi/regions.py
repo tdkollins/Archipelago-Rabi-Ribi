@@ -80,7 +80,7 @@ class RegionDef:
     """
     regions: Set[str] = set()
     location_table: Dict[str, int]
-    unreachable_regions: set[str]
+    unreachable_regions: Set[str]
 
     def __init__(self, multiworld: MultiWorld, player: int, options: RabiRibiOptions):
         self.player = player
