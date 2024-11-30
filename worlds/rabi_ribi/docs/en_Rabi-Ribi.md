@@ -16,6 +16,8 @@ would be expected to in the vanilla game.
 The goal of Rabi-Ribi is to find 5 Easter Egg items shuffled throughout Rabi Rabi Island. Collecting the fifth Easter Egg
 will complete your seed.
 
+Setting the goal to completing the main story is not currently implemented, as the game is beatable with no items.
+
 ## What items and locations can get shuffled?
 
 - All upgrades and abilities

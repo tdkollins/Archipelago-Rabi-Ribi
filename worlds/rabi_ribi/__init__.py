@@ -73,6 +73,10 @@ class RabiRibiWorld(World):
     item_name_to_id = item_table
     location_name_to_id: Dict[str, int] = all_locations
 
+    picked_templates: List[str]
+    map_transition_shuffle_order: List[int]
+    map_transition_shuffle_spoiler: List[str]
+
     def __init__(self, multiworld, player):
         super().__init__(multiworld, player)
         self.total_locations = 0
@@ -102,12 +106,11 @@ class RabiRibiWorld(World):
 
         region_def = RegionDef(self.multiworld, self.player, self.options)
 
-        # Universal tracker support, can be ignored for standard gen
-        if hasattr(self.multiworld, "re_gen_passthrough") and "Rabi-Ribi" in self.multiworld.re_gen_passthrough: # type: ignore
+        # Generate a world seed using the existing randomizer
+        if self.should_regenerate_seed_for_universal_tracker():
+            # Universal Tracker: Regenerate the seed used on the connected server
             passthrough = self.multiworld.re_gen_passthrough["Rabi-Ribi"] # type: ignore
-            picked_templates = passthrough["picked_templates"]
-            map_transition_shuffle_order = passthrough["map_transition_shuffle_order"]
-            region_def.generate_set_seed(picked_templates, map_transition_shuffle_order)
+            region_def.regenerate_seed_for_universal_tracker(passthrough)
         else:
             # Use standard generation
             region_def.generate_seed()
@@ -117,16 +120,8 @@ class RabiRibiWorld(World):
         self.total_locations = region_def.set_locations()
         region_def.set_events()
 
-        self.picked_templates = region_def.allocation.picked_templates
-        self.map_transition_shuffle_order = region_def.map_transition_shuffle_order
-
-        self.map_transition_shuffle_spoiler: List[str] = []
-        for (idx, x) in enumerate(self.map_transition_shuffle_order):
-            left = region_def.randomizer_data.walking_left_transitions[x]
-            right = region_def.randomizer_data.walking_right_transitions[idx]
-            left_name = convert_existing_rando_name_to_ap_name(left.origin_location)
-            right_name = convert_existing_rando_name_to_ap_name(right.origin_location)
-            self.map_transition_shuffle_spoiler.append(f'{left_name} -> {right_name}')
+        region_def.configure_slot_data(self)
+        region_def.configure_region_spoiler_log_data(self)
 
     def create_items(self) -> None:
         base_item_list = get_base_item_list(self.options)
@@ -151,7 +146,7 @@ class RabiRibiWorld(World):
             "attackMode": self.options.attack_mode.value,
             "randomize_gift_items": bool(self.options.randomize_gift_items.value),
             "plurkwood_reachable": bool(self.options.plurkwood_reachable.value),
-            "picked_templates": [template.name for template in self.picked_templates],
+            "picked_templates": self.picked_templates,
             "map_transition_shuffle_order": self.map_transition_shuffle_order,
             "shuffle_music": bool(self.options.shuffle_music.value),
             "shuffle_backgrounds": bool(self.options.shuffle_backgrounds.value)
@@ -178,7 +173,7 @@ class RabiRibiWorld(World):
     def write_spoiler(self, spoiler_handle: TextIO) -> None:
         spoiler_handle.write(f'\nApplied Map Constraints:\n')
         for template in self.picked_templates:
-            spoiler_handle.write(f'\n{convert_existing_rando_name_to_ap_name(template.name)}')
+            spoiler_handle.write(f'\n{convert_existing_rando_name_to_ap_name(template)}')
 
         spoiler_handle.write(f'\n\nMap Transitions:\n')
         for entrance in self.map_transition_shuffle_spoiler:
@@ -220,8 +215,20 @@ class RabiRibiWorld(World):
     def stage_post_fill(cls, multiworld) -> None:
         cls._handle_encourage_eggs_in_late_spheres(multiworld)
 
-    # For the universal tracker, doesn't get called in standard gen
+    # Methods for the universal tracker, not called in standard gen
     @staticmethod
     def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
-        # Returning slot_data so it regens, giving it back in multiworld.re_gen_passthrough
+        """
+        This method exists as a hook for Universal Tracker. When this method is implemented in a world, Universal Tracker
+        will perform a second world generation attempt when the player connects to the server, allowing the world access
+        to slot_data to set variables that were randomly assigned during generation.
+        """
+        # https://github.com/FarisTheAncient/Archipelago/blob/tracker/worlds/tracker/docs/re-gen-passthrough.md
         return slot_data
+
+    def should_regenerate_seed_for_universal_tracker(self):
+        """
+        If true, this world has information from Universal Tracker that should be used when generating the seed.
+        This ensures that the world state matches the seed used by the connected server.
+        """
+        return hasattr(self.multiworld, "re_gen_passthrough") and "Rabi-Ribi" in self.multiworld.re_gen_passthrough # type: ignore

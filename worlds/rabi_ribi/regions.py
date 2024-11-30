@@ -1,7 +1,7 @@
 """This module represents region definitions for Rabi-Ribi"""
 import logging
 
-from typing import Any, Dict, List, Set
+from typing import TYPE_CHECKING, Any, Dict, List, Set
 from BaseClasses import Region, MultiWorld, ItemClassification
 from worlds.generic.Rules import add_rule
 from . import logic_helpers as logic
@@ -17,6 +17,9 @@ from .logic_helpers import (
 )
 from .names import ItemName, LocationName
 from .options import RabiRibiOptions
+
+if TYPE_CHECKING:
+    from . import RabiRibiWorld
 
 logger = logging.getLogger("Rabi-Ribi")
 
@@ -97,11 +100,18 @@ class RegionDef:
         self.picked_templates = self.allocation.picked_templates
         self.map_transition_shuffle_order = self.map_transition_shuffle_order
 
-    def generate_set_seed(self, picked_templates: List[str], map_transition_shuffle_order: List[int]):
+    def regenerate_seed_for_universal_tracker(self, passthrough: Dict[str, Any]):
+        """
+        This method utilizes Universal Tracker's re_gen_passthrough data to set variables that were randomly assigned
+        when generating the seed to the same values that were used during seed generation.
+        """
+        self.picked_templates = passthrough["picked_templates"]
+        self.map_transition_shuffle_order = passthrough["map_transition_shuffle_order"]
+        self.generate_set_seed()
+
+    def generate_set_seed(self):
         self.allocation = MapAllocation(self.randomizer_data, self.existing_randomizer_args, self.multiworld.random)
-        self.allocation.construct_set_seed(self.randomizer_data, self.existing_randomizer_args, picked_templates, map_transition_shuffle_order)
-        self.picked_templates = self.allocation.picked_templates
-        self.map_transition_shuffle_order = map_transition_shuffle_order
+        self.allocation.construct_set_seed(self.randomizer_data, self.existing_randomizer_args, self.picked_templates, self.map_transition_shuffle_order)
 
     def _convert_options_to_existing_randomizer_args(self, options: RabiRibiOptions):
         args = parse_args()
@@ -366,7 +376,20 @@ class RegionDef:
         add_rule(chapter_5,
                  lambda state: logic.can_reach_chapter_5(state, self.player) and
                     state.has("Chapter 4", self.player))
-        
+
+    def configure_slot_data(self, world: "RabiRibiWorld"):
+        world.picked_templates = [template.name for template in self.allocation.picked_templates]
+        world.map_transition_shuffle_order = self.map_transition_shuffle_order
+
+    def configure_region_spoiler_log_data(self, world: "RabiRibiWorld"):
+        world.map_transition_shuffle_spoiler = []
+        for (idx, x) in enumerate(self.map_transition_shuffle_order):
+            left = self.randomizer_data.walking_left_transitions[x]
+            right = self.randomizer_data.walking_right_transitions[idx]
+            left_name = convert_existing_rando_name_to_ap_name(left.origin_location)
+            right_name = convert_existing_rando_name_to_ap_name(right.origin_location)
+            world.map_transition_shuffle_spoiler.append(f'{left_name} -> {right_name}')
+
     def _get_region_name_list(self):
         return [
             convert_existing_rando_name_to_ap_name(name) for \
