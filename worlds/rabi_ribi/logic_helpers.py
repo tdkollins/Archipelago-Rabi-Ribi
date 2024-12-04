@@ -436,7 +436,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Zip Required": lambda _: options.zips_required.value,
             "Plurkwood Reachable": lambda _: options.plurkwood_reachable.value,
             "Boss Keke Bunny" : lambda state: can_reach_keke_bunny(state, player),
-            "Event Warp" : lambda _: options.event_warps_in_logic.value
+            "Event Warps Required" : lambda _: options.event_warps_in_logic.value
         }
         if literal in literal_eval_map:
             return literal_eval_map[literal]
