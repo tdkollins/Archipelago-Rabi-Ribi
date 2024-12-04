@@ -1,7 +1,7 @@
 """This module represents option defintions for Rabi-Ribi"""
 from dataclasses import dataclass
 
-from Options import PerGameCommonOptions, Choice, Toggle
+from Options import PerGameCommonOptions, Choice, Range, Toggle
 
 class OpenMode(Toggle):
     """Gain access to chapter 1 areas without needing to complete the prologue"""
@@ -10,6 +10,10 @@ class OpenMode(Toggle):
 class RandomizeHammer(Toggle):
     """If set to false, the hammer is at the default location"""
     display_name = "Randomize Hammer"
+
+class RandomizeGiftItems(Toggle):
+    """If set to false, items given by NPCs (Speed Boost, Hammer Strike, P Hairpin) are at their default locations"""
+    display_name = "Randomize Gift Items"
 
 class CarrotShooterInLogic(Toggle):
     """
@@ -100,6 +104,11 @@ class UnderwaterWithoutWaterOrb(Toggle):
     """
     display_name = "Underwater Without Water Orb"
 
+class PlurkwoodReachable(Toggle):
+    """
+    If this flag is true, the game might expect you to go into Plurkwood.
+    """
+    display_name = "Plurkwood Reachable"
 
 class AttackMode(Choice):
     """
@@ -116,12 +125,47 @@ class AttackMode(Choice):
     option_hyper = 2
     default = option_normal
 
+class EnableConstraintChanges(Toggle):
+    """
+    If this flag is true, the randomizer will choose a number of predefined map
+    edits to restrict access to areas.
+    """
+    display_name = "Enable Map Constraints"
+
+class NumberOfConstraintChanges(Range):
+    """
+    Sets the total number of map constraint changes to be added.
+    """
+    display_name = "Number of Map Constraint Changes"
+    range_start = 0
+    range_end = 30
+
+class ShuffleMapTransitions(Toggle):
+    """
+    If this flag is true, the randomizer will shuffle the entrances between maps.
+    """
+    display_name = "Shuffle Map Transitions"
+
+class ShuffleMusic(Toggle):
+    """
+    If this flag is true, the randomizer will shuffle the music tracks played in each area.
+    """
+    display_name = "Shuffle Music"
+
+class ShuffleBackgrounds(Toggle):
+    """
+    If this flag is true, the randomizer will shuffle the room backgrounds in each area.
+    Note that some backgrounds that introduce lag or make tricks difficult to perform are disabled.
+    """
+    display_name = "Shuffle Backgrounds"
+
 
 @dataclass
 class RabiRibiOptions(PerGameCommonOptions):
     """Rabi Ribi Options Definition"""
     open_mode: OpenMode
     randomize_hammer: RandomizeHammer
+    randomize_gift_items: RandomizeGiftItems
     knowledge: Knowledge
     trick_difficulty: TrickDifficulty
     block_clips_required: BlockClipsRequired
@@ -132,3 +176,9 @@ class RabiRibiOptions(PerGameCommonOptions):
     attack_mode: AttackMode
     encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
     carrot_shooter_in_logic: CarrotShooterInLogic
+    plurkwood_reachable: PlurkwoodReachable
+    enable_constraint_changes: EnableConstraintChanges
+    number_of_constraint_changes: NumberOfConstraintChanges
+    shuffle_map_transitions: ShuffleMapTransitions
+    shuffle_music: ShuffleMusic
+    shuffle_backgrounds: ShuffleBackgrounds
