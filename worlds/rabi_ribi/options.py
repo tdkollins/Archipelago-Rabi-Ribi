@@ -110,13 +110,21 @@ class PlurkwoodReachable(Toggle):
     """
     display_name = "Plurkwood Reachable"
 
+class EventWarpsInLogic(Toggle):
+    """
+    If this flag is true, events that warp the player to another location are considered in logic.
+    While some of these events can only be reached once normally, the randomizer adds doors that
+    allow these events to be accessed multiple times.
+    """
+    display_name = "Event Warps in Logic"
+
 class AttackMode(Choice):
     """
     Normal attack mode starts you with 0 attack ups.
     Super attack mode starts you with 20 attack ups.
     Hyper attack mode starts you with 30 attack ups.
 
-    This gives you a lot more damage, which is especially useful because you often don’t get
+    This gives you a lot more damage, which is especially useful because you often don't get
     the hammer early in randomizer games. (Ribbon does about 20 damage per shot in super attack mode)
     """
     display_name = "Attack Mode"
@@ -164,8 +172,6 @@ class ShuffleBackgrounds(Toggle):
 class RabiRibiOptions(PerGameCommonOptions):
     """Rabi Ribi Options Definition"""
     open_mode: OpenMode
-    randomize_hammer: RandomizeHammer
-    randomize_gift_items: RandomizeGiftItems
     knowledge: Knowledge
     trick_difficulty: TrickDifficulty
     block_clips_required: BlockClipsRequired
@@ -173,10 +179,16 @@ class RabiRibiOptions(PerGameCommonOptions):
     zips_required: ZipsRequired
     darkness_without_light_orb: DarknessWithoutLightOrb
     underwater_without_water_orb: UnderwaterWithoutWaterOrb
+    carrot_shooter_in_logic: CarrotShooterInLogic
+    event_warps_in_logic: EventWarpsInLogic
+
     attack_mode: AttackMode
     encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
-    carrot_shooter_in_logic: CarrotShooterInLogic
+
+    randomize_hammer: RandomizeHammer
+    randomize_gift_items: RandomizeGiftItems
     plurkwood_reachable: PlurkwoodReachable
+
     enable_constraint_changes: EnableConstraintChanges
     number_of_constraint_changes: NumberOfConstraintChanges
     shuffle_map_transitions: ShuffleMapTransitions
