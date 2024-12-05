@@ -115,6 +115,7 @@ class RegionDef:
 
     def _convert_options_to_existing_randomizer_args(self, options: RabiRibiOptions):
         args = parse_args()
+        args.ap_options = options
         args.open_mode = options.open_mode.value
         args.shuffle_gift_items = options.randomize_gift_items.value
         args.shuffle_map_transitions = options.shuffle_map_transitions.value

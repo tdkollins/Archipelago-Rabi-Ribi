@@ -1,6 +1,7 @@
 import ast, re, os
 from typing import Dict, List
 from worlds.rabi_ribi.existing_randomizer.utility import *
+from worlds.rabi_ribi.options import RabiRibiOptions
 
 """
 Knowledge levels:
@@ -615,6 +616,15 @@ def read_config(default_setting_flags, item_locations_set, shufflable_gift_items
     knowledge = config_dict['knowledge']
     difficulty = config_dict['trick_difficulty']
 
+    # Replace config file with player options
+    if hasattr(settings, 'ap_options'):
+        ap_options: RabiRibiOptions = settings.ap_options
+        read_ap_config_settings(config_settings, ap_options)
+        knowledge_options = ['BASIC', 'INTERMEDIATE', 'ADVANCED']
+        knowledge = knowledge_options[ap_options.knowledge.value]
+        difficulty_options = ['NORMAL', 'HARD', 'V_HARD', 'STUPID']
+        difficulty = difficulty_options[ap_options.trick_difficulty.value]
+
     if settings.shuffle_gift_items:
         included_additional_items = [item_name for item_name in included_additional_items if not item_name in shufflable_gift_items_set]
     else:
@@ -629,8 +639,6 @@ def read_config(default_setting_flags, item_locations_set, shufflable_gift_items
         if not type(value) is bool:
             fail('Flag %s does not map to a boolean variable in config.txt' % key)
         setting_flags[key] = value
-
-
     # Knowledge
     if knowledge == 'BASIC':
         setting_flags[KNOWLEDGE_INTERMEDIATE] = False
@@ -689,6 +697,20 @@ def read_config(default_setting_flags, item_locations_set, shufflable_gift_items
     )
 
     return setting_flags, to_shuffle, must_be_reachable, included_additional_items, config_data
+
+def read_ap_config_settings(config_settings, ap_options):
+    """Updates the default configuration settings with the player options from Archipelago."""
+    config_settings['DARKNESS_WITHOUT_LIGHT_ORB'] = bool(ap_options.darkness_without_light_orb.value)
+    config_settings['UNDERWATER_WITHOUT_WATER_ORB'] = bool(ap_options.underwater_without_water_orb.value)
+    config_settings['ZIP_REQUIRED'] = bool(ap_options.zips_required.value)
+    config_settings['SEMISOLID_CLIPS_REQUIRED'] = bool(ap_options.semi_solid_clips_required.value)
+    config_settings['BLOCK_CLIPS_REQUIRED'] = bool(ap_options.block_clips_required.value)
+    config_settings['PLURKWOOD_REACHABLE'] = bool(ap_options.plurkwood_reachable.value)
+    config_settings['EVENT_WARPS_REQUIRED'] = bool(ap_options.event_warps_in_logic.value)
+    config_settings['POST_GAME_ALLOWED'] = False
+    config_settings['POST_IRISU_ALLOWED'] = False
+    config_settings['HALLOWEEN_REACHABLE'] = False
+    config_settings['WARP_DESTINATION_REACHABLE'] = False
 
 def parse_item_from_string(line):
     pos, areaid, itemid, name = (s.strip() for s in line.split(':', 3))
