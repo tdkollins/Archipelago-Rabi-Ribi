@@ -68,12 +68,16 @@ weaken              = "Weaken"
 # Collectable Definitions
 attack_up           = "Attack Up"
 easter_egg          = "Easter Egg"
+rumi_donut          = "Rumi Donut"
+rumi_cake           = "Rumi Cake"
+cocoa_bomb          = "Cocoa Bomb"
 gold_carrot         = "Gold Carrot"
 hp_up               = "HP Up"
 mp_up               = "MP Up"
 nothing             = "Nothing"
 pack_up             = "Pack Up"
 regen_up            = "Regen Up"
+pbpb_box            = "PBPB Box"
 
 # Recruit Definitions
 cocoa_1             = "Cocoa 1"

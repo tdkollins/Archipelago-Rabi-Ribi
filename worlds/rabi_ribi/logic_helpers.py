@@ -5,26 +5,29 @@ enough for it not to be confusing.
 """
 from BaseClasses import CollectionState, Region
 from typing import Callable, Dict, Set
-from .existing_randomizer.utility import OpLit, OpNot, OpOr, OpAnd
+from .existing_randomizer.utility import OpBacktrack, OpLit, OpNot, OpOr, OpAnd
 from .options import RabiRibiOptions, TrickDifficulty, Knowledge
 from .names import ItemName, LocationName
-from .items import recruit_table
+from .items import recruit_table, consumable_items, normal_consumable_items
 
 def has_3_magic_types(state: CollectionState, player: int):
     """Player has at least 3 types of magic"""
     return state.count_group_unique("Magic", player) + 1 >= 3
 
-def has_item_menu(state: CollectionState, player: int):
+def has_item_menu(state: CollectionState, player: int, options):
     """Player has access to the item menu"""
     return state.can_reach(LocationName.town_main, "Region", player) or \
-        has_3_magic_types(state, player)
+        (
+            is_at_least_advanced_knowledge(options) and
+            has_3_magic_types(state, player)
+        )
 
-def can_use_boost(state: CollectionState, player: int):
+def can_use_boost(state: CollectionState, player: int, options):
     """Player can use the boost skill"""
     return state.can_reach(LocationName.beach_main, "Region", player) or \
         (
             state.can_reach(LocationName.town_shop, "Region", player) and
-            has_item_menu(state, player)
+            has_item_menu(state, player, options)
         )
 
 def carrot_shooter_in_logic(state: CollectionState, player: int, options):
@@ -84,6 +87,11 @@ def can_get_speed_boost_3(state: CollectionState, player: int):
     return state.has(ItemName.speed_boost, player) and \
         state.can_reach(LocationName.town_shop, "Region", player)
 
+def can_charge_carrot_shooter_entry(state: CollectionState, player: int, options):
+    """Player can open entrances with a fully charged carrot shooter shot"""
+    return carrot_shooter_in_logic(state, player, options) and \
+        state.has(ItemName.charge_ring, player)
+
 def can_bunny_amulet(state: CollectionState, player: int):
     """Player can use the bunny amulet skill"""
     return state.has("Chapter 2", player)
@@ -103,6 +111,14 @@ def can_bunny_amulet_3(state: CollectionState, player: int):
             can_bunny_amulet(state, player) and \
             state.can_reach(LocationName.town_shop, "Region", player)
         )
+
+def can_bunny_amulet_4(state: CollectionState, player: int, options):
+    """Player can use 4 bunny amulet skills"""
+    # TODO: Add with post game
+    return False
+    # return options.post_game_allowed.value and \
+    #     can_bunny_amulet(state, player) and \
+    #     state.has(ItemName.rumi_recruit, player)
 
 def can_recruit_cocoa(state: CollectionState, player: int):
     """Player can recruit cocoa"""
@@ -193,37 +209,38 @@ def can_recruit_n_town_members(state: CollectionState, num_town_members: int, pl
     """
     return state.count_from_list_unique(recruit_table, player) > num_town_members
 
-def can_be_speedy(state: CollectionState, player: int):
-    """Player can buy the speed up buff"""
-    return can_recruit_cicini(state, player) and \
+def can_be_speedy(state: CollectionState, player: int, options):
+    """Player can buy the speedy buff"""
+    return is_at_least_intermediate_knowledge(options) and \
+        can_recruit_cicini(state, player) and \
         state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 3, player)
 
-def can_use_speed_1(state: CollectionState, player: int):
-    """Player can has level 1 speed"""
-    return can_be_speedy(state, player) or \
+def can_use_speed_1(state: CollectionState, player: int, options):
+    """Player can get level 1 speed"""
+    return can_be_speedy(state, player, options) or \
         state.has(ItemName.speed_boost, player)
 
-def can_use_speed_2(state: CollectionState, player: int):
+def can_use_speed_2(state: CollectionState, player: int, options):
     """Player can get level 2 speed"""
     return can_get_speed_boost_3(state, player) or \
-        state.has(ItemName.speed_boost, player)
+        can_be_speedy(state, player, options)
 
-def can_use_speed_3(state: CollectionState, player: int):
+def can_use_speed_3(state: CollectionState, player: int, options):
     """Player can get level 3 speed"""
     return can_get_speed_boost_3(state, player) or \
         (
             state.has(ItemName.speed_boost, player) and \
-            can_be_speedy(state, player)
+            can_be_speedy(state, player, options)
         )
 
-def can_use_speed_5(state: CollectionState, player: int):
+def can_use_speed_5(state: CollectionState, player: int, options):
     """
-    Player can get level 5 speed
-
-    I dont know why 4 was skipped but its not in the original randomizer.
+    Player can get level 5 speed.
+    Level 4 is skipped, as you can always buy both speed boost upgrades
+    and speedy gives the equivalent of 2 levels of movement speed.
     """
-    return can_be_speedy(state, player) and \
+    return can_be_speedy(state, player, options) and \
         can_get_speed_boost_3(state, player)
 
 def can_reach_chapter_1(state: CollectionState, player: int):
@@ -274,16 +291,35 @@ def can_reach_keke_bunny(state: CollectionState, player: int):
     """Player can reach Keke Bunny"""
     return state.can_reach(LocationName.plurkwood_main, "Region", player)
 
+def can_use_consumables(state: CollectionState, player: int, options):
+    """Player can use consumable items"""
+    return has_item_menu(state, player, options) and \
+        state.has_from_list(consumable_items, player, 1)
+
+def can_purchase_food(state: CollectionState, player: int):
+    """Player can purchase food"""
+    return state.can_reach(LocationName.town_shop, "Region", player)
+
+def can_purchase_cocoa_bomb(state: CollectionState, player: int):
+    """Player can purchase food"""
+    return state.can_reach(LocationName.town_main, "Region", player) and \
+        state.has(ItemName.cocoa_recruit, player) and \
+        can_recruit_n_town_members(state, 3, player)
+
 def is_at_least_hard_difficulty(options):
     """Trick difficulty is at least hard"""
     return options.trick_difficulty >= TrickDifficulty.option_hard
 
 def is_at_least_v_hard_difficulty(options):
-    """Trick difficulty is at least hard"""
+    """Trick difficulty is at least very hard"""
     return options.trick_difficulty >= TrickDifficulty.option_v_hard
 
+def is_at_least_extreme_difficulty(options):
+    """Trick difficulty is at least extreme"""
+    return options.trick_difficulty >= TrickDifficulty.option_extreme
+
 def is_at_least_stupid_difficulty(options):
-    """Trick difficulty is at least hard"""
+    """Trick difficulty is at least stupid"""
     return options.trick_difficulty >= TrickDifficulty.option_stupid
 
 def is_at_least_intermediate_knowledge(options):
@@ -294,16 +330,41 @@ def is_at_least_advanced_knowledge(options):
     """Knowledge is at least advanced"""
     return options.knowledge >= Knowledge.option_advanced
 
-def has_enough_amulet_food(state: CollectionState, player: int, num_amulet_food: int):
-    return state.can_reach(LocationName.town_shop, "Region", player) or \
-        (num_amulet_food == 1 and can_bunny_amulet(state, player)) or \
-        (num_amulet_food == 2 and can_bunny_amulet_2(state, player)) or \
-        (num_amulet_food == 3 and can_bunny_amulet_3(state, player)) or \
-        (num_amulet_food >= 4 and (
-            state.can_reach(LocationName.town_shop, "Region", player) and \
-            has_item_menu(state, player) and \
-            can_bunny_amulet(state, player)
-        ))
+def is_at_least_obscure_knowledge(options):
+    """Knowledge is at least obscure"""
+    return options.knowledge >= Knowledge.option_obscure
+
+def has_enough_amulet_food(state: CollectionState, player: int, options, num_amulet_food: int):
+    """Player can utilize enough items to perform a trick"""
+    amulet = 0
+    food = 0
+
+    if can_bunny_amulet_4(state, player, options):
+        amulet = 4
+    elif can_bunny_amulet_3(state, player):
+        amulet = 3
+    elif can_bunny_amulet_2(state, player):
+        amulet = 2
+    elif can_bunny_amulet(state, player):
+        amulet = 1
+    
+    if has_item_menu(state, player, options):
+        if state.has(ItemName.rumi_donut, player):
+            food = 1
+            # Eating a Rumi Donut gives an amulet charge
+            if can_bunny_amulet(state, player):
+                amulet += 1
+            food += state.count_from_list_unique(normal_consumable_items, player)
+            if amulet >= 4 and state.has(ItemName.kotri_recruit, player) and \
+                can_recruit_n_town_members(state, 3, player):
+                amulet += 1
+    return (amulet + food) >= num_amulet_food
+
+def has_many_amulet_food(state: CollectionState, player: int, options):
+    """Player has access to many consumables due to being able to reach the town shop"""
+    return has_item_menu(state, player, options) and \
+        state.can_reach(LocationName.town_shop, "Region", player) and \
+        can_bunny_amulet(state, player)
 
 ####################################################
 #           Utility used by other modules
@@ -382,6 +443,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Piko Hammer Leveled": lambda state: state.has(ItemName.piko_hammer, player),
             "Carrot Bomb Entry": lambda state: state.has(ItemName.carrot_bomb, player),
             "Carrot Shooter Entry": lambda state: carrot_shooter_in_logic(state, player, options),
+            "Charge Carrot Shooter Entry": lambda state: can_charge_carrot_shooter_entry(state, player, options),
             "Tm Cocoa": lambda state: state.has(ItemName.cocoa_recruit, player),
             "Tm Ashuri": lambda state: state.has(ItemName.ashuri_recruit, player),
             "Tm Rita": lambda state: state.has(ItemName.rita_recruit, player),
@@ -398,20 +460,22 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Tm Chocolate": lambda state: state.has(ItemName.chocolate_recruit, player),
             "Tm Kotri": lambda state: state.has(ItemName.kotri_recruit, player),
             "Tm Keke Bunny": lambda state: state.has(ItemName.keke_bunny_recruit, player),
-            "Speedy": lambda state: can_be_speedy(state, player),
-            "Speed1": lambda state: can_use_speed_1(state, player),
-            "Speed2": lambda state: can_use_speed_2(state, player),
-            "Speed3": lambda state: can_use_speed_3(state, player),
-            "Speed5": lambda state: can_use_speed_5(state, player),
+            "Speedy": lambda state: can_be_speedy(state, player, options),
+            "Speed1": lambda state: can_use_speed_1(state, player, options),
+            "Speed2": lambda state: can_use_speed_2(state, player, options),
+            "Speed3": lambda state: can_use_speed_3(state, player, options),
+            "Speed5": lambda state: can_use_speed_5(state, player, options),
             "3 Magic Types": lambda state: has_3_magic_types(state, player),
-            "Item Menu": lambda state: has_item_menu(state, player),
+            "Item Menu": lambda state: has_item_menu(state, player, options),
             "Chapter 1": lambda state: state.has("Chapter 1", player),
             "Chapter 2": lambda state: state.has("Chapter 2", player),
             "Chapter 3": lambda state: state.has("Chapter 3", player),
             "Chapter 4": lambda state: state.has("Chapter 4", player),
             "Chapter 5": lambda state: state.has("Chapter 5", player),
-            "Boost": lambda state: can_use_boost(state, player),
-            "Boost Many": lambda state: can_use_boost(state, player),
+            "Chapter 6": lambda state: state.has("Chapter 6", player),
+            "Chapter 7": lambda state: state.has("Chapter 7", player),
+            "Boost": lambda state: can_use_boost(state, player, options),
+            "Boost Many": lambda state: can_use_boost(state, player, options),
             "Darkness": lambda state: can_navigate_darkness(state, player, options),
             "Darkness Without Light Orb": lambda _: options.darkness_without_light_orb.value,
             "Underwater": lambda state: can_navigate_underwater(state, player, options),
@@ -422,21 +486,39 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Ashuri 2": lambda state: can_reach_ashuri_2(state, player),
             "Boss Ribbon": lambda state: can_reach_ribbon(state, player),
             "Difficulty Hard": lambda _: is_at_least_hard_difficulty(options),
-            "Difficulty Stupid": lambda _: is_at_least_stupid_difficulty(options),
             "Difficulty V Hard": lambda _: is_at_least_v_hard_difficulty(options),
+            "Difficulty Extreme": lambda _: is_at_least_extreme_difficulty(options),
+            "Difficulty Stupid": lambda _: is_at_least_stupid_difficulty(options),
             "Knowledge Intermediate": lambda _: is_at_least_intermediate_knowledge(options),
             "Knowledge Advanced": lambda _: is_at_least_advanced_knowledge(options),
-            "Amulet Food": lambda state: has_enough_amulet_food(state, player, 1),
-            "2 Amulet Food": lambda state: has_enough_amulet_food(state, player, 2),
-            "3 Amulet Food": lambda state: has_enough_amulet_food(state, player, 3),
-            "Many Amulet Food": lambda state: has_enough_amulet_food(state, player, 4),
+            "Knowledge Obscure": lambda _: is_at_least_obscure_knowledge(options),
+            "Consumable Use": lambda state: can_use_consumables(state, player, options),
+            "Rumi Donut": lambda state: can_purchase_food(state, player),
+            "Rumi Cake": lambda state: can_purchase_food(state, player),
+            "Cocoa Bomb": lambda state: can_purchase_cocoa_bomb(state, player),
+            "Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 1),
+            "2 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 2),
+            "3 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 3),
+            "4 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 4),
+            "6 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 6),
+            "Many Amulet Food": lambda state: has_many_amulet_food(state, player, options),
             "Open Mode": lambda _: options.open_mode.value,
             "Block Clips Required": lambda _: options.block_clips_required.value,
             "Semisolid Clips Required": lambda _: options.semi_solid_clips_required.value,
             "Zip Required": lambda _: options.zips_required.value,
             "Plurkwood Reachable": lambda _: options.plurkwood_reachable.value,
             "Boss Keke Bunny" : lambda state: can_reach_keke_bunny(state, player),
-            "Event Warps Required" : lambda _: options.event_warps_in_logic.value
+            "Event Warps Required" : lambda _: options.event_warps_in_logic.value,
+            # TODO: Add options for missing settings and states
+            "Boring Tricks Required": lambda _: False,
+            "Bunstrike Zip Required": lambda _: False,
+            "Post Irisu Allowed": lambda _: False,
+            "Post Game Allowed": lambda _: False,
+            "Halloween Reachable": lambda _: False,
+            "Warp Destination Reachable": lambda _: False,
+            "Tm Irisu": lambda _: False,
+            "Tm Miriam": lambda _: False,
+            "Tm Rumi": lambda _: False,
         }
         if literal in literal_eval_map:
             return literal_eval_map[literal]
@@ -457,4 +539,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
         expr_l = convert_existing_rando_rule_to_ap_rule(existing_rule.exprL, player, regions, options)
         expr_r = convert_existing_rando_rule_to_ap_rule(existing_rule.exprR, player, regions, options)
         return lambda state: expr_l(state) and expr_r(state)
+    # TODO: Convert backtracking logic to be handled in AP
+    elif isinstance(existing_rule, OpBacktrack):
+        return lambda _: False
     raise ValueError("Invalid Expression recieved.")

@@ -5,9 +5,10 @@ import random
 import re
 import ast
 import os
+from collections import defaultdict
 from typing import Callable
 
-from worlds.rabi_ribi.utility import load_text_file
+from ..utility import load_text_file
 
 ### Enums
 LOCATION_WARP = 0
@@ -66,12 +67,44 @@ class MapTransition(object):
         self.rect_width = rect_width
         self.rect_height = rect_height
 
+class StartLocation(object):
+    def __init__(self, area, position, weight, location):
+        self.area = area
+        self.position = ast.literal_eval(position)
+        self.weight = weight
+        self.location = location
+
+_constraint_re = re.compile(r'[\(\)]|\bAND\b|\bOR\b|\bBACKTRACK_\d+\b') 
+_impossible = {'IMPOSSIBLE'}
+_always_check = {'DEFAULT'}
+def get_prereq_literals(prereq):
+    literals_str = _constraint_re.sub('', str( prereq ) )
+    literals_set = set(literals_str.split())
+    if('FALSE' in literals_set):
+        return _impossible
+    literals_set.discard('TRUE')
+    if(len(literals_set) < 1):
+        return _always_check
+    return literals_set
+    
+def generate_progression_dict(variables_list, edges:'list<GraphEdge>', keep_progression = True) -> 'dict< str constraint = list<int edge_id>>':
+    progression = defaultdict(set)
+    for v in variables_list: 
+        progression[v] = set()
+    for edge in edges:
+        for literal in edge.progression:
+            progression[literal].add(edge.edge_id)
+        if not keep_progression:
+            del edge.progression #no longer needed, saves space
+    return progression
+
 class EdgeConstraintData(object):
     def __init__(self, from_location, to_location, prereq_expression):
         self.from_location = from_location
         self.to_location = to_location
         self.prereq_expression = prereq_expression
-        self.prereq_lambda = lambda v : prereq_expression.evaluate(v)
+        self.prereq_lambda = ExpressionLambda(prereq_expression).expression_lambda
+        self.prereq_literals = get_prereq_literals( prereq_expression )
 
     def __str__(self):
         return '\n'.join([
@@ -81,17 +114,15 @@ class EdgeConstraintData(object):
         ])
 
 class ItemConstraintData(object):
-    def __init__(self, item, from_location, entry_prereq, entry_prereq_expr, exit_prereq, exit_prereq_expr, alternate_entries, alternate_entry_exprs, alternate_exits, alternate_exit_exprs):
+    def __init__(self, item, from_location, entry_prereq, exit_prereq, alternate_entries, alternate_exits):
         self.item = item
         self.from_location = from_location
-        self.entry_prereq = entry_prereq
-        self.entry_prereq_expr = entry_prereq_expr
-        self.exit_prereq_expr = exit_prereq_expr
-        self.exit_prereq = exit_prereq
+        self.entry_prereq = ExpressionLambda(entry_prereq)
+        self.exit_prereq  = ExpressionLambda(exit_prereq)
+        self.entry_progression = get_prereq_literals( entry_prereq )
+        self.exit_progression  = get_prereq_literals(  exit_prereq )
         self.alternate_entries = alternate_entries
-        self.alternate_entry_exprs = alternate_entry_exprs
         self.alternate_exits = alternate_exits
-        self.alternate_exit_exprs = alternate_exit_exprs
         self.no_alternate_paths = (len(self.alternate_entries) + len(self.alternate_exits) == 0)
 
 class TemplateConstraintData(object):
@@ -100,6 +131,7 @@ class TemplateConstraintData(object):
         self.weight = weight
         self.template_file = template_file
         self.changes = changes
+        self.conflicts_names = []
         self.change_edge_set = set([(c.from_location, c.to_location) for c in changes]
                                 + [(c.to_location, c.from_location) for c in changes])
 
@@ -108,12 +140,13 @@ class TemplateConstraintData(object):
         return bool(self.change_edge_set.intersection(other.change_edge_set))
 
 class GraphEdge(object):
-    def __init__(self, edge_id, from_location, to_location, constraint = None, constraint_expr = None, backtrack_cost = 0):
+    def __init__(self, edge_id, from_location, to_location, constraint, constraint_expr, backtrack_cost, progression={'DEFAULT'}):
         self.edge_id = edge_id
         self.from_location = from_location
         self.to_location = to_location
         self.satisfied = constraint
         self.satisfied_expr = constraint_expr
+        self.progression = progression
         self.backtrack_cost = backtrack_cost
 
     def __str__(self):
@@ -123,7 +156,19 @@ class GraphEdge(object):
             'ID: %s' % self.edge_id,
             'Cost: %s' % self.backtrack_cost,
         ])
+    
+class ExpressionLambda(object):
+    def __init__(self, expression):
+        self.expression = expression
+        self.expression_compile = compile(expression.compile(), "<node>", mode= "eval")
+        self.expression_lambda = lambda v : eval(self.expression_compile, None, {"variables": v})
 
+class ExpressionData(object):
+    def __init__(self, exp):
+        self.exp = exp
+        compiled = compile(exp.compile(), "<node>", mode= "eval")
+        self.exp_lambda = lambda v : eval(compiled, None, {"variables": v})
+        self.exp_literals = get_prereq_literals( exp )
 
 class ConfigData(object):
     def __init__(self, knowledge, difficulty, settings):
@@ -148,8 +193,9 @@ def mean(values):
     values = tuple(values)
     return float(sum(values))/len(values)
 
+_potion_re = re.compile('^[A-Z]*_UP_')
 def is_potion(item_name):
-    return bool(re.match('^[A-Z]*_UP', item_name))
+    return bool(_potion_re.match(item_name))
 
 def is_egg(item_name):
     return item_name!=None and item_name.startswith('EGG_')
@@ -175,9 +221,10 @@ def to_tile_index(x, y):
 
 # Expression Parsing
 
-def parse_expression_lambda(line, variable_names_set, default_expressions, current_expression=None) -> Callable[[str], bool]:
+def parse_expression_lambda(line, variable_names_set, default_expressions, current_expression=None):
     expression = parse_expression(line, variable_names_set, default_expressions, current_expression)
-    return lambda v : expression.evaluate(v)
+    evaluate = ExpressionLambda(expression)
+    return evaluate.expression_lambda
 
 # & - and
 # | - or
@@ -195,10 +242,10 @@ def parse_expression(line, variable_names_set, default_expressions={}, current_e
 
 # Used in string parsing. We only have either strings or expressions
 isExpr = lambda s : not type(s) is str
+_logic_re = re.compile('([()&|!~])')
 def parse_expression_logic(line, variable_names_set, default_expressions, current_expression):
-    pat = re.compile('[()&|~!]')
     line = line.replace('&&', '&').replace('||', '|')
-    tokens = (s.strip() for s in re.split('([()&|!~])', line))
+    tokens = (s.strip() for s in _logic_re.split(line))
     tokens = [s for s in tokens if s]
     # Stack-based parsing. pop from [tokens], push into [stack]
     # We push an expression into [tokens] if we want to process it next iteration.
@@ -255,6 +302,8 @@ def parse_expression_logic(line, variable_names_set, default_expressions, curren
 class OpLit(object):
     def __init__(self, name):
         self.name = name
+    def compile(self):
+        return "variables['%s']" % self.name
     def evaluate(self, variables):
         return variables[self.name]
     def __str__(self):
@@ -264,6 +313,8 @@ class OpLit(object):
 class OpNot(object):
     def __init__(self, expr):
         self.expr = expr
+    def compile(self):
+        return "(not %s)" % self.expr.compile()
     def evaluate(self, variables):
         return not self.expr.evaluate(variables)
     def __str__(self):
@@ -274,6 +325,8 @@ class OpOr(object):
     def __init__(self, exprL, exprR):
         self.exprL = exprL
         self.exprR = exprR
+    def compile(self):
+        return "(%s or %s)" % (self.exprL.compile(), self.exprR.compile())
     def evaluate(self, variables):
         return self.exprL.evaluate(variables) or self.exprR.evaluate(variables)
     def __str__(self):
@@ -284,42 +337,47 @@ class OpAnd(object):
     def __init__(self, exprL, exprR):
         self.exprL = exprL
         self.exprR = exprR
+    def compile(self):
+        return "(%s and %s)" % (self.exprL.compile(), self.exprR.compile())
     def evaluate(self, variables):
         return self.exprL.evaluate(variables) and self.exprR.evaluate(variables)
     def __str__(self):
         return '(%s AND %s)' % (self.exprL, self.exprR)
     __repr__ = __str__
 
+def backtrackEvaluate(variables, nSteps):
+    # Yes, we're cheating by putting backtrack data in variables lol.
+    if not variables['IS_BACKTRACKING']: return False
+    untraversable_edges, outgoing_edges, edges = variables['BACKTRACK_DATA']
+    current_node, target_node = variables['BACKTRACK_GOALS']
+    reachable = set((current_node,))
+    frontier = set(((current_node,0),))
+    frontier_next = set()
 
+    while len(frontier) > 0:
+        for node, distance in frontier:
+            for edge_id in outgoing_edges[node]:
+                if edge_id in untraversable_edges: continue
+                target_location = edges[edge_id].to_location
+                new_cost = distance + edges[edge_id].backtrack_cost
+                if new_cost > nSteps: continue
+                if target_location == target_node: return True
+                if target_location in reachable: continue
+                frontier_next.add((target_location, new_cost))
+                reachable.add(target_location)
+        frontier.clear()
+        frontier, frontier_next = frontier_next, frontier
+    return False
+    
 class OpBacktrack(object):
     def __init__(self, nSteps):
         self.nSteps = nSteps
     def evaluate(self, variables):
-        # Yes, we're cheating by putting backtrack data in variables lol.
-        if not variables['IS_BACKTRACKING']: return False
-        untraversable_edges, outgoing_edges, edges = variables['BACKTRACK_DATA']
-        current_node, target_node = variables['BACKTRACK_GOALS']
-        reachable = set((current_node,))
-        frontier = set(((current_node,0),))
-        frontier_next = set()
-
-        while len(frontier) > 0:
-            for node, distance in frontier:
-                for edge_id in outgoing_edges[node]:
-                    if edge_id in untraversable_edges: continue
-                    target_location = edges[edge_id].to_location
-                    new_cost = distance + edges[edge_id].backtrack_cost
-                    if new_cost > self.nSteps: continue
-                    if target_location == target_node: return True
-                    if target_location in reachable: continue
-                    frontier_next.add((target_location, new_cost))
-                    reachable.add(target_location)
-            frontier.clear()
-            frontier, frontier_next = frontier_next, frontier
-        return False
-
+        return backtrackEvaluate(variables, self.nSteps)
     def __str__(self):
         return 'BACKTRACK_%d' % self.nSteps
+    def compile(self):
+        return "backtrackEvaluate(variables, %d)" % self.nSteps
     __repr__ = __str__
 
 
@@ -370,8 +428,14 @@ def read_file_and_strip_comments(filename):
 
 # Misc commands
 
-def string_to_integer_seed(s):
-    return int(hashlib.md5(s.encode('utf-8')).hexdigest(), base=16)
+def string_to_integer_seed(args):
+    seed = None
+    try:
+        seed = int(args.seed, base=16)
+    except ValueError:
+        s = '%s_hd:%s' % (args.seed, args.hide_difficulty)
+        seed = int(hashlib.md5(s.encode('utf-8')).hexdigest(), base=16)
+    return seed
 
 def hash_map_files(areaids, maps_dir):
     hash  = hashlib.md5()

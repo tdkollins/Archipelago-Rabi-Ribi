@@ -1,23 +1,34 @@
+import random, time
+from random import Random
 from typing import Optional
-from worlds.rabi_ribi.existing_randomizer.allocation import Allocation
-from worlds.rabi_ribi.existing_randomizer.analyzer import Analyzer
-from worlds.rabi_ribi.existing_randomizer.difficultyanalysis import DifficultyAnalysis
-from worlds.rabi_ribi.existing_randomizer.utility import fail, print_ln
-import time
+from .allocation import Allocation
+from .analyzer import Analyzer
+from .difficultyanalysis import DifficultyAnalysis
+from .utility import fail, print_ln
 
 class Generator(object):
+    random: Random
+
     def __init__(self, data, settings):
         self.data = data
         self.settings = settings
         self.allocation = Allocation(data, settings)
 
-    def generate_seed(self):
+    def generate_seed(self, seed):
+        if seed != None:
+            self.random = Random(seed)
+        else:
+            state = random.getstate()[1]
+            seed = state[2] ^ (state[4] << 32) ^ (state[6] << 64) ^ (state[8] << 96)
+            self.random = Random(seed)
+
+        SEED_UPDATE_ATTEMPTS = 1000
         MAX_ATTEMPTS = self.settings.max_attempts
         success = False
+        skip_difficulty_analysis = (self.settings.min_difficulty <= 0 and self.settings.max_sequence_breakability == None)
 
         start_time = time.time()
         for attempts in range(MAX_ATTEMPTS):
-
             self.shuffle()
             analyzer = Analyzer(self.data, self.settings, self.allocation)
             if analyzer.success:
@@ -31,7 +42,8 @@ class Generator(object):
                             success = True
 
             if success:
-                if not self.settings.hide_difficulty or self.settings.min_difficulty > 0 or self.settings.max_sequence_breakability != None:
+                difficulty_analysis: Optional[DifficultyAnalysis] = None
+                if not skip_difficulty_analysis:
                     # Run difficulty analysis
                     if self.settings.egg_goals: goals = analyzer.goals
                     else: goals = analyzer.hard_to_reach_items
@@ -46,23 +58,32 @@ class Generator(object):
                             success = False
 
             if success:
+                if skip_difficulty_analysis:
+                    # Run difficulty analysis
+                    if self.settings.egg_goals: goals = analyzer.goals
+                    else: goals = analyzer.hard_to_reach_items
+                    difficulty_analysis = DifficultyAnalysis(self.data, analyzer, goals)
                 break
-                    
-
-        if not success:
-            fail('Unable to generate a valid seed after %d attempts.' % MAX_ATTEMPTS)
+            self.allocation.revert_graph(self.data)
+            if (attempts + 1) % SEED_UPDATE_ATTEMPTS == 0:
+                state = self.random.getstate()[1]
+                seed = seed ^ state[2] ^ (state[4] << 32) ^ (state[6] << 64) ^ (state[8] << 96)
+                self.allocation = Allocation(self.data, self.settings)
+                self.random = Random(seed)
 
         time_taken = time.time() - start_time
         time_string = '%.2f seconds' % (time_taken)
 
-        print_ln('Seed generated after %d attempts in %s' % (attempts+1, time_string))
+        if not success:
+            fail('Unable to generate a valid seed after %d attempts in %s (%.2f/sec)' % (MAX_ATTEMPTS, time_string, MAX_ATTEMPTS / time_taken))
 
+        print_ln('Seed generated after %d attempts in %s (%.2f/sec)' % (attempts+1, time_string, (attempts + 1) / time_taken))
         # Generate Visualization and Print Output:
-        if False:
+        if self.settings.debug_visualize:
             Analyzer(self.data, self.settings, self.allocation, visualize=True)
-            self.allocation.print_important_item_locations()
+            #self.allocation.print_important_item_locations()
 
-        return self.allocation, analyzer, difficulty_analysis
+        return self.allocation, analyzer, difficulty_analysis, seed
 
     def shuffle(self):
         self.allocation.shuffle(self.data, self.settings)

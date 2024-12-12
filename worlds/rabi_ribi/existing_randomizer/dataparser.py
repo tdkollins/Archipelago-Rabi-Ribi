@@ -1,34 +1,46 @@
 import ast, re, os
-from typing import Dict, List
-from worlds.rabi_ribi.existing_randomizer.utility import *
-from worlds.rabi_ribi.options import RabiRibiOptions
+from typing import Any, Dict, List
+
+from numpy import exp
+
+from .utility import *
+from ..options import RabiRibiOptions
+from ..utility import resource_listdir
 
 """
 Knowledge levels:
     BASIC
     INTERMEDIATE
     ADVANCED
+    OBSCURE
 
 Difficulty levels:
     NORMAL
     HARD
     V_HARD
+    EXTREME
     STUPID
 """
 
 KNOWLEDGE_INTERMEDIATE = 'KNOWLEDGE_INTERMEDIATE'
 KNOWLEDGE_ADVANCED = 'KNOWLEDGE_ADVANCED'
+KNOWLEDGE_OBSCURE = 'KNOWLEDGE_OBSCURE'
 DIFFICULTY_HARD = 'DIFFICULTY_HARD'
 DIFFICULTY_V_HARD = 'DIFFICULTY_V_HARD'
+DIFFICULTY_EXTREME = 'DIFFICULTY_EXTREME'
 DIFFICULTY_STUPID = 'DIFFICULTY_STUPID'
 OPEN_MODE = 'OPEN_MODE'
 
+NO_CONDITIONS = lambda v : True
+INFTY = 99999
 
 def define_config_flags():
     d = {
         "ZIP_REQUIRED": False,
+        "BUNSTRIKE_ZIP_REQUIRED": False,
         "SEMISOLID_CLIPS_REQUIRED": False,
         "BLOCK_CLIPS_REQUIRED": True,
+        "BORING_TRICKS_REQUIRED": False,
         "POST_GAME_ALLOWED": True,
         "POST_IRISU_ALLOWED": True,
         "HALLOWEEN_REACHABLE": False,
@@ -48,8 +60,10 @@ def define_setting_flags(settings):
         # Difficulty Flags
         KNOWLEDGE_INTERMEDIATE: False,
         KNOWLEDGE_ADVANCED: False,
+        KNOWLEDGE_OBSCURE: False,
         DIFFICULTY_HARD: False,
         DIFFICULTY_V_HARD: False,
+        DIFFICULTY_EXTREME: False,
         DIFFICULTY_STUPID: False,
         # Other Flags
         OPEN_MODE: settings.open_mode,
@@ -60,14 +74,16 @@ def define_setting_flags(settings):
 def define_pseudo_items():
     return {
         "WALL_JUMP_LV2": "WALL_JUMP & TOWN_SHOP",
-        "HAMMER_ROLL_LV3": "HAMMER_ROLL & TOWN_SHOP & CHAPTER_3",
-        "AIR_DASH_LV3": "AIR_DASH & TOWN_SHOP",
+        "HAMMER_ROLL_LV3": "rHAMMER_ROLL & TOWN_SHOP & CHAPTER_3",
+        "AIR_DASH_LV3": "rAIR_DASH & TOWN_SHOP",
         "SPEED_BOOST_LV3": "SPEED_BOOST & TOWN_SHOP",
-        "BUNNY_AMULET_LV2": "(BUNNY_AMULET & TOWN_SHOP) | CHAPTER_3",
-        "BUNNY_AMULET_LV3": "(BUNNY_AMULET & TOWN_SHOP) | CHAPTER_4",
+        "BUNNY_AMULET_LV2": "(BUNNY_AMULET & (TOWN_SHOP | (POST_GAME & TM_RUMI))) | CHAPTER_3",
+        "BUNNY_AMULET_LV3": "(BUNNY_AMULET & (TOWN_SHOP | (POST_GAME & TM_RUMI))) | CHAPTER_4",
+        "BUNNY_AMULET_LV4": "BUNNY_AMULET & POST_GAME & TM_RUMI",
         "PIKO_HAMMER_LEVELED": "PIKO_HAMMER",
         "CARROT_BOMB_ENTRY": "CARROT_BOMB",
         "CARROT_SHOOTER_ENTRY": "CARROT_SHOOTER",
+        "CHARGE_CARROT_SHOOTER_ENTRY" : "CARROT_SHOOTER & CHARGE_RING",
 
         "COCOA_1": "FOREST_COCOA_ROOM",
         "KOTRI_1": "PARK_KOTRI",
@@ -75,43 +91,51 @@ def define_pseudo_items():
         "BOSS_KEKE_BUNNY": "PLURKWOOD_MAIN",
         "BOSS_RIBBON": "SPECTRAL_WARP",
 
-        "TM_COCOA": "COCOA_1 & KOTRI_1 & CAVE_COCOA",
+        "TM_COCOA": "CHAPTER_1 & COCOA_1 & KOTRI_1 & CAVE_COCOA",
         "TM_ASHURI": "RIVERBANK_LEVEL3 & TOWN_MAIN & SPECTRAL_WEST",
         "TM_RITA": "SNOWLAND_RITA",
         "TM_CICINI": "SPECTRAL_CICINI_ROOM",
         "TM_SAYA": "EVERNIGHT_SAYA & EVERNIGHT_EAST_OF_WARP",
         "TM_SYARO": "SYSTEM_INTERIOR_MAIN",
         "TM_PANDORA": "PYRAMID_MAIN",
-        "TM_NIEVE": "PALACE_LEVEL_5 & ICY_SUMMIT_MAIN",
-        "TM_NIXIE": "PALACE_LEVEL_5 & ICY_SUMMIT_MAIN",
+        "TM_NIEVE": "PALACE_LEVEL_5 & ICY_SUMMIT_NIXIE",
+        "TM_NIXIE": "PALACE_LEVEL_5 & ICY_SUMMIT_NIXIE",
         "TM_ARURAUNE": "FOREST_NIGHT_WEST",
-        "TM_SEANA": "TM_VANILLA & TM_CHOCOLATE & TM_CICINI & TM_SYARO & TM_NIEVE & TM_NIXIE & AQUARIUM_EAST & PARK_TOWN_ENTRANCE",
-        "TM_LILITH": "SKY_ISLAND_MAIN",
+        "TM_SEANA": "TM_VANILLA & TM_CHOCOLATE & TM_CICINI & TM_SYARO & TM_NIEVE & TM_NIXIE & AQUARIUM_SEANA & PARK_TOWN_ENTRANCE",
+        "TM_LILITH": "SKY_ISLAND_MAIN & TM_CICINI",
         "TM_VANILLA": "SKY_BRIDGE_EAST_LOWER",
         "TM_CHOCOLATE": "CHAPTER_1 & RAVINE_CHOCOLATE",
         "TM_KOTRI": "GRAVEYARD_KOTRI & VOLCANIC_MAIN",
         "TM_KEKE_BUNNY": "BOSS_KEKE_BUNNY & PLURKWOOD_MAIN & TOWN_MAIN",
+        "TM_MIRIAM": "HALL_OF_MEMORIES",
+        "TM_RUMI": "FORGOTTEN_CAVE_2",
+        "TM_IRISU": "WARP_DESTINATION_HOSPITAL & CHAPTER_5 & 15TM & TM_MIRIAM & TM_RUMI & LIBRARY_IRISU",
 
         "2TM": lambda v: count_town_members(v) >= 2,
         "3TM": lambda v: count_town_members(v) >= 3,
         "4TM": lambda v: count_town_members(v) >= 4,
         "7TM": lambda v: count_town_members(v) >= 7,
         "10TM": lambda v: count_town_members(v) >= 10,
-        "SPEEDY": "TM_CICINI & TOWN_MAIN & 3TM",
+        "SPEEDY": "ITM & TM_CICINI & TOWN_MAIN & 3TM",
 
         "3_MAGIC_TYPES": lambda v : count_magic_types(v) >= 3,
-        "ITEM_MENU": "TOWN_MAIN | 3_MAGIC_TYPES",
+        "ITEM_MENU": "TOWN_MAIN | (ADV & 3_MAGIC_TYPES)",
 
         "CHAPTER_1": "TOWN_MAIN",
         "CHAPTER_2": "TOWN_MAIN & 2TM",
         "CHAPTER_3": "TOWN_MAIN & 4TM",
         "CHAPTER_4": "TOWN_MAIN & 7TM",
         "CHAPTER_5": "TOWN_MAIN & 10TM",
+        "CHAPTER_6": "CHAPTER_5",
+        "CHAPTER_7": "TM_RUMI",
+        "15TM": lambda v: enough_town_members_irisu(v),
 
         "CONSUMABLE_USE": "ITEM_MENU & (RUMI_DONUT | RUMI_CAKE | COCOA_BOMB | GOLD_CARROT)",
         "AMULET_FOOD": lambda v : enough_amu_food(v, 1),
         "2_AMULET_FOOD": lambda v : enough_amu_food(v, 2),
         "3_AMULET_FOOD": lambda v : enough_amu_food(v, 3),
+        "4_AMULET_FOOD": lambda v : enough_amu_food(v, 4),
+        "6_AMULET_FOOD": lambda v : enough_amu_food(v, 6),
         "MANY_AMULET_FOOD": "ITEM_MENU & TOWN_SHOP & BUNNY_AMULET",
 
         "BOOST": "BEACH_MAIN | (RUMI_DONUT & ITEM_MENU)",
@@ -129,12 +153,12 @@ def define_alternate_conditions(settings, variable_names_set, default_expression
         "BUNNY_AMULET": "CHAPTER_2",
         "RUMI_DONUT": "TOWN_SHOP",
         "RUMI_CAKE": "TOWN_SHOP",
-        #"COCOA_BOMB": "TM_COCOA & TOWN_MAIN & 3TM", # Discounting this because you can't buy cocoa bombs from cocoa in IMP
+        "COCOA_BOMB": "TM_COCOA & TOWN_MAIN & 3TM",
     }
-    if not settings.shuffle_map_transitions:
+    if not settings.shuffle_gift_items:
         d.update({
             "SPEED_BOOST": "TOWN_SHOP",
-            "BUNNY_STRIKE": "SLIDING_POWDER & TOWN_SHOP",
+            "BUNNY_STRIKE": "SLIDING_POWDER & TOWN_SHOP & TM_CICINI",
             "P_HAIRPIN": "BOSS_KEKE_BUNNY & PLURKWOOD_MAIN",
         })
 
@@ -155,13 +179,16 @@ def define_default_expressions(variable_names_set):
     def1 = expr_all({
         "INTERMEDIATE": "KNOWLEDGE_INTERMEDIATE",
         "ADVANCED": "KNOWLEDGE_ADVANCED",
+        "OBSCURE": "KNOWLEDGE_OBSCURE",
         "HARD": "DIFFICULTY_HARD",
         "V_HARD": "DIFFICULTY_V_HARD",
+        "EXTREME": "DIFFICULTY_EXTREME",
         "STUPID": "DIFFICULTY_STUPID",
 
         "ZIP": "ZIP_REQUIRED",
         "SEMISOLID_CLIP": "SEMISOLID_CLIPS_REQUIRED",
         "BLOCK_CLIP": "BLOCK_CLIPS_REQUIRED",
+        "BORING": "BORING_TRICKS_REQUIRED",
         "POST_GAME": "POST_GAME_ALLOWED",
         "POST_IRISU": "POST_IRISU_ALLOWED",
         "HALLOWEEN": "HALLOWEEN_REACHABLE",
@@ -191,7 +218,12 @@ def define_default_expressions(variable_names_set):
         "ADV": "ADVANCED",
         "ADV_HARD": "ADVANCED & HARD",
         "ADV_VHARD": "ADVANCED & V_HARD",
+        "ADV_EXT": "ADVANCED & EXTREME",
         "ADV_STUPID": "ADVANCED & STUPID",
+        "OBS": "OBSCURE",
+        "OBS_VHARD": "OBSCURE & V_HARD",
+        "OBS_EXT": "OBSCURE & EXTREME",
+        "OBS_STUPID": "OBSCURE & STUPID",
     })
     def1.update(def2)
 
@@ -199,11 +231,14 @@ def define_default_expressions(variable_names_set):
     def3 = expr_all({
         "HAMMER_ROLL_ZIP": "ZIP & HAMMER_ROLL_LV3",
         "SLIDE_ZIP": "ZIP & SLIDING_POWDER",
+        "ROLL_BONK_ZIP": "ZIP & HAMMER_ROLL & OBS_VHARD",
+        "BUNSTRIKE_ZIP": "ZIP & BUNSTRIKE_ZIP_REQUIRED & BUNNY_STRIKE",
         "WHIRL_BONK": "BUNNY_WHIRL & ITM_HARD",
-        "WHIRL_BONK_CANCEL": "BUNNY_WHIRL & BUNNY_AMULET & ITM_HARD",
+        "WHIRL_BONK_CANCEL": "BUNNY_WHIRL & ((BUNNY_AMULET & ITM_HARD) | OBS_VHARD)",
         "SLIDE_JUMP_BUNSTRIKE": "BUNNY_STRIKE & INTERMEDIATE",
         "SLIDE_JUMP_BUNSTRIKE_CANCEL": "BUNNY_STRIKE & BUNNY_AMULET & ITM_HARD",
         "DOWNDRILL_SEMISOLID_CLIP": "PIKO_HAMMER_LEVELED & SEMISOLID_CLIP",
+        "2TILE_DOWNDRILL_SEMISOLID_CLIP": "PIKO_HAMMER_LEVELED & SEMISOLID_CLIP & OBS_EXT",
         "8TILE_WALLJUMP": "(ITM & (HARD | WALL_JUMP)) | RABI_SLIPPERS | AIR_JUMP",
 
         "EXPLOSIVES": "CARROT_BOMB | (CARROT_SHOOTER & BOOST)",
@@ -215,6 +250,28 @@ def define_default_expressions(variable_names_set):
         "SPEED5": "SPEED_BOOST_LV3 & SPEEDY",
     })
     def1.update(def3)
+
+    expr = lambda s : parse_expression(s, variable_names_set, def1)
+    def4 = expr_all({
+        "1TILE_ZIP": "SLIDE_ZIP",
+        "2TILE_ZIP": "SLIDE_ZIP & ADV_VHARD",
+        "3TILE_ZIP": "SLIDE_ZIP & HARD",
+        "4TILE_ZIP": "SLIDE_ZIP & HARD",
+        "5TILE_ZIP": "RABI_SLIPPERS & SLIDE_ZIP & ADV_VHARD",
+
+        "5TILE_WALL_CLIMB": "\
+            AIR_JUMP | AIR_DASH | (ADV_VHARD & RABI_SLIPPERS & AMULET_FOOD)\
+            | (ADV_EXT & WALL_JUMP & 2_AMULET_FOOD & (BUNNY_AMULET | STUPID))\
+            | (OBS_STUPID & BORING & 6_AMULET_FOOD)\
+        ",
+
+        "5TILE_WALL_CLIMB_BUNSTRIKE": "\
+            (RABI_SLIPPERS & SLIDE_JUMP_BUNSTRIKE)\
+            | (ADV_EXT & SLIDE_JUMP_BUNSTRIKE_CANCEL & 2_AMULET_FOOD)\
+        ",
+    })
+    def1.update(def4)
+
     return def1
 
 def shufflable_gift_item_map_modifications():
@@ -223,27 +280,45 @@ def shufflable_gift_item_map_modifications():
         os.path.join('existing_randomizer', 'maptemplates', 'shuffle_gift_items', 'mod_bunstrike_speedboost.txt')
     ]
 
-def get_default_areaids():
-    return list(range(10))
-
-TOWN_MEMBERS = ('TM_COCOA','TM_ASHURI','TM_RITA','TM_CICINI','TM_SAYA','TM_SYARO','TM_PANDORA','TM_NIEVE','TM_NIXIE','TM_ARURAUNE','TM_SEANA','TM_LILITH','TM_VANILLA','TM_CHOCOLATE','TM_KOTRI','TM_KEKE_BUNNY',)
+TOWN_MEMBERS = (
+    'TM_COCOA', 'TM_ASHURI', 'TM_RITA', 'TM_CICINI',
+    'TM_SAYA', 'TM_SYARO', 'TM_PANDORA', 'TM_NIEVE',
+    'TM_NIXIE', 'TM_ARURAUNE', 'TM_SEANA', 'TM_LILITH',
+    'TM_VANILLA', 'TM_CHOCOLATE', 'TM_KOTRI', 'TM_KEKE_BUNNY',
+    )
 def count_town_members(variables):
     return sum(1 for tm in TOWN_MEMBERS if variables[tm])
+
+# removed TM_VANILLA, TM_CHOCOLATE, TM_CICINI, TM_SYARO, TM_NIEVE, and TM_NIXIE from requirements since TM_SEANA is encompasses them
+TOWN_MEMBERS_IRISU = (
+    'TM_COCOA', 'TM_ASHURI', 'TM_RITA', 'TM_SAYA',
+    'TM_PANDORA', 'TM_ARURAUNE', 'TM_SEANA', 'TM_LILITH',
+    'TM_KOTRI',
+    )
+def enough_town_members_irisu(variables):
+    return sum(1 for tm in TOWN_MEMBERS_IRISU if variables[tm]) >= 9
 
 MAGIC_TYPES = ('SUNNY_BEAM','CHAOS_ROD','HEALING_STAFF','EXPLODE_SHOT','CARROT_SHOOTER')
 def count_magic_types(variables):
     return sum(1 for tm in MAGIC_TYPES if variables[tm]) + 1
 
 CONSUMABLE_ITEMS = ('RUMI_DONUT','RUMI_CAKE','COCOA_BOMB','GOLD_CARROT')
+NORMAL_CONSUMABLE_ITEMS = ('RUMI_CAKE','COCOA_BOMB','GOLD_CARROT')
 def enough_amu_food(variables, amount):
-    if variables['TOWN_SHOP']: return True
-    count = 0
-    if variables['BUNNY_AMULET']: count = 1
-    if variables['BUNNY_AMULET_LV2']: count = 2
-    if variables['BUNNY_AMULET_LV3']: count = 3
+    amulet = 0
+    food = 0
+    if variables['BUNNY_AMULET_LV4']: amulet = 4
+    elif variables['BUNNY_AMULET_LV3']: amulet = 3
+    elif variables['BUNNY_AMULET_LV2']: amulet = 2
+    elif variables['BUNNY_AMULET']: amulet = 1
     if variables['ITEM_MENU']:
-        count += sum(1 for tm in CONSUMABLE_ITEMS if variables[tm])
-    return count >= amount
+        if variables['RUMI_DONUT']:
+            food = 1
+            if variables['BUNNY_AMULET']: amulet += 1
+        food += sum(1 for tm in NORMAL_CONSUMABLE_ITEMS if variables[tm])
+    if amulet >= 4 and variables['TM_KOTRI'] and variables['3TM']:
+        amulet += 1
+    return (amulet + food) >= amount
 
 
 def evaluate_pseudo_item_constraints(pseudo_items, variable_names_set, default_expressions):
@@ -258,6 +333,7 @@ def parse_locations_and_items():
     shufflable_gift_items = []
     additional_items = {}
     map_transitions = []
+    start_locations = []
 
     locations_items_file = os.path.join('existing_randomizer', 'locations_items.txt')
     lines = read_file_and_strip_comments(locations_items_file)
@@ -274,6 +350,7 @@ def parse_locations_and_items():
     READING_ADDITIONAL_ITEMS = 3
     READING_SHUFFLABLE_GIFT_ITEMS = 4
     READING_ITEMS = 5
+    READING_START_LOCATIONS = 6
 
     currently_reading = READING_NOTHING
 
@@ -288,6 +365,8 @@ def parse_locations_and_items():
             currently_reading = READING_SHUFFLABLE_GIFT_ITEMS
         elif line.startswith('===Items==='):
             currently_reading = READING_ITEMS
+        elif line.startswith('===StartLocations==='):
+            currently_reading = READING_START_LOCATIONS
         elif currently_reading == READING_LOCATIONS:
             if len(line) <= 0: continue
             location, location_type = (x.strip() for x in line.split(':'))
@@ -333,7 +412,21 @@ def parse_locations_and_items():
                 entry_target = entry_target,
                 walking_right = walking_right,
                 rect = rect,
-             ))
+            ))
+        elif currently_reading == READING_START_LOCATIONS:
+            if len(line) <= 0: continue
+            # Line format:
+            # area : (x, y) : location
+            area, position, weight, location = [x.strip() for x in line.split(':')]
+            if not location in locations:
+                fail('Location %s is not defined!' % location)
+            start_locations.append(StartLocation(
+                area = int(area),
+                position = position,
+                weight = int(weight),
+                location = location,
+            ))
+
 
 
     # Validate map transition locations
@@ -342,7 +435,7 @@ def parse_locations_and_items():
             set(mt.origin_location for mt in map_transitions) - set(locations.keys())
         ))
 
-    return locations, map_transitions, items, additional_items, shufflable_gift_items
+    return locations, map_transitions, items, additional_items, shufflable_gift_items, start_locations
 
 # throws errors for invalid formats.
 def parse_edge_constraints(locations_set, variable_names_set, default_expressions):
@@ -383,12 +476,7 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
 
     def parse_alternates(alts):
         if alts == None: return {}
-        return dict((name, parse_expression_lambda(constraint, variable_names_set, default_expressions))
-            for name, constraint in alts.items())
-
-    def parse_alternate_exprs(alts):
-        if alts == None: return {}
-        return dict((name, parse_expression(constraint, variable_names_set, default_expressions))
+        return dict( (name, ExpressionData( parse_expression(constraint, variable_names_set, default_expressions)) )
             for name, constraint in alts.items())
 
     item_constraints: List[ItemConstraintData] = []
@@ -404,14 +492,10 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
         item_constraints.append(ItemConstraintData(
             item = item,
             from_location = from_location,
-            entry_prereq = parse_expression_lambda(cdict['entry_prereq'], variable_names_set, default_expressions),
-            entry_prereq_expr = parse_expression(cdict['entry_prereq'], variable_names_set, default_expressions),
-            exit_prereq = parse_expression_lambda(cdict['exit_prereq'], variable_names_set, default_expressions),
-            exit_prereq_expr = parse_expression(cdict['exit_prereq'], variable_names_set, default_expressions),
+            entry_prereq = parse_expression(cdict['entry_prereq'], variable_names_set, default_expressions),
+            exit_prereq = parse_expression(cdict['exit_prereq'], variable_names_set, default_expressions),
             alternate_entries = parse_alternates(cdict.get('alternate_entries')),
-            alternate_entry_exprs = parse_alternate_exprs(cdict.get('alternate_entries')),
             alternate_exits = parse_alternates(cdict.get('alternate_exits')),
-            alternate_exit_exprs = parse_alternate_exprs(cdict.get('alternate_exits'))
         ))
 
     # Validate that there are no duplicate items defined
@@ -423,148 +507,22 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
 
     return item_constraints
 
-def parse_template_constraints(locations_set, variable_names_set, default_expressions, edge_constraints):
-    patch_files = [
-        'CS_above_hammer_fireorb.txt',
-        'CS_above_hammer_unclimbable.txt',
-        'CS_aquarium_east_transition_fireorb.txt',
-        'CS_aquarium_east_transition_nothing.txt',
-        'CS_aquarium_east_transition_whirlblocks.txt',
-        'CS_aquarium_entrance_fireorb.txt',
-        'CS_aquarium_entrance_hammer.txt',
-        'CS_aquarium_entrance_underwater_zip.txt',
-        'CS_aquarium_interior_left_entrance_semisolid.txt',
-        'CS_aquarium_interior_left_entrance_wall.txt',
-        'CS_aquarium_upperlevel_east_hammer.txt',
-        'CS_aquarium_upperlevel_east_wall.txt',
-        'CS_aurora_palace_fireorb.txt',
-        'CS_aurora_palace_nospring.txt',
-        'CS_aurora_palace_wall.txt',
-        'CS_aurora_palace_whirlblocks.txt',
-        'CS_beach_aquarium_entrance_fireorb.txt',
-        'CS_beach_east_wall.txt',
-        'CS_beach_volcanic_entrance_fireorb.txt',
-        'CS_beach_volcanic_entrance_hammer.txt',
-        'CS_beach_volcanic_entrance_oneway.txt',
-        'CS_cicini_room_fireorb.txt',
-        'CS_cicini_room_hammer.txt',
-        'CS_cicini_room_nostupid.txt',
-        'CS_cicini_room_slide.txt',
-        'CS_cocoa_fireorb.txt',
-        'CS_cocoa_hammer.txt',
-        'CS_computer_entrance_5tile.txt',
-        'CS_computer_entrance_bombs_slide.txt',
-        'CS_computer_entrance_fireorb.txt',
-        'CS_computer_entrance_hammer.txt',
-        'CS_evernight_to_lower_riverbank_fireorb.txt',
-        'CS_evernight_to_lower_riverbank_hammer.txt',
-        'CS_evernight_warp_left_redirect.txt',
-        'CS_forest_east_above_spring_wall.txt',
-        'CS_forest_east_no_spring.txt',
-        'CS_forest_lower_riverbank_exit_fireorb.txt',
-        'CS_forest_lower_riverbank_exit_whirlblocks.txt',
-        'CS_forest_night_spike_gap.txt',
-        'CS_forest_northwest_oneway.txt',
-        'CS_icy_summit_entrance_airjump.txt',
-        'CS_icy_summit_entrance_fireorb.txt',
-        'CS_lab_west_to_mid_fireorb.txt',
-        'CS_lab_west_to_mid_hammer.txt',
-        'CS_lab_west_to_mid_wall.txt',
-        'CS_lower_riverbank_east_nospring.txt',
-        'CS_lower_riverbank_east_oneway.txt',
-        'CS_lower_riverbank_east_oneway_fireorb.txt',
-        'CS_lower_riverbank_east_oneway_hammer.txt',
-        'CS_mid_lower_riverbank_left_semisolid.txt',
-        'CS_mid_lower_riverbank_left_semisolid_fireorb.txt',
-        'CS_mid_lower_riverbank_left_semisolid_hammer.txt',
-        'CS_pacifist_jump_fireorb.txt',
-        'CS_pacifist_jump_wall.txt',
-        'CS_pacifist_jump_whirlblocks.txt',
-        'CS_palace_level2_fireorb.txt',
-        'CS_palace_level2_hammer.txt',
-        'CS_palace_level2_nospring.txt',
-        'CS_palace_level2_wall.txt',
-        'CS_palace_level3_semisolid_spring.txt',
-        'CS_palace_level4_nospring.txt',
-        'CS_park_defgrow_semisolid.txt',
-        'CS_park_kotri_right_4tile.txt',
-        'CS_park_kotri_right_fireorb.txt',
-        'CS_park_kotri_right_hammer_slide.txt',
-        'CS_pyramid_darkroom_fireorb.txt',
-        'CS_pyramid_entrance_fireorb.txt',
-        'CS_pyramid_entrance_hammer_nobomb.txt',
-        'CS_pyramid_entrance_left_wall.txt',
-        'CS_pyramid_lower_fireorb.txt',
-        'CS_pyramid_lower_hammer_nobomb.txt',
-        'CS_pyramid_lower_wall.txt',
-        'CS_ravine_mana_surge_airdash.txt',
-        'CS_ravine_mana_surge_fireorb.txt',
-        'CS_ravine_mana_surge_hammer.txt',
-        'CS_ravine_mid_fireorb.txt',
-        'CS_ravine_mid_wall.txt',
-        'CS_ravine_mid_whirlblocks.txt',
-        'CS_ravine_town_entrance_fireorb.txt',
-        'CS_ravine_town_entrance_hammer.txt',
-        'CS_ravine_town_entrance_wall.txt',
-        'CS_rita_right_hammer.txt',
-        'CS_rita_right_slide.txt',
-        'CS_rita_right_wall.txt',
-        'CS_riverbank_level1_fireorb.txt',
-        'CS_riverbank_level1_hammer_nobomb.txt',
-        'CS_riverbank_level1_wall.txt',
-        'CS_riverbank_level2_wall.txt',
-        'CS_riverbank_lower_exit_fireorb.txt',
-        'CS_riverbank_lower_exit_wall.txt',
-        'CS_riverbank_post_ashuri2_fireorb.txt',
-        'CS_riverbank_post_ashuri2_hammer.txt',
-        'CS_riverbank_post_ashuri2_wall.txt',
-        'CS_riverbank_ribbonblocks_fireorb.txt',
-        'CS_riverbank_ribbonblocks_hammer.txt',
-        'CS_riverbank_ribbonblocks_wall.txt',
-        'CS_shop_entrance_fireorb.txt',
-        'CS_shop_entrance_hammer_nobomb.txt',
-        'CS_shop_entrance_slide.txt',
-        'CS_sky_island_entrance_fireorb.txt',
-        'CS_sky_island_entrance_hammer.txt',
-        'CS_sky_island_entrance_walljump.txt',
-        'CS_skybridge_eastwest_fireorb.txt',
-        'CS_skybridge_eastwest_hammer.txt',
-        'CS_skybridge_eastwest_slippers.txt',
-        'CS_skybridge_eastwest_wall.txt',
-        'CS_skybridge_west_fireorb.txt',
-        'CS_skybridge_west_hammer.txt',
-        'CS_skybridge_west_wall.txt',
-        'CS_snowland_east_mid_4tile.txt',
-        'CS_snowland_east_mid_wall.txt',
-        'CS_snowland_east_mid_whirlblocks.txt',
-        'CS_snowland_lake_left_entrance_semisolid.txt',
-        'CS_snowland_lake_left_entrance_wall.txt',
-        'CS_snowland_lake_left_entrance_whirlblocks.txt',
-        'CS_snowland_lake_right_entrance_semisolid.txt',
-        'CS_snowland_lake_right_entrance_whirlblocks.txt',
-        'CS_spike_barrier_fireorb.txt',
-        'CS_spike_barrier_nostupid.txt',
-        'CS_upper_icy_summit_4tile.txt',
-        'CS_upper_icy_summit_wall.txt',
-        'CS_upper_park_4tile.txt',
-        'CS_upper_park_fireorb.txt',
-        'CS_upper_park_whirlblocks.txt',
-        'CS_uprprc_base_fireorb.txt',
-        'CS_uprprc_base_wall.txt',
-        'CS_uprprc_base_whirlblocks.txt',
-        'CS_uprprc_slippers_exit_4tile.txt',
-        'CS_vanilla_left_wall.txt',
-        'CS_volcanic_west_nostupid.txt',
-    ]
+DIR_TEMPLATE_PATCH_FILES = os.path.join('existing_randomizer', 'maptemplates', 'constraint_shuffle')
 
+def parse_template_constraints(settings, locations_set, variable_names_set, default_expressions, edge_constraints):
     template_constraints = os.path.join('existing_randomizer', 'maptemplates', 'template_constraints.txt')
     lines = read_file_and_strip_comments(template_constraints)
+    if settings.shuffle_start_location:
+        start_rando_template_constraints = os.path.join('existing_randomizer', 'maptemplates', 'start_rando_template_constraints.txt')
+        lines += read_file_and_strip_comments(start_rando_template_constraints)
     jsondata = ' '.join(lines)
     jsondata = re.sub(r',\s*}', '}', jsondata)
     jsondata = '},{'.join(re.split(r'}\s*{', jsondata))
     jsondata = '[' + jsondata + ']'
+
     cdicts = parse_json(jsondata)
 
+    patch_files = resource_listdir(DIR_TEMPLATE_PATCH_FILES)
     patch_names = []
     for patch_file in patch_files:
         if not patch_file.startswith('CS_'): fail('Patch file %s does not start with CS_' % patch_file)
@@ -592,13 +550,15 @@ def parse_template_constraints(locations_set, variable_names_set, default_expres
         template_constraints.append(TemplateConstraintData(
             name=name,
             weight=weight,
-            template_file=os.path.join(
-                'existing_randomizer', 'maptemplates',
-                'constraint_shuffle', name_to_patch_file[name]),
+            template_file=os.path.join(DIR_TEMPLATE_PATCH_FILES, name_to_patch_file[name]),
             changes=changes,
         ))
-
     template_constraints.sort(key=lambda tc:tc.name)
+
+    for src_t in template_constraints:
+        for cmp_t in template_constraints:
+            if src_t.conflicts_with(cmp_t):
+                src_t.conflicts_names.append(cmp_t.name)
     return template_constraints
 
 
@@ -607,28 +567,41 @@ def read_config(default_setting_flags, item_locations_set, shufflable_gift_items
     jsondata = ' '.join(lines)
     jsondata = re.sub(r',\s*]', ']', jsondata)
     jsondata = re.sub(r',\s*}', '}', jsondata)
+    jsondata = re.sub(r'\],\s*$', ']', jsondata)
     config_dict = parse_json('{' + jsondata + '}')
 
-    to_shuffle = config_dict['to_shuffle']
-    must_be_reachable = set(config_dict['must_be_reachable'])
-    included_additional_items = config_dict['additional_items']
-    config_settings = config_dict['settings']
-    knowledge = config_dict['knowledge']
-    difficulty = config_dict['trick_difficulty']
+    knowledge = "BASIC"
+    difficulty = "NORMAL"
+    included_additional_items = list()
+    must_be_reachable = set()
+    config_settings = dict()
+
+    if 'to_shuffle' not in config_dict:
+        fail('Missing "to_shuffle" in config')
+    to_shuffle = set(config_dict['to_shuffle'])
+    if 'must_be_reachable' in config_dict:
+        must_be_reachable = set(config_dict['must_be_reachable'])
+    if 'additional_items' in config_dict:
+        included_additional_items = config_dict['additional_items']
+    if 'settings' in config_dict:
+        config_settings = config_dict['settings']
+    if 'knowledge' in config_dict:
+        knowledge = config_dict['knowledge']
+    if 'trick_difficulty' in config_dict:
+        difficulty = config_dict['trick_difficulty']
 
     # Replace config file with player options
     if hasattr(settings, 'ap_options'):
         ap_options: RabiRibiOptions = settings.ap_options
         read_ap_config_settings(config_settings, ap_options)
-        knowledge_options = ['BASIC', 'INTERMEDIATE', 'ADVANCED']
+        knowledge_options = ['BASIC', 'INTERMEDIATE', 'ADVANCED', 'OBSCURE']
         knowledge = knowledge_options[ap_options.knowledge.value]
-        difficulty_options = ['NORMAL', 'HARD', 'V_HARD', 'STUPID']
+        difficulty_options = ['NORMAL', 'HARD', 'V_HARD', 'EXTREME', 'STUPID']
         difficulty = difficulty_options[ap_options.trick_difficulty.value]
-
     if settings.shuffle_gift_items:
         included_additional_items = [item_name for item_name in included_additional_items if not item_name in shufflable_gift_items_set]
     else:
-        to_shuffle = [item_name for item_name in to_shuffle if not item_name in shufflable_gift_items_set]
+        to_shuffle -= shufflable_gift_items_set
         must_be_reachable -= shufflable_gift_items_set
 
     # Settings
@@ -637,40 +610,57 @@ def read_config(default_setting_flags, item_locations_set, shufflable_gift_items
         if key not in config_flags_set:
             fail('Undefined flag: %s' % key)
         if not type(value) is bool:
-            fail('Flag %s does not map to a boolean variable in config.txt' % key)
+            fail('Flag %s does not map to a boolean variable in config' % key)
         setting_flags[key] = value
+
     # Knowledge
     if knowledge == 'BASIC':
         setting_flags[KNOWLEDGE_INTERMEDIATE] = False
         setting_flags[KNOWLEDGE_ADVANCED] = False
+        setting_flags[KNOWLEDGE_OBSCURE] = False
     elif knowledge == 'INTERMEDIATE':
         setting_flags[KNOWLEDGE_INTERMEDIATE] = True
         setting_flags[KNOWLEDGE_ADVANCED] = False
+        setting_flags[KNOWLEDGE_OBSCURE] = False
     elif knowledge == 'ADVANCED':
         setting_flags[KNOWLEDGE_INTERMEDIATE] = True
         setting_flags[KNOWLEDGE_ADVANCED] = True
+        setting_flags[KNOWLEDGE_OBSCURE] = False
+    elif knowledge == 'OBSCURE':
+        setting_flags[KNOWLEDGE_INTERMEDIATE] = True
+        setting_flags[KNOWLEDGE_ADVANCED] = True
+        setting_flags[KNOWLEDGE_OBSCURE] = True
     else:
-        fail('Unknown knowledge level: %s. Either BASIC, INTERMEDIATE or ADVANCED.' % knowledge)
+        fail('Unknown knowledge level: %s. Either BASIC, INTERMEDIATE, ADVANCED or OBSCURE.' % knowledge)
 
     # Difficulty
     if difficulty == 'NORMAL':
         setting_flags[DIFFICULTY_HARD] = False
         setting_flags[DIFFICULTY_V_HARD] = False
+        setting_flags[DIFFICULTY_EXTREME] = False
         setting_flags[DIFFICULTY_STUPID] = False
     elif difficulty == 'HARD':
         setting_flags[DIFFICULTY_HARD] = True
         setting_flags[DIFFICULTY_V_HARD] = False
+        setting_flags[DIFFICULTY_EXTREME] = False
         setting_flags[DIFFICULTY_STUPID] = False
     elif difficulty == 'V_HARD':
         setting_flags[DIFFICULTY_HARD] = True
         setting_flags[DIFFICULTY_V_HARD] = True
+        setting_flags[DIFFICULTY_EXTREME] = False
+        setting_flags[DIFFICULTY_STUPID] = False
+    elif difficulty == 'EXTREME':
+        setting_flags[DIFFICULTY_HARD] = True
+        setting_flags[DIFFICULTY_V_HARD] = True
+        setting_flags[DIFFICULTY_EXTREME] = True
         setting_flags[DIFFICULTY_STUPID] = False
     elif difficulty == 'STUPID':
         setting_flags[DIFFICULTY_HARD] = True
         setting_flags[DIFFICULTY_V_HARD] = True
+        setting_flags[DIFFICULTY_EXTREME] = True
         setting_flags[DIFFICULTY_STUPID] = True
     else:
-        fail('Unknown difficulty level: %s. Either NORMAL, HARD, V_HARD or STUPID.' % difficulty)
+        fail('Unknown difficulty level: %s. Either NORMAL, HARD, V_HARD, EXTREME or STUPID.' % difficulty)
 
     if set(included_additional_items) - predefined_additional_items_set:
         fail('\n'.join([
@@ -678,16 +668,16 @@ def read_config(default_setting_flags, item_locations_set, shufflable_gift_items
             '\n'.join(map(str, set(included_additional_items) - predefined_additional_items_set)),
         ]))
 
-    if set(to_shuffle) - item_locations_set:
+    if to_shuffle - item_locations_set:
         fail('\n'.join([
             'Unknown items defined in config:',
-            '\n'.join(map(str, set(to_shuffle) - item_locations_set)),
+            '\n'.join(map(str, to_shuffle - item_locations_set)),
         ]))
 
-    if set(must_be_reachable) - item_locations_set:
+    if must_be_reachable - item_locations_set:
         fail('\n'.join([
             'Unknown items defined in config:',
-            '\n'.join(map(str, set(must_be_reachable) - item_locations_set)),
+            '\n'.join(map(str, must_be_reachable - item_locations_set)),
         ]))
 
     config_data = ConfigData(
@@ -696,7 +686,7 @@ def read_config(default_setting_flags, item_locations_set, shufflable_gift_items
         settings=config_settings,
     )
 
-    return setting_flags, to_shuffle, must_be_reachable, included_additional_items, config_data
+    return setting_flags, sorted(list(to_shuffle)), must_be_reachable, included_additional_items, config_data
 
 def read_ap_config_settings(config_settings, ap_options):
     """Updates the default configuration settings with the player options from Archipelago."""
@@ -732,6 +722,7 @@ class RandomizerData(object):
     # list: edge_constraints   (EdgeConstraintData objects)
     # list: item_constraints   (ItemConstraintData objects)
     # list: map_transitions   (MapTransition objects)
+    # list: start_locations   (StartLocation objects)
     #
     # obj: config_data  (ConfigData object. Used for analysis printing, not used in generation.)
     #
@@ -756,6 +747,7 @@ class RandomizerData(object):
     # Preprocessed Information
     #
     # list: items_to_allocate
+    # dict: edge_progression (variable_name -> set(edge_id))
     #
     # list: walking_left_transitions
     # list: walking_right_transitions
@@ -778,7 +770,7 @@ class RandomizerData(object):
         self.pessimistic_setting_flags.update(self.pessimistic_config_flags)
 
         self.pseudo_items = define_pseudo_items()
-        self.locations, self.map_transitions, self.items, self.all_additional_items, self.shufflable_gift_items = parse_locations_and_items()
+        self.locations, self.map_transitions, self.items, self.all_additional_items, self.shufflable_gift_items, self.start_locations = parse_locations_and_items()
         self.additional_items = dict(self.all_additional_items)
 
         self.gift_item_map_modifications = shufflable_gift_item_map_modifications()
@@ -807,7 +799,7 @@ class RandomizerData(object):
             # Repeats detected! Fail.
             repeat_names = [x for x in variable_names_set if self.variable_names_list.count(x) > 1]
             fail('Repeat names detected: %s' % ','.join(repeat_names))
-        
+
         self.locations_set = set(self.location_list)
         items_set = set(self.item_names)
 
@@ -821,11 +813,14 @@ class RandomizerData(object):
         self.alternate_conditions = define_alternate_conditions(settings, variable_names_set, default_expressions)
         self.edge_constraints = parse_edge_constraints(self.locations_set, variable_names_set, default_expressions)
         self.item_constraints = parse_item_constraints(settings, items_set, shufflable_gift_items_set, self.locations_set, variable_names_set, default_expressions)
-        self.template_constraints = parse_template_constraints(self.locations_set, variable_names_set, default_expressions, self.edge_constraints)
+        self.template_constraints = parse_template_constraints(settings, self.locations_set, variable_names_set, default_expressions, self.edge_constraints)
 
         self.preprocess_data(settings)
         self.preprocess_variables(settings)
         self.preprocess_graph(settings)
+
+        self.preprocess_backward_reachable(settings)
+        self.preprocess_template_constraints(settings)
 
     def preprocess_variables_with_settings(self, setting_flags, settings):
         # Mark all unconstrained pseudo-items
@@ -838,7 +833,7 @@ class RandomizerData(object):
         while has_changes:
             has_changes = False
             to_remove.clear()
-            for condition, target in unreached_pseudo_items.items():
+            for target, condition in unreached_pseudo_items.items():
                 if condition(variables):
                     variables[target] = True
                     to_remove.add(target)
@@ -859,11 +854,12 @@ class RandomizerData(object):
         # Partial Graph Construction
         graph_vertices = list(self.location_list)
         item_locations_in_node = dict((node, []) for node in graph_vertices)
+
         edges = []
         for item_constraint in self.item_constraints:
             if item_constraint.no_alternate_paths and \
-                    item_constraint.entry_prereq(pessimistic_variables) and \
-                    item_constraint.exit_prereq(pessimistic_variables):
+                    item_constraint.entry_prereq.expression_lambda(pessimistic_variables) and \
+                    item_constraint.exit_prereq.expression_lambda(pessimistic_variables):
                 # Unconstrained - Merge directly into from_location
                 item_locations_in_node[item_constraint.from_location].append(item_constraint.item)
             else:
@@ -876,8 +872,9 @@ class RandomizerData(object):
                     edge_id=len(edges),
                     from_location=item_constraint.from_location,
                     to_location=item_node_name,
-                    constraint=item_constraint.entry_prereq,
-                    constraint_expr=item_constraint.entry_prereq_expr,
+                    constraint=item_constraint.entry_prereq.expression_lambda,
+                    constraint_expr=item_constraint.entry_prereq.expression,
+                    progression=item_constraint.entry_progression,
                     backtrack_cost=0,
                 ))
 
@@ -885,30 +882,70 @@ class RandomizerData(object):
                     edge_id=len(edges),
                     from_location=item_node_name,
                     to_location=item_constraint.from_location,
-                    constraint=item_constraint.exit_prereq,
-                    constraint_expr=item_constraint.exit_prereq_expr,
+                    constraint=item_constraint.exit_prereq.expression_lambda,
+                    constraint_expr=item_constraint.exit_prereq.expression,
+                    progression=item_constraint.exit_progression,
                     backtrack_cost=0,
                 ))
 
-                for entry_node, prereq in item_constraint.alternate_entries.items():
+                for entry_node, expression_data in item_constraint.alternate_entries.items():
                     edges.append(GraphEdge(
                         edge_id=len(edges),
                         from_location=entry_node,
                         to_location=item_node_name,
-                        constraint=prereq,
-                        constraint_expr=item_constraint.alternate_entry_exprs[entry_node],
+                        constraint=expression_data.exp_lambda,
+                        constraint_expr=expression_data.exp,
+                        progression=expression_data.exp_literals,
                         backtrack_cost=1,
                     ))
 
-                for exit_node, prereq in item_constraint.alternate_exits.items():
+                for exit_node, expression_data in item_constraint.alternate_exits.items():
                     edges.append(GraphEdge(
                         edge_id=len(edges),
                         from_location=item_node_name,
                         to_location=exit_node,
-                        constraint=prereq,
-                        constraint_expr=item_constraint.alternate_exit_exprs[exit_node],
+                        constraint=expression_data.exp_lambda,
+                        constraint_expr=expression_data.exp,
+                        progression=expression_data.exp_literals,
                         backtrack_cost=1,
                     ))
+
+        # check all replacement potencial nodes
+        replacement_edges = set(
+            (change.from_location, change.to_location)
+            for t in self.template_constraints
+            for change in t.changes
+        )
+
+        # marge non-replacement potencial nodes into initial_edges
+        edge_constraints = self.edge_constraints
+        sifted_edge_constraints = []
+        for graph_edge in edge_constraints:
+            if (graph_edge.from_location, graph_edge.to_location) not in replacement_edges:
+                edges.append(GraphEdge(
+                    edge_id=len(edges),
+                    from_location=graph_edge.from_location,
+                    to_location=graph_edge.to_location,
+                    constraint=graph_edge.prereq_lambda,
+                    constraint_expr=graph_edge.prereq_expression,
+                    progression=graph_edge.prereq_literals,
+                    backtrack_cost=1,
+                ))
+            else:
+                sifted_edge_constraints.append(graph_edge)
+        self.edge_constraints = sifted_edge_constraints
+
+        # replacement potencial nodes
+        self.replacement_edges_id = len(edges)
+        for graph_edge in sifted_edge_constraints:
+            edges.append(GraphEdge(
+                edge_id=len(edges),
+                from_location=graph_edge.from_location,
+                to_location=graph_edge.to_location,
+                constraint=graph_edge.prereq_lambda,
+                constraint_expr=graph_edge.prereq_expression,
+                backtrack_cost=1,
+            ))
 
         initial_outgoing_edges = dict((node, []) for node in graph_vertices)
         initial_incoming_edges = dict((node, []) for node in graph_vertices)
@@ -917,12 +954,34 @@ class RandomizerData(object):
             initial_outgoing_edges[edge.from_location].append(edge.edge_id)
             initial_incoming_edges[edge.to_location].append(edge.edge_id)
 
+        # map transition nodes
+        self.transition_edges_id = len(edges)
+        for rtr, ltr in zip(self.walking_right_transitions, self.walking_left_transitions):
+            edge1 = GraphEdge(
+                edge_id=len(edges),
+                from_location=rtr.origin_location,
+                to_location=ltr.origin_location,
+                constraint=NO_CONDITIONS,
+                constraint_expr=OpLit('TRUE'),
+                backtrack_cost=INFTY,
+            )
+            edge2 = GraphEdge(
+                edge_id=len(edges)+1,
+                from_location=ltr.origin_location,
+                to_location=rtr.origin_location,
+                constraint=NO_CONDITIONS,
+                constraint_expr=OpLit('TRUE'),
+                backtrack_cost=INFTY,
+            )
+            edges.append(edge1)
+            edges.append(edge2)
+
         self.graph_vertices = graph_vertices
         self.item_locations_in_node = item_locations_in_node
         self.initial_edges = edges
         self.initial_outgoing_edges = initial_outgoing_edges
         self.initial_incoming_edges = initial_incoming_edges
-
+        self.edge_progression = generate_progression_dict(self.variable_names_list, edges, keep_progression=False)
 
     def preprocess_data(self, settings):
         ### For item shuffle
@@ -989,3 +1048,89 @@ class RandomizerData(object):
 
     def generate_pessimistic_variables(self):
         return dict(self.pessimistic_variables)
+
+    def preprocess_backward_reachable(self, settings):
+        variables = self.generate_variables()
+        edges = self.initial_edges
+
+        outgoing_edges = dict((key, list(edge_ids)) for key, edge_ids in self.initial_outgoing_edges.items())
+        incoming_edges = dict((key, list(edge_ids)) for key, edge_ids in self.initial_incoming_edges.items())
+
+        for edge in edges[self.transition_edges_id:]:
+            outgoing_edges[edge.from_location].append(edge.edge_id)
+            incoming_edges[edge.to_location].append(edge.edge_id)
+
+        dynamic_edges_id = self.replacement_edges_id
+        if(settings.constraint_changes <= 0 and
+           settings.min_constraint_changes <= 0 and
+           settings.max_constraint_changes <= 0):
+            dynamic_edges_id = self.transition_edges_id
+            if not settings.shuffle_map_transitions:
+                dynamic_edges_id = len(edges)
+
+        dfs_stack = [location for location, loc_type in self.locations.items() if loc_type == LOCATION_WARP]
+        visited = set(dfs_stack)
+        pending_edges = dict()
+
+        while len(dfs_stack) > 0:
+            current_dest = dfs_stack.pop()
+            for edge_id in incoming_edges[current_dest]:
+                target_src = edges[edge_id].from_location
+                if edge_id >= dynamic_edges_id:
+                        if current_dest not in pending_edges:
+                            pending_edges[current_dest] = []
+                        pending_edges[current_dest].append(edge_id)
+                else:
+                    if target_src in visited: continue
+                    if edges[edge_id].satisfied(variables):
+                        visited.add(target_src)
+                        dfs_stack.append(target_src)
+
+        pending_stack = set()
+        for current_dest, from_edges in pending_edges.items():
+            resolved = True
+            for edge_id in from_edges:
+                if edge_id >= self.transition_edges_id:
+                    resolved = False
+                    break
+                target_src = edges[edge_id].from_location
+                if target_src not in visited:
+                    resolved = False
+                    break
+            if not resolved:
+                pending_stack.add(current_dest)
+
+        traversable_edges = set()
+        backward_frontier = set()
+        pending_static_edges = [False for _ in range(dynamic_edges_id)]
+        for edge_id in range(dynamic_edges_id):
+                edge = edges[edge_id]
+                if edge.satisfied(variables):
+                    traversable_edges.add(edge_id)
+                    if edge.to_location in visited:
+                        backward_frontier.add(edge.to_location)
+                    if edge.from_location not in visited:
+                        pending_static_edges[edge_id] = True
+
+
+        self.initial_visited_edges = visited
+        self.initial_pending_stack = list(sorted(pending_stack))
+        self.initial_backward_frontier = backward_frontier
+        self.initial_traversable_edges = traversable_edges
+        self.initial_untraversable_edges = set(edge.edge_id for edge in edges) - traversable_edges
+        self.pending_static_edges = pending_static_edges
+        self.dynamic_edges_id = dynamic_edges_id
+
+    def preprocess_template_constraints(self, settings):
+        initial_template_index = dict()
+        initial_template_weights = list()
+        templates = self.template_constraints
+        total_weight = 0
+        for i in range(len(templates)):
+            t = templates[i]
+            total_weight += t.weight
+            initial_template_index[t.name] = i
+            initial_template_weights.append(total_weight)
+
+        self.initial_template_index = initial_template_index
+        self.initial_template_weights = initial_template_weights

@@ -1,9 +1,9 @@
 import random
-from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
-from worlds.rabi_ribi.existing_randomizer.utility import *
-from worlds.rabi_ribi.existing_randomizer.difficultyanalysis import compute_average_goal_level
+from .utility import *
+from .dataparser import RandomizerData
+from .difficultyanalysis import compute_average_goal_level
 
-START_LOCATION = 'FOREST_START'
+#START_LOCATION = 'FOREST_START'
 
 class Analyzer(object):
     # -- Results --
@@ -44,20 +44,14 @@ class Analyzer(object):
             self.error_message = 'Not all goals are reachable.'
             return False
 
-        if self.settings.egg_goals:
-            if not self.verify_chain_length_requirement(levels):
-                self.error_message = 'Below minimum chain length.'
-                return False
-
         error = self.process_verification_results(reachable, unreachable, levels)
         if error:
             self.error_message = error
             return False
 
-        if not self.settings.egg_goals:
-            if not self.verify_chain_length_requirement(levels):
-                self.error_message = 'Below minimum chain length.'
-                return False
+        if not self.verify_chain_length_requirement(levels):
+            self.error_message = 'Below minimum chain length.'
+            return False
 
         return True
 
@@ -72,7 +66,7 @@ class Analyzer(object):
         #print_ln(set(reachable) - set(all_levels))
         #print_ln(len(all_levels), len(set(all_levels)), len(reachable), len(unreachable))
         #print_ln(set(all_levels) - set(reachable))
-        
+
         allocated_items_set = set(self.data.items_to_allocate)
         nHardToReach = self.data.nHardToReach
         minHardToReachPoolSize = nHardToReach * 5
@@ -91,7 +85,27 @@ class Analyzer(object):
         if len(hard_to_reach_all) < nHardToReach:
             return 'Not enough reachable items (%d) for hard to reach (%d)...?' % (len(hard_to_reach_all), nHardToReach)
 
-        self.hard_to_reach_items = random.sample(hard_to_reach_all, nHardToReach)
+        if self.settings.egg_goals:
+            hard_to_reach_egg = [item for item in hard_to_reach_all if is_egg(item)]
+
+            # hard-to-reach priority
+            # egg > potion > other
+            nHardToReachEgg = len(hard_to_reach_egg)
+            if nHardToReachEgg >= nHardToReach:
+                self.hard_to_reach_items = random.sample(hard_to_reach_egg, nHardToReach)
+            else:
+                self.hard_to_reach_items = random.sample(hard_to_reach_egg, nHardToReachEgg)
+                hard_to_reach_potion = [item for item in hard_to_reach_all if is_potion(item)]
+                nHardToReachPotion = len(hard_to_reach_potion)
+                if (nHardToReachEgg + nHardToReachPotion >= nHardToReach):
+                    self.hard_to_reach_items += random.sample(hard_to_reach_potion, nHardToReach - nHardToReachEgg)
+                else:
+                    self.hard_to_reach_items += random.sample(hard_to_reach_potion, nHardToReachPotion)
+                    hard_to_reach_other = [item for item in hard_to_reach_all if not is_potion(item) and not is_egg(item)]
+                    self.hard_to_reach_items += random.sample(hard_to_reach_other, nHardToReach - nHardToReachEgg - nHardToReachPotion)
+
+        else:
+            self.hard_to_reach_items = random.sample(hard_to_reach_all, nHardToReach)
         self.reachable = reachable
         self.unreachable = unreachable
         self.levels = levels
@@ -102,25 +116,41 @@ class Analyzer(object):
         return None
 
 
-    def verify_warps_reachable(self, starting_variables):
+    def verify_warps_reachable(self, starting_variables, diff_analysis = False):
         # verify that every major location has an unconstrained path to the goal.
         variables = starting_variables #should make a copy, but we don't modify variables anyway so we optimize this out.
         allocation = self.allocation
         edges = allocation.edges
+        data = self.data
 
-        dfs_stack = [location for location, loc_type in self.data.locations.items() if loc_type == LOCATION_WARP]
-        visited = set(dfs_stack)
+        if diff_analysis:
+            dfs_stack = [location for location, loc_type in data.locations.items() if loc_type == LOCATION_WARP]
+            visited = set(dfs_stack)
+            pending_static_edges = []
+            dynamic_edges_id = 0
+        else:
+            dfs_stack = data.initial_pending_stack.copy()
+            visited = data.initial_visited_edges.copy()
+            pending_static_edges = data.pending_static_edges
+            dynamic_edges_id = data.dynamic_edges_id
 
         while len(dfs_stack) > 0:
             current_dest = dfs_stack.pop()
             for edge_id in allocation.incoming_edges[current_dest]:
-                target_src = edges[edge_id].from_location
-                if target_src in visited: continue
-                if edges[edge_id].satisfied(variables):
-                    visited.add(target_src)
-                    dfs_stack.append(target_src)
+                if edge_id < dynamic_edges_id:
+                    if pending_static_edges[edge_id]:
+                        target_src = edges[edge_id].from_location
+                        if target_src in visited: continue
+                        visited.add(target_src)
+                        dfs_stack.append(target_src)
+                else:
+                    target_src = edges[edge_id].from_location
+                    if target_src in visited: continue
+                    if edges[edge_id].satisfied(variables):
+                        visited.add(target_src)
+                        dfs_stack.append(target_src)
 
-        major_locations = set(location for location, loc_type in self.data.locations.items() if loc_type == LOCATION_MAJOR)
+        major_locations = set(location for location, loc_type in data.locations.items() if loc_type == LOCATION_MAJOR)
 
         return (len(major_locations - visited) == 0, visited)
 
@@ -128,7 +158,7 @@ class Analyzer(object):
     def verify_reachable_items(self, starting_variables, backward_exitable):
         if self.visualize:
             from visualizer import Visualization
-            vis = Visualization()
+            vis = Visualization(self.settings)
             vis.load_graph(self.data, self.allocation)
 
         data = self.data
@@ -139,14 +169,16 @@ class Analyzer(object):
         outgoing_edges = allocation.outgoing_edges
         incoming_edges = allocation.incoming_edges
         locations_set = data.locations_set
+        edge_progression = data.edge_progression
 
         # Persistent variables
         variables = dict(starting_variables)
-        untraversable_edges = set(edge.edge_id for edge in edges)
+        untraversable_edges = data.initial_untraversable_edges.copy()
         unreached_pseudo_items = dict(data.pseudo_items)
         unsatisfied_item_conditions = dict(data.alternate_conditions)
+        edge_progression_default = edge_progression['DEFAULT'].copy()
 
-        forward_enterable = set((START_LOCATION,))
+        forward_enterable = set((allocation.start_location.location,))
         backward_exitable = set(backward_exitable)
         pending_exit_locations = set()
         locally_exitable_locations = {}
@@ -155,24 +187,27 @@ class Analyzer(object):
 
         # Temp Variables that are reset every time
         to_remove = []
-        forward_frontier = set()
-        backward_frontier = set()
-        new_reachable_locations = set()
-        newly_traversable_edges = set()
+        forward_frontier = set((allocation.start_location.location,))
+        backward_frontier = data.initial_backward_frontier.copy()
+        new_reachable_locations = forward_enterable.intersection(backward_exitable)
+        newly_traversable_edges = data.initial_traversable_edges.copy()
         temp_variable_storage = {}
-
+        previous_new_variables = set() # for step 1 updating edges
+        new_variables_edges = set()
+        edge_progression_default -= newly_traversable_edges
 
         variables['IS_BACKTRACKING'] = False
         variables['BACKTRACK_DATA'] = untraversable_edges, outgoing_edges, edges
         variables['BACKTRACK_GOALS'] = None, None
 
-        first_loop = True
+        reachable_levels = {allocation.start_location.location : 0}
+
+        #step -1: Mark variables that start True (step 1 checks these)
+        previous_new_variables.update(var for var,val in variables.items() if val == True)
+
         while True:
-            new_reachable_locations.clear()
-            if first_loop: new_reachable_locations = forward_enterable.intersection(backward_exitable)
             current_level_part1 = []
             current_level_part2 = []
-            first_loop = False
 
             # STEP 0: Mark Pseudo-Items
             has_changes = True
@@ -203,13 +238,17 @@ class Analyzer(object):
 
                 for target in to_remove:
                     del unsatisfied_item_conditions[target]
+            previous_new_variables.update(current_level_part1)
 
 
             # STEP 1: Loop Edge List
-            forward_frontier.clear()
-            backward_frontier.clear()
-            newly_traversable_edges.clear()
-            for edge_id in untraversable_edges:
+            new_variables_edges.clear()
+            for var in previous_new_variables:
+                if len(edge_progression[var]) > 0:
+                    new_variables_edges |= edge_progression[var]
+            new_variables_edges &= untraversable_edges
+            new_variables_edges |= edge_progression_default
+            for edge_id in new_variables_edges:
                 edge = edges[edge_id]
                 if edge.satisfied(variables):
                     newly_traversable_edges.add(edge_id)
@@ -217,7 +256,11 @@ class Analyzer(object):
                         forward_frontier.add(edge.from_location)
                     if edge.to_location in backward_exitable:
                         backward_frontier.add(edge.to_location)
+
+            previous_new_variables.clear()
+            edge_progression_default -= newly_traversable_edges
             untraversable_edges -= newly_traversable_edges
+            newly_traversable_edges.clear()
 
             # STEP 2: Find Forward Reachable Nodes
             new_forward_enterable = set()
@@ -229,7 +272,6 @@ class Analyzer(object):
                             if target_location not in forward_enterable:
                                 new_forward_enterable.add(target_location)
                                 forward_enterable.add(target_location)
-
                                 if target_location in backward_exitable:
                                     new_reachable_locations.add(target_location)
                                 else:
@@ -258,6 +300,9 @@ class Analyzer(object):
 
             # STEP 4: Mark New Reachable Locations
             for location in new_reachable_locations:
+                if self.visualize:
+                    if location not in reachable_levels:
+                        reachable_levels[location] = len(levels)//2
                 if location in locations_set:
                     if not variables[location]:
                         current_level_part2.append(location)
@@ -305,7 +350,7 @@ class Analyzer(object):
                             if edge.edge_id not in untraversable_edges or edge.satisfied(variables):
                                 locally_exitable.add(edge.to_location)
                                 new_locally_backward_exitable.add(edge.to_location)
-                    
+
                     local_backward_frontier.clear()
                     local_backward_frontier, new_locally_backward_exitable = new_locally_backward_exitable, local_backward_frontier
 
@@ -336,15 +381,36 @@ class Analyzer(object):
                 break
             levels.append(current_level_part1)
             levels.append(current_level_part2)
+            previous_new_variables.update(current_level_part2)
 
         if self.visualize:
-            for edge_id in untraversable_edges:
-                edge = edges[edge_id]
-                vis.set_edge_color(edge.from_location, edge.to_location, color=(191,32,32))
+            colors = [ \
+                (255,191,0), (128,224,0), (0,160,0), (32,255,160), \
+                (0,224,255), (0,160,255), (0,96,255), (128,96,255), \
+                (160,32,224), (255,64,255), (255,128,160), (255,192,192), \
+                (192,192,192), (160,160,160), (128,128,128), (64,64,64), \
+                (32,32,32), (32,16,16), (32,0,0), (0,0,0) \
+            ]
+            template_edges = []
+            for t in allocation.picked_templates:
+                for c in t.changes:
+                    template_edges.append(c.from_location + c.to_location)
+            for edge in edges:
+                if edge.from_location + edge.to_location in template_edges:
+                    if edge.edge_id in untraversable_edges:
+                        vis.set_edge_color(edge.from_location, edge.to_location, color=(255,32,255))
+                    else:
+                        vis.set_edge_color(edge.from_location, edge.to_location, color=(32,255,32))
+                elif edge.edge_id in untraversable_edges:
+                    vis.set_edge_color(edge.from_location, edge.to_location, color=(191,32,32))
             for loc in forward_enterable.intersection(backward_exitable):
-                vis.set_node_color(loc, (255,191,0))
+                if loc in reachable_levels:
+                    level = reachable_levels[loc]
+                else:
+                    level = 19
+                level = min(level, 19)
+                vis.set_node_color(loc, colors[level])
             vis.render()
-
         reachable = sorted(name for name, value in variables.items() if value)
         unreachable = sorted(name for name, value in variables.items() if not value)
 
@@ -356,8 +422,8 @@ class Analyzer(object):
         return reachable, unreachable, levels, variables
 
     def analyze_with_variable_set(self, starting_variables):
-        result, backward_exitable = self.verify_warps_reachable(starting_variables)
+        result, backward_exitable = self.verify_warps_reachable(starting_variables, diff_analysis=True)
         reachable, unreachable, levels, ending_variables = self.verify_reachable_items(starting_variables, backward_exitable)
         return reachable, unreachable, levels, ending_variables
-        
+
 

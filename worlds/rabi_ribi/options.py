@@ -31,36 +31,37 @@ class EncourageEggsInLateSpheres(Toggle):
 
 class Knowledge(Choice):
     """
-    Knowledge can be BASIC, INTERMEDIATE or ADVANCED.
+    Knowledge can be BASIC, INTERMEDIATE, ADVANCED, or OBSCURE.
 
     There are many tricks in the game that requires advanced knowledge of how the game works to perform.
-
-    Basic is recommended for anyone not familiar with speedrunning tricks used in Rabi-Ribi.
-    Intermediate is recommended for players who are already very familiar with the advanced speedrunning tricks used in Rabi-Ribi.
-    Advanced tricks require extremely specific knowledge, and is not recommended unless you are always keeping up to date with the very specific tricks used to get into certain areas in the game.
+    Knowledge levels (mostly) align with the tricks explained on each section of the Platforming Tricks Tutorial custom map.
+    Obscure contains tricks that require incredibly specific game knowledge and may be scarcely documented, if at all.
     """
     display_name = "Knowledge"
     option_basic = 0
     option_intermediate = 1
     option_advanced = 2
+    option_obscure = 3
     default = option_basic
 
 class TrickDifficulty(Choice):
     """
-    Difficulty can be NORMAL, HARD, V_HARD or STUPID.
+    Difficulty can be NORMAL, HARD, V_HARD, EXTREME, or STUPID.
 
     Some tricks in Rabi-Ribi can be very difficult to execute. This flag determines the minimum execution ability required to complete the seed.
 
     Normal is recommended for most players. There are many tight jumps which are still labeled as NORMAL.
-    Hard involves some tricks that are very tight, and can be difficult to execute even for experienced players. However, these tricks are still reasonable.
-    V_Hard involves tricks that can be quite unreasonable to be expected to execute (i.e. borderline stupid), but some people still do them anyway.
+    Hard involves some tricks that are tight, and can be difficult to execute for newer players.
+    V_Hard involves some tricks that are very tight, and can be difficult to execute even for experienced players.
+    Extreme involves tricks that can be quite unreasonable to be expected to execute.
     Stupid refers to tricks that no one wants to do, ever. This often refers to tricks that have only been performed successfully once, just to prove that it is possible.
     """
     display_name = "Trick Difficulty"
     option_normal = 0
     option_hard = 1
     option_v_hard = 2
-    option_stupid = 3
+    option_extreme = 3
+    option_stupid = 4
     default = option_normal
 
 class BlockClipsRequired(Toggle):
