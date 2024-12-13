@@ -23,6 +23,7 @@ class Allocation(object):
     def __init__(self, data, settings, random = random.Random()):
         self.items_to_allocate = list(data.items_to_allocate)
         self.walking_left_transitions = list(data.walking_left_transitions)
+        # AP Change: Pass in an instance of random instead of setting the global random seed
         self.random = random
 
     def shuffle(self, data, settings):
@@ -38,6 +39,7 @@ class Allocation(object):
         self.construct_graph(data, settings)
 
         # Shuffle Start Location
+        # AP Change: Refactored to a new method
         self.choose_starting_location(data, settings)
 
     def allocate_items(self, data, settings):

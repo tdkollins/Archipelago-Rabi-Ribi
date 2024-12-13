@@ -107,6 +107,7 @@ def write_items(areaid, items, path='.'):
 def map_filename(areaid, path='.'):
     return '%s/area%d.map' % (path, areaid)
 
+# AP Change: Removed dead code referencing dead code
 def has_neighboring_bomb_block(tiledata_event, x, y):
     px, py = x-1, y
     if px >= 0 and tiledata_event[xy_to_index(px,py)] in BOMB_BLOCK_IDS:
@@ -211,6 +212,7 @@ class ItemModifier(object):
         self.areaids = list(areaids)
         self.items = dict((areaid, {}) for areaid in areaids)
 
+        # AP Change: Removed dead code path
         self._set_all_dirty_flags(True)
 
         self.stored_datas = {}
@@ -232,6 +234,8 @@ class ItemModifier(object):
     def add_item(self, item):
         self.items[item.areaid][item.position] = item
         self._dirty(item.areaid)
+
+    # AP Change: Removed dead code referencing dead code.
 
     def save(self, output_dir='.'):
         for areaid, modified in self.modified.items():

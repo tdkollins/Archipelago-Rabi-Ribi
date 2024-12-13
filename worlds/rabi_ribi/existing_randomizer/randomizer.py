@@ -45,12 +45,14 @@ def parse_args():
     args.add_argument('-num-hard-to-reach', default=5, type=int, help='Number of hard to reach items/eggs. Default is 5.')
     args.add_argument('--debug-visualize', action='store_true', help='Output debug info and node graph image.')
 
-    return args.parse_args("")
+    return args.parse_args(sys.argv[1:])
 
 
 def apply_item_specific_fixes(mod, allocation):
     item_at_location = allocation.item_at_item_location
 
+    # AP Change: Added more robust method for checking if a location
+    #            an egg, as the location may not exist in AP.
     def is_egg_at_location(location_name):
         return location_name in item_at_location \
             and is_egg(item_at_location[location_name])
@@ -467,6 +469,7 @@ def pre_modify_map_data(mod, settings, diff_patch_files, config):
     if settings.apply_fixes:
         for areaid, data in mod.stored_datas.items():
             apply_fixes_for_randomizer(areaid, data)
+        # AP Change: Use os.path.join
         diff_patch_files += [
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_cicini_to_ravine.txt'),
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_forest_to_beach.txt'),
@@ -479,6 +482,7 @@ def pre_modify_map_data(mod, settings, diff_patch_files, config):
     # Note: because musicrandomizer requires room color info, the music
     # must be shuffled before the room colors!
 
+    # AP Change: Ensure music and background shuffle are consistent by seed
     rng = random.Random(settings.random_seed)
     if settings.shuffle_music:
         musicrandomizer.shuffle_music(mod.stored_datas, rng)
@@ -537,6 +541,7 @@ def apply_map_transition_shuffle(mod, data, settings, allocation):
 def apply_start_location_shuffle(mod, settings, allocation):
     if not settings.shuffle_start_location: return
     # Add start warp room and remove FC2 warp stone
+    # AP Change: Use os.path.join
     apply_diff_patch_fixes(mod, [
         os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_start_room.txt'),
         os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_fc2_to_start.txt'),

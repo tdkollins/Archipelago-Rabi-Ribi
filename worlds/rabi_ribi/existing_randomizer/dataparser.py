@@ -162,6 +162,7 @@ def define_alternate_conditions(settings, variable_names_set, default_expression
             "P_HAIRPIN": "BOSS_KEKE_BUNNY & PLURKWOOD_MAIN",
         })
 
+    # AP Change: Fixed reuse of d (dict[str, str])
     callable_d = {}
     for key in d.keys():
         if type(d[key]) == str:
@@ -275,10 +276,13 @@ def define_default_expressions(variable_names_set):
     return def1
 
 def shufflable_gift_item_map_modifications():
+    # AP Change: Use os.path.join
     return [
         os.path.join('existing_randomizer', 'maptemplates', 'shuffle_gift_items', 'mod_p_hairpin.txt'),
         os.path.join('existing_randomizer', 'maptemplates', 'shuffle_gift_items', 'mod_bunstrike_speedboost.txt')
     ]
+
+# AP Change: Moved get_default_areaids to utility.py
 
 TOWN_MEMBERS = (
     'TM_COCOA', 'TM_ASHURI', 'TM_RITA', 'TM_CICINI',
@@ -335,6 +339,7 @@ def parse_locations_and_items():
     map_transitions = []
     start_locations = []
 
+    # AP Change: Use pkgutil to read file from .apworld
     locations_items_file = os.path.join('existing_randomizer', 'locations_items.txt')
     lines = read_file_and_strip_comments(locations_items_file)
 
@@ -439,6 +444,7 @@ def parse_locations_and_items():
 
 # throws errors for invalid formats.
 def parse_edge_constraints(locations_set, variable_names_set, default_expressions):
+    # AP Change: Use pkgutil to read file from .apworld
     constraints_graph = os.path.join('existing_randomizer', 'constraints_graph.txt')
     lines = read_file_and_strip_comments(constraints_graph)
     jsondata = ' '.join(lines)
@@ -466,6 +472,7 @@ def parse_edge_constraints(locations_set, variable_names_set, default_expression
     return constraints
 
 def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locations_set, variable_names_set, default_expressions):
+    # AP Change: Use pkgutil to read file from .apworld
     constraints = os.path.join('existing_randomizer', 'constraints.txt')
     lines = read_file_and_strip_comments(constraints)
     jsondata = ' '.join(lines)
@@ -507,9 +514,11 @@ def parse_item_constraints(settings, items_set, shufflable_gift_items_set, locat
 
     return item_constraints
 
+# AP Change: Use os.path.join
 DIR_TEMPLATE_PATCH_FILES = os.path.join('existing_randomizer', 'maptemplates', 'constraint_shuffle')
 
 def parse_template_constraints(settings, locations_set, variable_names_set, default_expressions, edge_constraints):
+    # AP Change: Use pkgutil to read file from .apworld
     template_constraints = os.path.join('existing_randomizer', 'maptemplates', 'template_constraints.txt')
     lines = read_file_and_strip_comments(template_constraints)
     if settings.shuffle_start_location:
@@ -522,6 +531,8 @@ def parse_template_constraints(settings, locations_set, variable_names_set, defa
 
     cdicts = parse_json(jsondata)
 
+    
+    # AP Change: Use pkg_resources to read directory contents from .apworld
     patch_files = resource_listdir(DIR_TEMPLATE_PATCH_FILES)
     patch_names = []
     for patch_file in patch_files:
@@ -590,7 +601,7 @@ def read_config(default_setting_flags, item_locations_set, shufflable_gift_items
     if 'trick_difficulty' in config_dict:
         difficulty = config_dict['trick_difficulty']
 
-    # Replace config file with player options
+    # AP Change: Replace config file with player options
     if hasattr(settings, 'ap_options'):
         ap_options: RabiRibiOptions = settings.ap_options
         read_ap_config_settings(config_settings, ap_options)
@@ -688,6 +699,7 @@ def read_config(default_setting_flags, item_locations_set, shufflable_gift_items
 
     return setting_flags, sorted(list(to_shuffle)), must_be_reachable, included_additional_items, config_data
 
+# AP Change: Added method to read config data from player options
 def read_ap_config_settings(config_settings, ap_options):
     """Updates the default configuration settings with the player options from Archipelago."""
     config_settings['DARKNESS_WITHOUT_LIGHT_ORB'] = bool(ap_options.darkness_without_light_orb.value)

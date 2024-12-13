@@ -277,6 +277,7 @@ def get_item_coords(x, y, areaid, name):
 
 def load_item_locs():
     d = {}
+    # AP Change: Use pkgutil to load data from .apworld
     locations_items = os.path.join('existing_randomizer', 'locations_items.txt')
     f = load_text_file(locations_items)
     reading = False

@@ -16,6 +16,7 @@ class MusicShuffler(object):
 
     def __init__(self, stored_datas, random = random.Random()):
         self.stored_datas = stored_datas
+    # AP Change: Pass in an instance of random instead of setting the global random seed
         self.random = random
         original_locations = []
 

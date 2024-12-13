@@ -117,6 +117,7 @@ class ItemConstraintData(object):
     def __init__(self, item, from_location, entry_prereq, exit_prereq, alternate_entries, alternate_exits):
         self.item = item
         self.from_location = from_location
+        # AP Change: Store the ExpressionLambda instead of the lambda function, so we can read the original logic
         self.entry_prereq = ExpressionLambda(entry_prereq)
         self.exit_prereq  = ExpressionLambda(exit_prereq)
         self.entry_progression = get_prereq_literals( entry_prereq )
@@ -145,6 +146,7 @@ class GraphEdge(object):
         self.from_location = from_location
         self.to_location = to_location
         self.satisfied = constraint
+        # AP Change: Store the expression so we can read the original logic in AP
         self.satisfied_expr = constraint_expr
         self.progression = progression
         self.backtrack_cost = backtrack_cost
@@ -419,6 +421,7 @@ def read_file_and_strip_comments(filename):
     def strip_comments(line):
         if '//' not in line: return line
         return line[:line.find('//')]
+    # AP Change: Use pkgutil to read data from .apworld
     f = load_text_file(filename)
     lines = f.splitlines()
     lines = [strip_comments(line).strip() for line in lines]
@@ -457,6 +460,7 @@ def hash_maps(output_dir):
     hash_digest = hash_map_files(areaids, output_dir)
     print_ln('Hash: %s' % hash_digest)
 
+# AP Change: Moved method from dataparser.py to avoid circular dependency
 def get_default_areaids():
     return list(range(10))
 

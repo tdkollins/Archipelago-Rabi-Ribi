@@ -10,10 +10,12 @@ def to_tile_index(x, y):
 
 def shuffle_backgrounds(stored_datas, no_laggy_backgrounds, no_difficult_backgrounds, random = random.Random()):
     #start_time = time.time()
+    # AP Change: Pass in an instance of random instead of setting the global random seed
     shuffler = BackgroundShuffler(stored_datas, no_laggy_backgrounds, no_difficult_backgrounds, random)
     shuffler.shuffle()
     print_ln('Backgrounds shuffled')
 
+    # AP Change: Pass in an instance of random instead of setting the global random seed
     shuffler = RoomColorShuffler(stored_datas, random)
     shuffler.shuffle()
     print_ln('Tile colors shuffled')

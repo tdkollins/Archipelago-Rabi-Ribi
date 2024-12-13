@@ -227,6 +227,7 @@ class DifficultyAnalysis(object):
         total_weight = sum(config.weight for config in DIFFICULTY_CONFIGS)
         self._compute_all_level_scores()
 
+        # AP Change: Add null checks to remove warnings
         if self.level_scores is not None:
             # We take the weighted mean of the square roots to reduce the weight of outliers.
             total_weighted_score = sum(config.weight*level_score**0.5 for config, level_score in zip(DIFFICULTY_CONFIGS, self.level_scores))
@@ -235,6 +236,8 @@ class DifficultyAnalysis(object):
 
     def _compute_breakability(self):
         self._compute_all_level_scores()
+
+        # AP Change: Add null checks to remove warnings
         if self.level_scores is not None:
             #self._compute_current_config_score()
             score = self.difficulty_score

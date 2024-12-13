@@ -7,6 +7,7 @@ from .difficultyanalysis import DifficultyAnalysis
 from .utility import fail, print_ln
 
 class Generator(object):
+    # AP Change: Pass in an instance of random instead of setting the global random seed
     random: Random
 
     def __init__(self, data, settings):
@@ -49,6 +50,7 @@ class Generator(object):
                     else: goals = analyzer.hard_to_reach_items
                     difficulty_analysis = DifficultyAnalysis(self.data, analyzer, goals)
 
+                    # AP Change: Fix missing indentation
                     if self.settings.min_difficulty > 0:
                         if difficulty_analysis.difficulty_score < self.settings.min_difficulty:
                             success = False
