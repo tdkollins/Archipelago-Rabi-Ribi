@@ -15,4 +15,4 @@ def load_text_file(path):
     return data.decode()
 
 def resource_listdir(path):
-    return pkg_resources.resource_listdir(__name__, path)
+    return [f for f in pkg_resources.resource_listdir(__name__, path) if f != '']
