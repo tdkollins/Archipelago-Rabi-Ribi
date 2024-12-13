@@ -6,7 +6,7 @@ import re
 import ast
 import os
 from collections import defaultdict
-from typing import Callable
+from typing import Callable, Dict, List, Set
 
 from ..utility import load_text_file
 
@@ -86,17 +86,8 @@ def get_prereq_literals(prereq):
     if(len(literals_set) < 1):
         return _always_check
     return literals_set
-    
-def generate_progression_dict(variables_list, edges:'list<GraphEdge>', keep_progression = True) -> 'dict< str constraint = list<int edge_id>>':
-    progression = defaultdict(set)
-    for v in variables_list: 
-        progression[v] = set()
-    for edge in edges:
-        for literal in edge.progression:
-            progression[literal].add(edge.edge_id)
-        if not keep_progression:
-            del edge.progression #no longer needed, saves space
-    return progression
+
+# AP Change: Moved generate_progression_dict to after declaration of class GraphEdge
 
 class EdgeConstraintData(object):
     def __init__(self, from_location, to_location, prereq_expression):
@@ -177,6 +168,18 @@ class ConfigData(object):
         self.knowledge = knowledge
         self.difficulty = difficulty
         self.settings = settings
+
+# AP Change: Moved method to after creation of class GraphEdge for typing
+def generate_progression_dict(variables_list, edges:List[GraphEdge], keep_progression = True) -> Dict[str, Set[int]]:
+    progression = defaultdict(set)
+    for v in variables_list: 
+        progression[v] = set()
+    for edge in edges:
+        for literal in edge.progression:
+            progression[literal].add(edge.edge_id)
+        if not keep_progression:
+            del edge.progression #no longer needed, saves space
+    return progression
 
 # misc utility functions
 
