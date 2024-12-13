@@ -1,8 +1,6 @@
 import ast, re, os
 from typing import Any, Dict, List
 
-from numpy import exp
-
 from .utility import *
 from ..options import RabiRibiOptions
 from ..utility import resource_listdir
