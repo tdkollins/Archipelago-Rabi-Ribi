@@ -1,6 +1,6 @@
 import random
 import time
-from worlds.rabi_ribi.existing_randomizer.utility import to_position, to_index, xy_to_index, print_ln
+from .utility import to_position, to_index, xy_to_index, print_ln
 
 # NOTE: Music must be shuffled before room colors!
 def shuffle_music(stored_datas, random = random.Random()):
@@ -16,6 +16,7 @@ class MusicShuffler(object):
 
     def __init__(self, stored_datas, random = random.Random()):
         self.stored_datas = stored_datas
+    # AP Change: Pass in an instance of random instead of setting the global random seed
         self.random = random
         original_locations = []
 

@@ -137,6 +137,19 @@ recruit_table: Set[str] = {
     ItemName.keke_bunny_recruit
 }
 
+consumable_items = {
+    ItemName.rumi_donut,
+    ItemName.rumi_cake,
+    ItemName.cocoa_bomb,
+    ItemName.gold_carrot
+}
+
+normal_consumable_items = {
+    ItemName.rumi_cake,
+    ItemName.cocoa_bomb,
+    ItemName.gold_carrot
+}
+
 shufflable_gift_items = {
     ItemName.speed_boost,
     ItemName.bunny_strike
@@ -181,6 +194,7 @@ def get_base_item_list(options: RabiRibiOptions) -> List[str]:
             "ITEM_UNKNOWN_ITEM_1",
             "ITEM_UNKNOWN_ITEM_2",
             "ITEM_UNKNOWN_ITEM_3",
+            "ITEM_PBPB_BOX",
         ]:
             pass
         elif not options.plurkwood_reachable and item.startswith("ITEM_P_HAIRPIN"):

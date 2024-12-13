@@ -1,0 +1,86 @@
+ 
+ {
+"name": "spectral_west_nothing",
+"weight": 30,
+"changes": [
+    {
+    "edge": "SPECTRAL_MID -> SPECTRAL_WARP",
+    "prereq": "NONE",
+    }
+    {
+    "edge": "SPECTRAL_WARP -> SPECTRAL_MID",
+    "prereq": "NONE",
+    }
+]}
+
+{
+"name": "forest_hammer_pedestal_wall",
+"weight": 25,
+"changes": [
+    {
+    "edge": "FOREST_START -> FOREST_WARP",
+    "prereq": "IMPOSSIBLE",
+    }
+    {
+    "edge": "FOREST_WARP -> FOREST_START",
+    "prereq": "IMPOSSIBLE",
+    }
+]}
+
+{
+"name": "forest_hammer_pedestal_hammer_nobomb",
+"weight": 50,
+"changes": [
+    {
+    "edge": "FOREST_START -> FOREST_WARP",
+    "prereq": "PIKO_HAMMER",
+    }
+    {
+    "edge": "FOREST_WARP -> FOREST_START",
+    "prereq": "PIKO_HAMMER",
+    }
+]}
+
+{
+"name": "forest_hammer_pedestal_fireorb",
+"weight": 25,
+"changes": [
+    {
+    "edge": "FOREST_START -> FOREST_WARP",
+    "prereq": "FIRE_ORB",
+    }
+    {
+    "edge": "FOREST_WARP -> FOREST_START",
+    "prereq": "FIRE_ORB",
+    }
+]}
+
+{
+"name": "cave_west_wall",
+"weight": 40,
+"changes": [
+    {
+    "edge": "CAVE_ENTRANCE -> CAVE_WEST",
+    "prereq": "IMPOSSIBLE",
+    }
+]}
+
+{
+"name": "cave_west_fireorb",
+"weight": 20,
+"changes": [
+    {
+    "edge": "CAVE_ENTRANCE -> CAVE_WEST",
+    "prereq": "FIRE_ORB",
+    }
+]}
+
+{
+"name": "cave_west_whirlblocks",
+"weight": 20,
+"changes": [
+    {
+    "edge": "CAVE_ENTRANCE -> CAVE_WEST",
+    "prereq": "EXPLOSIVES_ENEMY | BUNNY_WHIRL",
+    }
+]}

@@ -3,8 +3,8 @@ import struct
 import json
 import os
 import sys
-
-from worlds.rabi_ribi.utility import load_text_file
+from ..utility import print_ln
+from ...utility import load_text_file
 
 DIR_ORIGINAL_MAPS = './original'
 DIR_MODIFIED_MAPS = './modified'

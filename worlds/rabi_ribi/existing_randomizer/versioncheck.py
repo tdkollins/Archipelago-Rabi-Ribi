@@ -1,6 +1,6 @@
 import requests
 import json
-from worlds.rabi_ribi.existing_randomizer.utility import print_ln
+from .utility import print_ln
 
 VERSION_STRING = '{PLACEHOLDER_VERSION}'
 

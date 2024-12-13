@@ -1,7 +1,7 @@
 """
 Utility used across the apworld
 """
-import pkgutil
+import pkgutil, pkg_resources
 
 rabi_ribi_base_id: int = 8350438193300
 
@@ -13,3 +13,6 @@ def load_text_file(path):
     if data is None:
         raise FileNotFoundError(f'{path!r} not found in {__name__}.')
     return data.decode()
+
+def resource_listdir(path):
+    return [f for f in pkg_resources.resource_listdir(__name__, path) if f != '']

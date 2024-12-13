@@ -1,5 +1,5 @@
 import struct
-from worlds.rabi_ribi.existing_randomizer.utility import *
+from .utility import *
 
 MAP_SIZE = 100000
 MINIMAP_SIZE = 450
@@ -107,23 +107,7 @@ def write_items(areaid, items, path='.'):
 def map_filename(areaid, path='.'):
     return '%s/area%d.map' % (path, areaid)
 
-# def print_all_items(path='.'):
-#     sb = []
-#     for areaid in range(0,10):
-#         continue
-#         items = load_items(areaid, path)
-#         sb.append('Area %d: NAME' % areaid)
-#         for item in items:
-#             sb.append(str(item))
-#     for areaid in range(0,10):
-#         items = load_eggs(areaid, path)
-#         for item in items:
-#             item.name = 'EGG_'
-#         sb.append('Area %d: NAME' % areaid)
-#         for item in items:
-#             sb.append(str(item))
-#     print_ln('\n'.join(sb))
-
+# AP Change: Removed dead code referencing dead code
 def has_neighboring_bomb_block(tiledata_event, x, y):
     px, py = x-1, y
     if px >= 0 and tiledata_event[xy_to_index(px,py)] in BOMB_BLOCK_IDS:
@@ -224,28 +208,11 @@ class StoredMapData(object):
 
 
 class ItemModifier(object):
-    def __init__(self, areaids, source_dir='.', no_load=False):
-        """
-        AP Note:
-            In the existing randomizer, this function is currently always
-            called with no_load=True. It looks like no_load=False will break things
-            so I'm just going to remove that code path...
-        """
+    def __init__(self, areaids, source_dir='.'):
         self.areaids = list(areaids)
         self.items = dict((areaid, {}) for areaid in areaids)
 
-
-        """
-        AP Note: always take the no_load = True code path.
-        """
-        # if no_load:
-        #     self._set_all_dirty_flags(True)
-        # else:
-        #     # Load items from maps
-        #     for areaid in areaids:
-        #         for item in load_items(areaid, source_dir):
-        #             self.items[item.areaid][item.position] = item
-        #     self._set_all_dirty_flags(False)
+        # AP Change: Removed dead code path
         self._set_all_dirty_flags(True)
 
         self.stored_datas = {}
@@ -268,17 +235,7 @@ class ItemModifier(object):
         self.items[item.areaid][item.position] = item
         self._dirty(item.areaid)
 
-    def delete_item(self, item):
-        try: del self.items[item.areaid][item.position]
-        except KeyError:
-            print_ln('item [%s] does not exist!' % item)
-        self._dirty(item.areaid)
-
-    def delete_position(self, areaid, position):
-        try: del self.items[areaid][position]
-        except KeyError:
-            print_ln('position [%d, %s] does not exist!' % areaid, position)
-        self._dirty(item.areaid)
+    # AP Change: Removed dead code referencing dead code.
 
     def save(self, output_dir='.'):
         for areaid, modified in self.modified.items():

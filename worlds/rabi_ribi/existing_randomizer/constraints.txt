@@ -36,22 +36,22 @@
 
 {
 "item": "MP_UP_CAVE",
-"from_location": "CAVE_ENTRANCE",
+"from_location": "CAVE_WEST",
 "entry_prereq": "SLIDING_POWDER",
 "exit_prereq": "SLIDING_POWDER",
 }
 
 {
 "item": "HP_UP_CAVE",
-"from_location": "CAVE_ENTRANCE",
+"from_location": "CAVE_WEST",
 "entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "BLESSED",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "POST_GAME",
+"from_location": "FORGOTTEN_CAVE_2",
+"entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
@@ -103,16 +103,27 @@
 "item": "WALL_JUMP",
 "from_location": "SPECTRAL_MID",
 "entry_prereq": "NONE",
-"exit_prereq": "RABI_SLIPPERS | AIR_JUMP | WALL_JUMP | (ITM_HARD & (AIR_DASH | SLIDING_POWDER)) | (SPEED5 & ADV_STUPID)",
+"exit_prereq": "
+    RABI_SLIPPERS | AIR_JUMP | WALL_JUMP
+    | (ITM_HARD & (AIR_DASH | SLIDING_POWDER))
+    | (ADV_EXT & (
+        // quick drop jump, (amulet), wall jump, wall kick
+        // quick drop, amulet gliding, wimpy, bounce (stupid method)
+        SPEED3
+        | (BUNNY_AMULET & (SPEED1 | STUPID))
+    ))
+",
 }
 
 {
 "item": "REGEN_UP_MID_FOREST",
-"from_location": "FOREST_START",
+"from_location": "FOREST_WARP",
 "entry_prereq": "
-    (ITM_HARD & (WALL_JUMP_LV2 | WHIRL_BONK_CANCEL))
-    | AIR_JUMP
-    | ((RABI_SLIPPERS | SLIDE_JUMP_BUNSTRIKE_CANCEL) & WALL_JUMP_LV2)
+    AIR_JUMP
+    | ((RABI_SLIPPERS | ITM_HARD) & WALL_JUMP_LV2)
+    | (RABI_SLIPPERS & SLIDE_JUMP_BUNSTRIKE_CANCEL & (SPEED2 | WALL_JUMP | ITM_VHARD))
+    | (ADV_HARD & (WHIRL_BONK_CANCEL | HAMMER_ROLL))
+    | (ADV_EXT & (WHIRL_BONK | SLIDING_POWDER)) // bonk off jumping uprprc
 ",
 "exit_prereq": "NONE",
 }
@@ -140,7 +151,7 @@
 
 {
 "item": "DEF_TRADE",
-"from_location": "FOREST_START",
+"from_location": "FOREST_WARP",
 "entry_prereq": "EXPLOSIVES_ENEMY",
 "exit_prereq": "NONE",
 }
@@ -154,12 +165,20 @@
 
 {
 "item": "HP_UP_FOREST_POST_COCOA",
-"from_location": "FOREST_START",
-"entry_prereq": "PIKO_HAMMER",
-"exit_prereq": "PIKO_HAMMER | EXPLOSIVES_ENEMY",
+"from_location": "FOREST_WARP",
+"entry_prereq": "PIKO_HAMMER | EXPLOSIVES | (CARROT_SHOOTER & OBS_VHARD)",
+"exit_prereq": "PIKO_HAMMER | EXPLOSIVES | (CARROT_SHOOTER_ENTRY & OBS_VHARD)",
 
 "alternate_entries": {
     "FOREST_COCOA_ROOM": "EXPLOSIVES_ENEMY",
+    },
+
+"alternate_exits": {
+    // only relevant if boost is not obtained
+    "FOREST_COCOA_ROOM": "
+        CARROT_SHOOTER_ENTRY & (
+            AIR_JUMP | (ITM & RABI_SLIPPERS & WALL_JUMP & (SPEED1 | HARD))
+        )",
     },
 }
 
@@ -198,12 +217,25 @@
 
 "alternate_entries": {
     "FOREST_EAST_ABOVE_SPRING": "
-        (AIR_JUMP & AIR_DASH & ((ITM_HARD & RABI_SLIPPERS) | SLIDE_JUMP_BUNSTRIKE_CANCEL))
-        | (WHIRL_BONK_CANCEL & AIR_DASH)
+    ITM_HARD & (
+        (WHIRL_BONK_CANCEL & AIR_DASH)
         | (ADV_VHARD & WHIRL_BONK)
-        | (ADV_HARD & RABI_SLIPPERS & SLIDE_JUMP_BUNSTRIKE & SPEED5)
-        // | (ADV_VHARD & HAMMER_ROLL & AIR_JUMP)
-    ",
+        | (AIR_JUMP & (
+            (AIR_DASH & (RABI_SLIPPERS | SLIDE_JUMP_BUNSTRIKE_CANCEL))
+            | (ADV_HARD & RABI_SLIPPERS & SLIDE_JUMP_BUNSTRIKE & (SPEED5 | ADV_VHARD))
+            | (ADV_EXT & (
+                (AIR_DASH_LV3 & BUNNY_AMULET_LV2)
+                | (AIR_DASH & WALL_JUMP & BUNNY_AMULET_LV2 & (SPEED2 | STUPID))
+                // slide airjump, bonk the bee, airjump
+                | (SLIDING_POWDER & (RABI_SLIPPERS | OBSCURE))
+            ))
+        ))
+        // slide bonk the bee, walljump
+        | (SLIDING_POWDER & RABI_SLIPPERS & (
+            (OBS_EXT & AIR_DASH & (WALL_JUMP | (BUNNY_AMULET_LV3 & STUPID)))
+            | (ADV_STUPID & BORING & WALL_JUMP_LV2 & MANY_AMULET_FOOD)
+        ))
+    )",
     },
 }
 
@@ -215,22 +247,36 @@
     | (AIR_JUMP & (RABI_SLIPPERS | ITM_HARD))
     | (AIR_DASH & (RABI_SLIPPERS | SLIDE_JUMP_BUNSTRIKE_CANCEL))
     // 4 tile corner rwj, airdash, wallkick, amulet cancel
-    | (ADV_VHARD & AIR_DASH_LV3 & BUNNY_AMULET)
-    // slide bonk off big bunny
-    | (ADV_STUPID & SLIDING_POWDER & RABI_SLIPPERS)",
+    | (ADV_HARD & AIR_DASH_LV3 & AMULET_FOOD)
+    // same as Crisis Boost
+    | (OBS_EXT & AIR_DASH & BUNNY_AMULET & (BUNNY_AMULET_LV2 | (ITEM_MENU & RUMI_DONUT) | STUPID))
+    | (ADV_VHARD & SLIDING_POWDER & (
+        // slide bonk off big bunny
+        AIR_DASH
+        | (BORING & (RABI_SLIPPERS | AMULET_FOOD))
+        // hammer slide bonk mushroom, carrot bomb does not work due to longer action frames
+        | (OBS_STUPID & PIKO_HAMMER)
+    ))
+    // dboost big mushroom
+    | (ADV_STUPID & BORING & (AIR_DASH | (RABI_SLIPPERS & AMULET_FOOD)))
+    // amuclimbs
+    | (ADV_VHARD & WALL_JUMP & AIR_DASH & (AMULET_FOOD | OBSCURE))
+    | (ADV_EXT & WALL_JUMP_LV2 & MANY_AMULET_FOOD)
+    | (ADV_EXT & WALL_JUMP & RABI_SLIPPERS & 2_AMULET_FOOD & BUNNY_AMULET)
+    ",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "MP_UP_EAST_FOREST",
-"from_location": "FOREST_START",
+"from_location": "FOREST_EAST_ABOVE_SPRING",
 "entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "PACK_UP_EAST_FOREST",
-"from_location": "FOREST_START",
+"from_location": "FOREST_WARP",
 "entry_prereq": "(PIKO_HAMMER | EXPLOSIVES_ENEMY) & SLIDING_POWDER",
 "exit_prereq": "SLIDING_POWDER",
 }
@@ -243,20 +289,30 @@
 
 "alternate_entries": {
     "SPECTRAL_CICINI_LEDGE": "
-        AIR_JUMP
-        | SLIDE_JUMP_BUNSTRIKE_CANCEL
-        | (ITM_HARD & (WALL_JUMP_LV2 | AIR_DASH))
-        | (RABI_SLIPPERS & (ADV_VHARD | (ADV_HARD & SPEED3)))
-        | (ADV_STUPID & PROLOGUE_TRIGGER & SPEED3)
-        ",
+        ITM & (
+            AIR_JUMP
+            | SLIDE_JUMP_BUNSTRIKE_CANCEL
+            | (ITM_HARD & (WALL_JUMP_LV2 | AIR_DASH))
+            | (RABI_SLIPPERS & (ADV_VHARD | (ADV_HARD & SPEED3)))
+            | (PROLOGUE_TRIGGER & (
+                (ADV_VHARD & SLIDING_POWDER & (BUNNY_AMULET | OBS_EXT))
+                | (ADV_EXT & BUNNY_AMULET & 3_AMULET_FOOD)
+                | (ADV_STUPID & SPEED3)
+                // done by TAS
+                // | (ADV_STUPID & SPEED2)
+            ))
+        )",
     },
 }
 
 {
 "item": "MP_UP_NORTHEAST_FOREST",
 "from_location": "FOREST_UPPER_EAST",
-"entry_prereq": "EXPLOSIVES_ENEMY & SLIDING_POWDER",
-"exit_prereq": "SLIDING_POWDER",
+"entry_prereq": "
+    (EXPLOSIVES_ENEMY & SLIDING_POWDER)
+    | (OBS_VHARD & 5TILE_ZIP) // 5-tile zip from missing collision spot
+    ",
+"exit_prereq": "SLIDING_POWDER & (CARROT_SHOOTER_ENTRY | EXPLOSIVES)",
 }
 
 {
@@ -270,12 +326,11 @@
 "item": "HEALTH_WAGER",
 "from_location": "GRAVEYARD_UPPER",
 "entry_prereq": "
-    (AIR_JUMP & AIR_DASH)
-    | (AIR_JUMP & ITM_HARD)
+    (AIR_JUMP & (AIR_DASH | BUNNY_STRIKE | ITM_HARD))
     | (AIR_DASH_LV3 & (
         ADV_VHARD | (ITM_HARD & (WALL_JUMP | BUNNY_AMULET))
     ))
-    | (AIR_DASH & ADV_STUPID)
+    | (AIR_DASH & ADV_EXT)
     | (ADV_VHARD & BUNNY_STRIKE & BUNNY_AMULET)
 ",
 "exit_prereq": "NONE",
@@ -316,10 +371,17 @@
 "entry_prereq": "
     // Getting onto the ledge
     (AIR_JUMP | AIR_DASH | (ITM_HARD & (AMULET_FOOD | BUNNY_STRIKE)))
-    & (CARROT_BOMB | BLOCK_CLIP)
+    & (EXPLOSIVES | BLOCK_CLIP)
 ",
 "exit_prereq": "AIR_JUMP | SLIDE_JUMP_BUNSTRIKE_CANCEL",
 
+"alternate_entries": {
+    "GRAVEYARD_MAIN": "ADV_VHARD & WHIRL_BONK & (
+        AIR_JUMP
+        | (OBS_EXT & HAMMER_ROLL)
+        | (ADV_EXT & BUNNY_AMULET & 2_AMULET_FOOD & (RABI_SLIPPERS | STUPID))
+    )",
+    },
 "alternate_exits": {
     "GRAVEYARD_MAIN": "NONE",
     },
@@ -334,9 +396,15 @@
 
 {
 "item": "AUTO_TRIGGER",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "POST_GAME & IMPOSSIBLE",
-"exit_prereq": "NONE",
+"from_location": "LIBRARY_MID_UPPER",
+"entry_prereq": "SLIDING_POWDER",
+"exit_prereq": "
+    ((ADV_VHARD & BUNNY_AMULET) | SLIDING_POWDER | AIR_JUMP | AIR_DASH | RABI_SLIPPERS)
+    & (SLIDE_ZIP | (EXPLOSIVES & (SLIDING_POWDER | HAMMER_ROLL_ZIP)))
+",
+"alternate_exits": {
+    "LIBRARY_IRISU": "5TILE_ZIP | BUNSTRIKE_ZIP",
+    },
 }
 
 {
@@ -355,11 +423,8 @@
 
 {
 "item": "CRISIS_BOOST",
-"from_location": "GRAVEYARD_MAIN",
-"entry_prereq": "
-    (AIR_JUMP & (RABI_SLIPPERS | ITM_HARD))
-    | (AIR_DASH & (RABI_SLIPPERS | SLIDE_JUMP_BUNSTRIKE_CANCEL))
-",
+"from_location": "LIBRARY_OUTSIDE",
+"entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
@@ -396,14 +461,16 @@
 "from_location": "PYRAMID_MAIN",
 "entry_prereq": "EXPLOSIVES",
 "exit_prereq": "NONE",
+
+"alternate_exits": {
+    "PYRAMID_LOWER": "EXPLOSIVES & 2TILE_ZIP"
+    },
 }
 
-// entry_prereq was changed to NONE as the bunny can blow it up for you.
 {
 "item": "ARMORED",
 "from_location": "PYRAMID_MAIN",
-"entry_prereq": "NONE",
-//"entry_prereq": "BLOCK_CLIP | EXPLOSIVES | ITM",
+"entry_prereq": "BLOCK_CLIP | EXPLOSIVES | ITM",
 "exit_prereq": "NONE",
 }
 
@@ -424,21 +491,43 @@
 {
 "item": "TOP_FORM",
 "from_location": "SKY_ISLAND_UPPER",
-"entry_prereq": "NONE",
+"entry_prereq": "
+    5TILE_WALL_CLIMB | SLIDE_JUMP_BUNSTRIKE
+    | (ADV_EXT & RABI_SLIPPERS & SLIDING_POWDER)
+",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "HP_UP_PYRAMID_ENTRANCE",
 "from_location": "BEACH_MAIN",
-"entry_prereq": "CARROT_BOMB | (CARROT_SHOOTER & BOOST & ADV_HARD)",
-"exit_prereq": "NONE",
+"entry_prereq": "
+    CARROT_BOMB | (CARROT_SHOOTER & BOOST & ADV_HARD)
+    | ((BUNSTRIKE_ZIP | 2TILE_DOWNDRILL_SEMISOLID_CLIP) & SLIDE_ZIP & ADV_VHARD) // j6 n11
+",
+"exit_prereq": "EXPLOSIVES | HAMMER_ROLL_ZIP",
 }
 
 {
 "item": "HITBOX_DOWN",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "POST_GAME & CARROT_BOMB & IMPOSSIBLE",
+"from_location": "LIBRARY_BOTTOM",
+"entry_prereq": "
+    ( // stupid direct path
+        CARROT_SHOOTER & BOOST & BUNNY_AMULET_LV2 & 3_AMULET_FOOD & ADV_STUPID
+        & (
+            AIR_JUMP| AIR_DASH | RABI_SLIPPERS | SLIDE_JUMP_BUNSTRIKE_CANCEL
+        )
+    ) | ( // the intended route
+        CARROT_BOMB
+        & (
+            (AIR_JUMP & WALL_JUMP_LV2)
+            | (
+                (RABI_SLIPPERS | SLIDE_JUMP_BUNSTRIKE_CANCEL)
+                & (AIR_JUMP | WALL_JUMP_LV2)
+            )
+        )
+    )
+",
 "exit_prereq": "NONE",
 }
 
@@ -451,9 +540,9 @@
 
 {
 "item": "AIR_DASH",
-"from_location": "SKY_ISLAND_MAIN",
-"entry_prereq": "EXPLOSIVES & SLIDING_POWDER",
-"exit_prereq": "EXPLOSIVES",
+"from_location": "SKY_ISLAND_AIR_DASH_ROOM",
+"entry_prereq": "NONE",
+"exit_prereq": "NONE",
 }
 
 {
@@ -467,7 +556,11 @@
 "item": "PURE_LOVE",
 "from_location": "SKY_ISLAND_UPPER",
 "entry_prereq": "EXPLOSIVES & SLIDING_POWDER",
-"exit_prereq": "SLIDING_POWDER",
+"exit_prereq": "SLIDING_POWDER | HAMMER_ROLL_ZIP",
+
+"alternate_entries": {
+    "SKY_ISLAND_OOB" : "OBSCURE & EXPLOSIVES & HAMMER_ROLL_ZIP",
+},
 }
 
 {
@@ -530,7 +623,11 @@
 "item": "ATK_TRADE",
 "from_location": "PARK_MAIN",
 "entry_prereq": "EXPLOSIVES",
-"exit_prereq": "NONE",
+"exit_prereq": "EXPLOSIVES",
+
+"alternate_entries": {
+    "PARK_UPPER" : "OBS_VHARD & BUNSTRIKE_ZIP",
+},
 }
 
 {
@@ -542,7 +639,7 @@
 
 {
 "item": "RABI_SLIPPERS",
-"from_location": "PARK_MAIN",
+"from_location": "UPRPRC_LOWER",
 "entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
@@ -550,7 +647,7 @@
 {
 "item": "REGEN_UP_PARK",
 "from_location": "PARK_UPPER",
-"entry_prereq": "SLIDING_POWDER | HAMMER_ROLL_ZIP",
+"entry_prereq": "SLIDING_POWDER | HAMMER_ROLL_ZIP | (STUPID & ROLL_BONK_ZIP)",
 "exit_prereq": "SLIDING_POWDER",
 }
 
@@ -564,8 +661,13 @@
 {
 "item": "MP_UP_SKY_BRIDGE",
 "from_location": "SKY_BRIDGE_MAIN",
-"entry_prereq": "EXPLOSIVES & SLIDING_POWDER",
-"exit_prereq": "SLIDING_POWDER | HAMMER_ROLL_ZIP",
+"entry_prereq": "
+    (EXPLOSIVES & SLIDING_POWDER)
+    | 5TILE_ZIP
+    | (ADV_EXT & 2TILE_ZIP & (CARROT_SHOOTER | WHIRL_BONK_CANCEL | AIR_JUMP | WALL_JUMP | BUNNY_AMULET | OBSCURE)) // 2-tile zip
+    | BUNSTRIKE_ZIP // 4-tile strike zip (j6 n11)
+    ",
+"exit_prereq": "(EXPLOSIVES & SLIDING_POWDER) | SLIDE_ZIP | HAMMER_ROLL_ZIP",
 }
 
 {
@@ -578,7 +680,11 @@
 {
 "item": "MP_UP_PARK",
 "from_location": "PARK_MAIN",
-"entry_prereq": "RABI_SLIPPERS | SLIDING_POWDER | AIR_DASH | AIR_JUMP | (ITM & SPEED2) | (ADV_VHARD & AMULET_FOOD)",
+"entry_prereq": "
+    RABI_SLIPPERS | SLIDING_POWDER | AIR_DASH | AIR_JUMP
+    // pure 0% method: wimpy, quick drop, bounce
+    | (ITM & SPEED2) | (ADV_VHARD & AMULET_FOOD) | OBS_EXT
+",
 "exit_prereq": "NONE",
 }
 
@@ -614,7 +720,8 @@
 "item": "LUCKY_SEVEN",
 "from_location": "SKY_BRIDGE_MAIN",
 "entry_prereq": "NONE",
-"exit_prereq": "NONE",
+"exit_prereq": "NONE", // borderline of DARKNESS?
+//"exit_prereq": "DARKNESS | DOWNDRILL_SEMISOLID_CLIP",
 }
 
 {
@@ -648,7 +755,7 @@
 {
 "item": "HP_UP_SOUTH_RAVINE",
 "from_location": "RAVINE_LOWER",
-"entry_prereq": "EXPLOSIVES_ENEMY & (SLIDING_POWDER | HAMMER_ROLL_ZIP)",
+"entry_prereq": "EXPLOSIVES_ENEMY & (SLIDING_POWDER | HAMMER_ROLL_ZIP | (ROLL_BONK_ZIP & BORING))",
 "exit_prereq": "(SLIDING_POWDER | HAMMER_ROLL_ZIP)",
 }
 
@@ -676,9 +783,12 @@
 {
 "item": "REGEN_UP_RAVINE",
 "from_location": "RAVINE_LOWER",
-// cramped 2 tile zip in and out
-"entry_prereq": "EXPLOSIVES | (ADV_STUPID & SLIDE_ZIP)",
-"exit_prereq": "EXPLOSIVES | (ADV_STUPID & SLIDE_ZIP)",
+"entry_prereq": "
+    EXPLOSIVES
+    | (OBS_EXT & 2TILE_ZIP & (BUNNY_AMULET | (STUPID & AMULET_FOOD))) // cramped 2 tile zip in and out
+    | (OBS_STUPID & BUNSTRIKE_ZIP)
+",
+"exit_prereq": "EXPLOSIVES | (ADV_EXT & 2TILE_ZIP)",
 }
 
 {
@@ -704,15 +814,15 @@
 
 {
 "item": "HP_UP_WEST_AQUARIUM",
-"from_location": "AQUARIUM_WEST",
-"entry_prereq": "DARKNESS & EXPLOSIVES",
+"from_location": "AQUARIUM_WEST_DARKNESS",
+"entry_prereq": "EXPLOSIVES",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "MANA_PLUS",
-"from_location": "AQUARIUM_WEST",
-"entry_prereq": "DARKNESS",
+"from_location": "AQUARIUM_WEST_DARKNESS",
+"entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
@@ -726,7 +836,7 @@
 {
 "item": "ATK_UP_SNOWLAND",
 "from_location": "SNOWLAND_WEST",
-"entry_prereq": "EXPLOSIVES_ENEMY & (SLIDING_POWDER | HAMMER_ROLL | BLOCK_CLIP)",
+"entry_prereq": "EXPLOSIVES_ENEMY & (SLIDING_POWDER | HAMMER_ROLL | (ADV_HARD & BLOCK_CLIP))",
 "exit_prereq": "NONE",
 }
 
@@ -734,16 +844,19 @@
 "item": "REGEN_UP_PALACE",
 "from_location": "PALACE_LEVEL_3",
 "entry_prereq": "
-    DARKNESS &
-    (
+    DARKNESS & (
         SLIDE_JUMP_BUNSTRIKE
         | WHIRL_BONK
         | AIR_DASH
         | AIR_JUMP
+        // slide bonk
+        | (ADV_HARD & SLIDING_POWDER)
         // rwj left wall, wallkick overhang
-        | (RABI_SLIPPERS & ((ITM_HARD & SPEED2) | ADV_STUPID))
+        | (ITM_HARD & RABI_SLIPPERS & SPEED2)
+        // damage boost
+        | ADV_EXT
         // wimpy right corner, bounce left wall, amulet (similar to spike barrier)
-        | (ADV_STUPID & AMULET_FOOD)
+        //| (ADV_STUPID & AMULET_FOOD)
     )
 ",
 "exit_prereq": "NONE",
@@ -782,14 +895,23 @@
 "from_location": "ICY_SUMMIT_UPPER",
 "entry_prereq": "
     AIR_JUMP
+    | (OBS_VHARD & RABI_SLIPPERS & SLIDE_JUMP_BUNSTRIKE_CANCEL) // need turn-off hammer roll v1.08
+    // whirlbonk fairy, amulet cancel, airdash, wall kick, amulet
+    | (OBS_STUPID & AIR_DASH & 2_AMULET_FOOD & BUNNY_AMULET & (
+        HAMMER_ROLL
+        | (SLIDE_JUMP_BUNSTRIKE & WHIRL_BONK)
+        | (SLIDING_POWDER & RABI_SLIPPERS & WHIRL_BONK & WALL_JUMP & 3_AMULET_FOOD & BUNNY_AMULET_LV2)
+    ))
     | (WALL_JUMP_LV2 & (
         WHIRL_BONK
         | (AIR_DASH & HARD)
         | SLIDE_JUMP_BUNSTRIKE
+        | (ADV_VHARD & SLIDING_POWDER) // slide bonk
+        | ADV_EXT // amulet climb, need 2 items at least
         | (RABI_SLIPPERS & (
             SLIDING_POWDER
             | (SPEED1 & ITM_HARD)
-            | (AMULET_FOOD & ADV_STUPID)
+            | ADV_STUPID // very tight quickdrop jump
         ))
     ))",
 "exit_prereq": "NONE",
@@ -805,7 +927,7 @@
 {
 "item": "PACK_UP_ICY_SUMMIT",
 "from_location": "ICY_SUMMIT_UPPER",
-"entry_prereq": "AIR_JUMP | AIR_DASH | (WHIRL_BONK & ADV_VHARD)",
+"entry_prereq": "AIR_JUMP | AIR_DASH | (WHIRL_BONK & ADV_VHARD) | (ADV_EXT & BUNNY_AMULET & 4_AMULET_FOOD)", // 3 amulets, wall kick, amulet
 "exit_prereq": "NONE",
 }
 
@@ -818,7 +940,7 @@
 
 {
 "item": "ATK_UP_MID_AQUARIUM",
-"from_location": "AQUARIUM_MID",
+"from_location": "AQUARIUM_MID_EAST",
 "entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
@@ -826,7 +948,14 @@
 {
 "item": "MP_UP_ICY_SUMMIT",
 "from_location": "ICY_SUMMIT_MAIN",
-"entry_prereq": "ADV_STUPID | RABI_SLIPPERS | AIR_JUMP | WALL_JUMP | WHIRL_BONK | (SPEED1 & ITM_VHARD)",
+"entry_prereq": "
+    ITM & (
+        ADV_EXT | RABI_SLIPPERS | AIR_JUMP | WHIRL_BONK
+        | (ITM_VHARD & SPEED1)
+        | (ITM_HARD & (WALL_JUMP | SPEED3)) 
+        | (ADV_HARD & (AIR_DASH | SLIDING_POWDER))
+    )
+    ",
 "exit_prereq": "NONE",
 
 "alternate_entries": {
@@ -843,7 +972,7 @@
 
 {
 "item": "QUICK_BARRETTE",
-"from_location": "SNOWLAND_LAKE",
+"from_location": "SNOWLAND_QUICK_BARRETTE_ROOM",
 "entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
@@ -864,8 +993,8 @@
 
 {
 "item": "REGEN_UP_SNOWLAND_WATER",
-"from_location": "SNOWLAND_LAKE",
-"entry_prereq": "NONE",
+"from_location": "SNOWLAND_QUICK_BARRETTE_ROOM",
+"entry_prereq": "NONE", // borderline of UNDERWATER
 "exit_prereq": "NONE",
 }
 
@@ -940,6 +1069,35 @@
 }
 
 {
+"item": "PBPB_BOX",
+"from_location": "LAB_WEST",
+"entry_prereq": "
+    (CARROT_BOMB | (CARROT_SHOOTER & BOOST_MANY)) & FIRE_ORB & SLIDING_POWDER & (
+        AIR_JUMP
+        | (RABI_SLIPPERS & (
+            SLIDE_JUMP_BUNSTRIKE
+            | WALL_JUMP
+            | (ADV_HARD & AIR_DASH)
+        ))
+        // dboost
+        | (ADV_EXT & (AMULET_FOOD | AIR_DASH))
+    )
+",
+"exit_prereq": "
+    (SLIDING_POWDER & (
+        AIR_JUMP
+        | (RABI_SLIPPERS & (
+            SLIDE_JUMP_BUNSTRIKE
+            | WALL_JUMP
+            | (ADV_HARD & AIR_DASH)
+        ))
+        // dboost
+        | (ADV_EXT & (AMULET_FOOD | AIR_DASH))
+    ))
+",
+}
+
+{
 "item": "ATK_UP_RIVERBANK_PIT",
 "from_location": "RIVERBANK_MAIN_LEVEL1",
 "entry_prereq": "NONE",
@@ -952,9 +1110,13 @@
 "entry_prereq": "
     PIKO_HAMMER | (CARROT_SHOOTER & BOOST & ADV_HARD)
     // slide zip from bomb block slide tunnel in room to the left
-    | SLIDE_ZIP
+    | (ADV_HARD & SLIDE_ZIP)
 ",
-"exit_prereq": "BUNNY_WHIRL | AIR_DASH | (CARROT_SHOOTER_ENTRY & BOOST & ADV_HARD) | DOWNDRILL_SEMISOLID_CLIP",
+"exit_prereq": "
+    BUNNY_WHIRL
+    | (CARROT_SHOOTER_ENTRY & BOOST & ADV_HARD)
+    | DOWNDRILL_SEMISOLID_CLIP
+",
 }
 
 {
@@ -967,15 +1129,20 @@
 {
 "item": "MP_UP_MID_RIVERBANK",
 "from_location": "RIVERBANK_MAIN_LEVEL1",
-"entry_prereq": "EXPLOSIVES_ENEMY",
+"entry_prereq": "
+    EXPLOSIVES_ENEMY
+    | (BUNSTRIKE_ZIP & ((ADV_VHARD & SPEED2) | OBS_STUPID))
+",
 // only relevant if boost is not obtained
 "exit_prereq": "
     EXPLOSIVES
+    | (CHARGE_CARROT_SHOOTER_ENTRY & ADV_HARD)
     | SLIDE_ZIP
     | AIR_JUMP
     | WALL_JUMP_LV2
-    | (SLIDE_JUMP_BUNSTRIKE_CANCEL & (RABI_SLIPPERS | SPEED1))
-    | (RABI_SLIPPERS & ADV_HARD & (SPEED2 | (SPEED1 & WALL_JUMP)))
+    | (SLIDE_JUMP_BUNSTRIKE_CANCEL & (RABI_SLIPPERS | SPEED1 | AIR_DASH | V_HARD))
+    | (RABI_SLIPPERS & ADV_HARD & (AIR_DASH | SPEED2 | (SPEED1 & WALL_JUMP)))
+    | (ADV_STUPID & SLIDING_POWDER) // hi-speed walljump
 ",
 }
 
@@ -988,6 +1155,10 @@
     | (EXPLOSIVES & RIVERBANK_LOWER_HEALTH_UP_ROOM & SLIDING_POWDER)
 ",
 "exit_prereq": "NONE",
+
+"alternate_entries": {
+    "RIVERBANK_LOWER_HEALTH_UP_ROOM": "SLIDING_POWDER & CARROT_SHOOTER & BOOST & ADV_HARD",
+},
 }
 
 {
@@ -1000,8 +1171,12 @@
 {
 "item": "FRAME_CANCEL",
 "from_location": "RIVERBANK_LEVEL3",
-"entry_prereq": " EXPLOSIVES_ENEMY & (SLIDING_POWDER | HAMMER_ROLL_ZIP)",
-"exit_prereq": "(CARROT_BOMB_ENTRY | CARROT_SHOOTER_ENTRY) & SLIDING_POWDER",
+"entry_prereq": "(EXPLOSIVES_ENEMY & SLIDING_POWDER) | SLIDE_ZIP | HAMMER_ROLL_ZIP | ROLL_BONK_ZIP",
+"exit_prereq": "(CARROT_SHOOTER_ENTRY | EXPLOSIVES) & SLIDING_POWDER",
+
+"alternate_exits" : {
+    "RIVERBANK_LOWER_HEALTH_UP_ROOM" : "BUNSTRIKE_ZIP & ADV_EXT", // j12 (n3 or n8) strike (n5 ~ n7) right
+},
 }
 
 {
@@ -1021,7 +1196,7 @@
 {
 "item": "HP_UP_RIVERBANK",
 "from_location": "RIVERBANK_LOWER_HEALTH_UP_ROOM",
-"entry_prereq": "EXPLOSIVES_ENEMY | BUNNY_WHIRL | AIR_DASH | BLOCK_CLIP | PIKO_HAMMER_LEVELED",
+"entry_prereq": "EXPLOSIVES_ENEMY | BUNNY_WHIRL | AIR_DASH | BLOCK_CLIP | (ITM & PIKO_HAMMER_LEVELED)",
 "exit_prereq": "NONE",
 }
 
@@ -1029,13 +1204,16 @@
 "item": "MP_UP_EVERNIGHT",
 "from_location": "EVERNIGHT_WARP",
 "entry_prereq": "
-    DARKNESS & SLIDING_POWDER
-    & (
+    DARKNESS & SLIDING_POWDER & (
         (AIR_JUMP & (RABI_SLIPPERS | AIR_DASH | ITM_HARD))
         | WHIRL_BONK
-        | (RABI_SLIPPERS & AIR_DASH)
-        | (BUNNY_STRIKE & AIR_DASH & ITM_HARD)
-        | (ADV_STUPID & 3_AMULET_FOOD) // wimpy, bounce, spam amulet (same as spike barrier jump)
+        | ((RABI_SLIPPERS | SLIDE_JUMP_BUNSTRIKE_CANCEL) & AIR_DASH)
+        // wimpy, bounce, airdash or wall jump
+        | (ADV_VHARD & (AIR_DASH | WALL_JUMP_LV2))
+        // wimpy, bounce, spam amulet (same as spike barrier jump)
+        | (ADV_EXT & 3_AMULET_FOOD)
+        // slide bonk, buffered wimpy, bounce
+        | ADV_STUPID
     )
 ",
 "exit_prereq": "NONE",
@@ -1051,7 +1229,7 @@
 {
 "item": "HP_UP_LAB_PIT",
 "from_location": "LAB_MID",
-"entry_prereq": "CARROT_BOMB",
+"entry_prereq": "CARROT_BOMB | (OBS_VHARD & PIKO_HAMMER & CARROT_SHOOTER)",
 "exit_prereq": "NONE",
 }
 
@@ -1065,7 +1243,7 @@
 {
 "item": "ATK_UP_EVERNIGHT_UPRPRC",
 "from_location": "EVERNIGHT_NORTHWEST",
-"entry_prereq": "SLIDING_POWDER & (EXPLOSIVES | DOWNDRILL_SEMISOLID_CLIP)",
+"entry_prereq": "(SLIDING_POWDER & (EXPLOSIVES | DOWNDRILL_SEMISOLID_CLIP)) | 2TILE_DOWNDRILL_SEMISOLID_CLIP",
 "exit_prereq": "NONE",
 }
 
@@ -1107,45 +1285,47 @@
 {
 "item": "PACK_UP_NORTH_EVERNIGHT",
 "from_location": "EVERNIGHT_NORTHWEST",
-"entry_prereq": "
-    AIR_DASH | AIR_JUMP | SLIDE_JUMP_BUNSTRIKE
-    | (ADV_VHARD & RABI_SLIPPERS & AMULET_FOOD)
-    | (ADV_STUPID & WALL_JUMP_LV2 & MANY_AMULET_FOOD)
-    ",
+"entry_prereq": "SLIDE_JUMP_BUNSTRIKE | 5TILE_WALL_CLIMB",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "REGEN_UP_EVERNIGHT",
 "from_location": "EVERNIGHT_SAYA",
-"entry_prereq": "EXPLOSIVES",
+"entry_prereq": "
+    EXPLOSIVES
+    // shoot a fairy in the east room
+    | (OBS_VHARD & CARROT_SHOOTER)
+    ",
 "exit_prereq": "NONE",
+
+"alternate_entries": {
+    "EVERNIGHT_NORTHWEST": "SLIDING_POWDER & EXPLOSIVES",
+},
+"alternate_exits": {
+    "EVERNIGHT_NORTHWEST": "SLIDING_POWDER",
+},
 }
 
 {
 "item": "ATK_UP_EVERNIGHT",
 "from_location": "EVERNIGHT_CORRIDOR_BELOW_SAYA",
 "entry_prereq": "NONE",
-"exit_prereq": "NONE",
+"exit_prereq": "AIR_JUMP | WALL_JUMP_LV2",
+
+"alternate_entries": {
+    "EVERNIGHT_EAST_OF_WARP": "ADV_EXT & WHIRL_BONK",
+},
+"alternate_exits": {
+    "EVERNIGHT_EAST_OF_WARP": "NONE",
+},
 }
 
 {
 "item": "ATK_UP_EAST_LAB",
-"from_location": "LAB_EAST",
-"entry_prereq": "EXPLOSIVES_ENEMY & (
-    AIR_JUMP
-    | AIR_DASH
-    | (RABI_SLIPPERS & ADV_VHARD)
-    | (RABI_SLIPPERS & SLIDE_JUMP_BUNSTRIKE)
-)",
+"from_location": "LAB_EAST_ATK_UP_ROOM",
+"entry_prereq": "EXPLOSIVES_ENEMY",
 "exit_prereq": "NONE",
-
-"alternate_entries": {
-    "LAB_ENTRANCE": "EXPLOSIVES_ENEMY & HAMMER_ROLL_ZIP",
-},
-"alternate_exits": {
-    "LAB_EAST_PACK_UP_ROOM": "ADV & EXPLOSIVES_ENEMY & SLIDE_ZIP",
-},
 }
 
 {
@@ -1165,14 +1345,14 @@
 {
 "item": "RIBBON_BADGE",
 "from_location": "TOWN_MAIN",
-"entry_prereq": "POST_IRISU & SLIDING_POWDER",
+"entry_prereq": "POST_IRISU & TM_IRISU & SLIDING_POWDER",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "ERINA_BADGE",
 "from_location": "TOWN_MAIN",
-"entry_prereq": "POST_IRISU & SLIDING_POWDER",
+"entry_prereq": "POST_IRISU & TM_IRISU & SLIDING_POWDER",
 "exit_prereq": "NONE",
 }
 
@@ -1185,20 +1365,27 @@
 
 {
 "item": "CARROT_SHOOTER",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "POST_GAME",
+"from_location": "HALL_OF_MEMORIES",
+"entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "FIRE_ORB",
 "from_location": "VOLCANIC_MAIN",
-// 1.8 requirements
-"entry_prereq": "FIRE_ORB | CARROT_BOMB | (CARROT_SHOOTER & (BOOST | CHARGE_RING))",
-"exit_prereq": "FIRE_ORB | (RABI_SLIPPERS & AIR_JUMP & WALL_JUMP_LV2)",
-// 1.75 requirements
-//"entry_prereq": "CARROT_BOMB | (CARROT_SHOOTER & (BOOST | CHARGE_RING))",
-//"exit_prereq": "EXPLOSIVES_ENEMY | (RABI_SLIPPERS & AIR_JUMP & WALL_JUMP_LV2)",
+"entry_prereq": "
+    (ITM & FIRE_ORB)
+    | CARROT_BOMB | (CARROT_SHOOTER & (BOOST | CHARGE_RING | OBS_VHARD))
+",
+"exit_prereq": "
+    FIRE_ORB
+    | (AIR_JUMP & WALL_JUMP_LV2 & (
+        RABI_SLIPPERS
+        | (ADV_VHARD & SLIDE_JUMP_BUNSTRIKE_CANCEL)
+        | (OBS_EXT & HAMMER_ROLL & (BUNNY_AMULET | (AIR_DASH & STUPID)))
+    ))
+    | (ADV_EXT & BUNSTRIKE_ZIP) // j12 (n7 or n8)
+",
 }
 
 {
@@ -1211,7 +1398,16 @@
 {
 "item": "REGEN_UP_CYBERSPACE",
 "from_location": "SYSTEM_INTERIOR_MAIN",
-"entry_prereq": "(CARROT_BOMB | (CARROT_SHOOTER & BOOST & ADV_HARD)) & ((AIR_JUMP & ITM_HARD) | (AIR_JUMP & RABI_SLIPPERS) | AIR_DASH | SLIDE_JUMP_BUNSTRIKE | ADV_STUPID)",
+"entry_prereq": "
+    (CARROT_BOMB | (CARROT_SHOOTER & BOOST & ADV_HARD)) & (
+        AIR_DASH_LV3
+        | (AIR_DASH & (RABI_SLIPPERS | ITM))
+        | (AIR_JUMP & (RABI_SLIPPERS | AIR_DASH | HARD))
+        | SLIDE_JUMP_BUNSTRIKE
+        // (needs amulet) wimpy, bounce, amulet
+        | ADV_EXT
+    )
+    ",
 "exit_prereq": "NONE",
 }
 
@@ -1224,8 +1420,8 @@
 
 {
 "item": "CYBER_FLOWER",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "POST_GAME & IMPOSSIBLE",
+"from_location": "SYSINT2_END",
+"entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
@@ -1233,7 +1429,7 @@
 "item": "AIR_JUMP",
 "from_location": "SYSTEM_INTERIOR_MAIN",
 "entry_prereq": "NONE",
-"exit_prereq": "AIR_JUMP | AIR_DASH | BUNNY_STRIKE | DOWNDRILL_SEMISOLID_CLIP",
+"exit_prereq":"SLIDE_JUMP_BUNSTRIKE | DOWNDRILL_SEMISOLID_CLIP | 5TILE_WALL_CLIMB",
 }
 
 {
@@ -1243,16 +1439,15 @@
     (SLIDING_POWDER & (
         CARROT_BOMB
         // hammer roll zip oob, then almost blind 2 tile zip
-        | (ADV_STUPID & SLIDE_ZIP & HAMMER_ROLL_ZIP)
+        | (2TILE_ZIP & ((OBS_EXT & HAMMER_ROLL_ZIP) | (OBS_STUPID & BUNSTRIKE_ZIP)))
     ))
     & (
-        (AIR_JUMP & (RABI_SLIPPERS | ITM_HARD)) // 6tile airjump
+        (AIR_JUMP & (AIR_DASH | RABI_SLIPPERS | ITM_HARD)) // 6tile airjump
         | (AIR_DASH_LV3 & ITM_HARD) // 4tile walljump, some other strange jumps
         | (AIR_DASH & ADV_VHARD) // (needs slide) 4tile walljump + weird jump at end
-        | (WALL_JUMP_LV2 & (
-            (RABI_SLIPPERS & ADV_VHARD) // buffered wall launch
-            | ADV_STUPID // (needs slide) two slide bonks, one buffered wall launch
-        ))
+        | (WALL_JUMP & RABI_SLIPPERS & (AIR_DASH | ADV_VHARD)) // buffered wall launch
+        | (ADV_VHARD & WALL_JUMP_LV2) // (need slide) hi-speed walljump, amulet climb
+        | ADV_STUPID // (needs slide) two slide bonks, one buffered wall launch
         | (WHIRL_BONK & ITM_VHARD) // 3 buffered whirlbonks. last one is tight
     )",
 "exit_prereq": "SLIDING_POWDER",
@@ -1277,7 +1472,7 @@
 {
 "item": "EGG_CAVE_COCOA",
 "from_location": "CAVE_COCOA",
-"entry_prereq": "ADV_STUPID | EXPLOSIVES_ENEMY",
+"entry_prereq": "(ITM & BORING) | EXPLOSIVES_ENEMY",
 "exit_prereq": "NONE",
 }
 
@@ -1318,8 +1513,8 @@
 
 {
 "item": "EGG_RUMI",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "POST_GAME",
+"from_location": "FORGOTTEN_CAVE_2",
+"entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
@@ -1330,14 +1525,20 @@
 "exit_prereq": "NONE",
 
 "alternate_entries": {
-    "SPECTRAL_CICINI_LEDGE": "SLIDING_POWDER & (
+    "SPECTRAL_CICINI_LEDGE": "
+        ITM & SLIDING_POWDER & (
             AIR_JUMP
             | SLIDE_JUMP_BUNSTRIKE_CANCEL
             | (ITM_HARD & (WALL_JUMP_LV2 | AIR_DASH))
             | (RABI_SLIPPERS & (ADV_VHARD | (ADV_HARD & SPEED3)))
-            | (ADV_STUPID & SPEED3)
-        )
-        ",
+            | (PROLOGUE_TRIGGER & (
+                (ADV_VHARD & SLIDING_POWDER & (BUNNY_AMULET | OBS_EXT))
+                | (ADV_EXT & BUNNY_AMULET & 3_AMULET_FOOD)
+                | (ADV_STUPID & SPEED3)
+                // done by TAS
+                // | (ADV_STUPID & SPEED2)
+            ))
+        )",
     },
 }
 
@@ -1362,7 +1563,14 @@
     AIR_JUMP
     | AIR_DASH
     | SLIDE_JUMP_BUNSTRIKE
-    | (SLIDING_POWDER & (RABI_SLIPPERS | (ADV_VHARD & SPEED5) | (ADV_STUPID & 2_AMULET_FOOD)))
+    | (RABI_SLIPPERS & ((ITM & SPEED5) | (ADV_HARD & SPEED3) | SLIDING_POWDER))
+    // quickdrop, buffered slide jump
+    | (ADV_VHARD & SLIDING_POWDER)
+    // stupid hover launch tricks
+    | (ADV_EXT & BUNNY_AMULET & (
+        (RABI_SLIPPERS & (SPEED2 | 2_AMULET_FOOD))
+        | (SPEED2 & 2_AMULET_FOOD) | 3_AMULET_FOOD
+    ))
 ",
 "exit_prereq": "NONE",
 }
@@ -1371,13 +1579,12 @@
 "item": "EGG_HALLOWEEN_CICINI_ROOM",
 "from_location": "HALLOWEEN_PUMPKIN_HALL",
 "entry_prereq": "
-    HALLOWEEN & (
     EXPLOSIVES & (
         SLIDE_ZIP
         | HAMMER_ROLL_ZIP
         | (CARROT_SHOOTER & BOOST & SLIDING_POWDER)
         | (TM_CHOCOLATE & TM_VANILLA & TM_CICINI & TM_SYARO & TM_LILITH & SLIDING_POWDER & BUNNY_WHIRL)
-    ))
+    )
 ",
 "exit_prereq": "EXPLOSIVES & SLIDING_POWDER"
 }
@@ -1385,14 +1592,14 @@
 {
 "item": "EGG_HALLOWEEN_LEFT_PILLAR",
 "from_location": "HALLOWEEN_EXIT",
-"entry_prereq": "HALLOWEEN & (AIR_JUMP | RABI_SLIPPERS | SLIDING_POWDER | BUNNY_WHIRL)",
+"entry_prereq": "AIR_JUMP | RABI_SLIPPERS | SLIDING_POWDER | BUNNY_WHIRL | ADV_VHARD",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "EGG_HALLOWEEN_MID",
 "from_location": "HALLOWEEN_FLOODED",
-"entry_prereq": "HALLOWEEN & (EXPLOSIVES & SLIDING_POWDER)",
+"entry_prereq": "EXPLOSIVES & SLIDING_POWDER",
 "exit_prereq": "HAMMER_ROLL_ZIP | SLIDING_POWDER",
 "alternate_exits": {
     "HALLOWEEN_DARK_SHAFT": "EXPLOSIVES & SLIDING_POWDER",
@@ -1402,14 +1609,14 @@
 {
 "item": "EGG_HALLOWEEN_NEAR_BOSS",
 "from_location": "HALLOWEEN_UPPER",
-"entry_prereq": "HALLOWEEN & EXPLOSIVES_ENEMY",
+"entry_prereq": "EXPLOSIVES_ENEMY",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "EGG_HALLOWEEN_PAST_PILLARS1",
 "from_location": "HALLOWEEN_PAST_PILLARS",
-"entry_prereq": "HALLOWEEN",
+"entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
@@ -1417,38 +1624,47 @@
 "item": "EGG_HALLOWEEN_PAST_PILLARS2",
 "from_location": "HALLOWEEN_PAST_PILLARS",
 "entry_prereq": "
-        HALLOWEEN & (
-        (BUNNY_WHIRL & AIR_DASH_LV3 & (ADV_VHARD | AIR_JUMP))
-        | (BUNNY_WHIRL & AIR_JUMP & WALL_JUMP_LV2 & ADV))
+    BUNNY_WHIRL & (
+        ((ADV_VHARD | AIR_JUMP) & (
+            AIR_DASH_LV3 | (ITM_HARD & BUNNY_STRIKE)
+        ))
+        | (ADV_VHARD & AIR_JUMP & (WALL_JUMP_LV2 | STUPID))
+        | (ADV_STUPID & BUNNY_AMULET & AIR_DASH)
+    )
 ",
 "exit_prereq": "
-        (BUNNY_WHIRL & AIR_DASH_LV3 & (ADV_VHARD | AIR_JUMP))
-        | (BUNNY_WHIRL & AIR_JUMP & WALL_JUMP_LV2 & ADV)
+    (BUNNY_WHIRL | EXPLOSIVES) & (
+        ((ADV_VHARD | AIR_JUMP) & (
+            AIR_DASH_LV3 | (ITM_HARD & BUNNY_STRIKE)
+        ))
+        | (ADV_VHARD & AIR_JUMP & (WALL_JUMP_LV2 | STUPID))
+        | (ADV_STUPID & BUNNY_AMULET & AIR_DASH)
+    )
 ",
 "alternate_entries": {
     "HALLOWEEN_PUMPKIN_HALL": "
-// Bunstrike out of a tunnel jump zip then either
-// amulet climb the right wall or use precise wall kicks to reach the egg
-        ADV_STUPID & SLIDE_ZIP & EXPLOSIVES_ENEMY & BUNNY_AMULET_LV2 &
-        BUNNY_STRIKE & AIR_JUMP & WALL_JUMP_LV2 & AIR_DASH
+        // Bunstrike out of a tunnel jump zip then either
+        ADV_STUPID & SLIDE_ZIP & EXPLOSIVES_ENEMY & (
+            // amulet climb the right wall or use precise wall kicks to reach the egg
+            (BUNNY_AMULET & BUNNY_STRIKE & AIR_JUMP & WALL_JUMP & AIR_DASH)
+            // double airjump
+            | (OBS_STUPID & SLIDE_JUMP_BUNSTRIKE & AIR_JUMP)
+        )
     ",
-    },
-"alternate_exits": {
-    "BEACH_MAIN": "NONE",
     },
 }
 
 {
 "item": "EGG_HALLOWEEN_RIGHT_PILLAR",
 "from_location": "HALLOWEEN_EXIT",
-"entry_prereq": "HALLOWEEN & (AIR_JUMP | RABI_SLIPPERS | SLIDING_POWDER | BUNNY_WHIRL)",
+"entry_prereq": "AIR_JUMP | RABI_SLIPPERS | SLIDING_POWDER | BUNNY_WHIRL | ADV_VHARD",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "EGG_HALLOWEEN_SW_SLIDE",
 "from_location": "HALLOWEEN_FLOODED",
-"entry_prereq": "HALLOWEEN & (EXPLOSIVES & SLIDING_POWDER)",
+"entry_prereq": "EXPLOSIVES & SLIDING_POWDER",
 "exit_prereq": "EXPLOSIVES & (SLIDING_POWDER | (HAMMER_ROLL_ZIP & WATER_ORB))"
 }
 
@@ -1456,14 +1672,13 @@
 "item": "EGG_HALLOWEEN_WARP_ZONE",
 "from_location": "HALLOWEEN_UPPER",
 "entry_prereq": "
-    HALLOWEEN & (
     WHIRL_BONK
     | (AIR_JUMP & (AIR_DASH | ADV_STUPID))
-    | (ADV_STUPID & AIR_DASH & WALL_JUMP_LV2 & BUNNY_AMULET_LV2 & (
-        SLIDE_JUMP_BUNSTRIKE_CANCEL
-        | (RABI_SLIPPERS & SLIDING_POWDER)
+    | (ADV_EXT & AIR_DASH & SLIDING_POWDER & (
+        (RABI_SLIPPERS & WALL_JUMP & BUNNY_AMULET)
+        | (WALL_JUMP_LV2 & BUNNY_AMULET_LV2)
         // probably speed something
-    ) ) )
+    ) )
 ",
 "exit_prereq": "
     ADV_STUPID
@@ -1479,24 +1694,27 @@
 "item": "EGG_HALLOWEEN_WEST",
 "from_location": "HALLOWEEN_DARK_SHAFT",
 "entry_prereq": "
-    HALLOWEEN & (
     //SLIDING_POWDER & DARKNESS & (FIRE_ORB | (ADV_HARD & RIBBON)) &
-    SLIDING_POWDER & DARKNESS & (FIRE_ORB | ADV_HARD) &
-    (BUNNY_WHIRL | (
-        CARROT_SHOOTER
-        & BOOST_MANY
-        & (CARROT_BOMB | PIKO_HAMMER)
-        & ADV_STUPID
-    )))
+    SLIDING_POWDER & DARKNESS & (FIRE_ORB | ADV_HARD) & (
+        BUNNY_WHIRL
+        // many boosts method
+        // step 1: break lower bomb blocks (2 boosts)
+        // step 2: break upper bomb blocks from the slide tunnel (4 boosts)
+        | (ADV_STUPID & BOOST_MANY & CARROT_SHOOTER)
+    )
 ",
 "exit_prereq": "SLIDING_POWDER | HAMMER_ROLL_ZIP",
 }
 
 {
 "item": "EGG_LIBRARY",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "POST_GAME & IMPOSSIBLE",
+"from_location": "LIBRARY_BOTTOM",
+"entry_prereq": "AIR_JUMP | AIR_DASH | SLIDING_POWDER | (ADV_STUPID & AMULET_FOOD)",
 "exit_prereq": "NONE",
+"alternate_entries": {
+    // EXPLOSIVES | RIBBON | (FIRE_ORB & (SLIDING_POWDER | PIKO_HAMMER))
+    "LIBRARY_ENTRANCE": "NONE",
+},
 }
 
 {
@@ -1509,7 +1727,13 @@
 {
 "item": "EGG_PYRAMID_BEACH",
 "from_location": "BEACH_MAIN",
-"entry_prereq": "(ADV_STUPID & AMULET_FOOD) | EXPLOSIVES | AIR_JUMP | AIR_DASH",
+"entry_prereq": "
+    EXPLOSIVES | AIR_JUMP | AIR_DASH
+    // abusing pause for recognize x-position makes wimpy launch easier
+    | (ADV_EXT & AMULET_FOOD)
+    // whirl bonk off the jumping roly-poly
+    | (ADV_EXT & WHIRL_BONK)
+",
 "exit_prereq": "NONE",
 }
 
@@ -1531,12 +1755,9 @@
 "item": "EGG_PARK_GREEN_KOTRI",
 "from_location": "PARK_KOTRI",
 "entry_prereq": "
-    WHIRL_BONK | AIR_JUMP | AIR_DASH
-    | (RABI_SLIPPERS & SLIDE_JUMP_BUNSTRIKE)
-    | (ADV_VHARD & (
-        (RABI_SLIPPERS & AMULET_FOOD)
-        | SLIDING_POWDER // slide bonk off stone
-    ))
+    WHIRL_BONK | 5TILE_WALL_CLIMB | (RABI_SLIPPERS & SLIDE_JUMP_BUNSTRIKE)
+    | (ADV_VHARD & SLIDING_POWDER) // slide bonk off stone
+    | (ADV_STUPID & 3_AMULET_FOOD)
 ",
 "exit_prereq": "NONE",
 }
@@ -1545,6 +1766,13 @@
 "item": "EGG_UPRPRC_BASE",
 "from_location": "UPRPRC_BASE",
 "entry_prereq": "EXPLOSIVES_ENEMY",
+"exit_prereq": "NONE",
+}
+
+{
+"item": "EGG_SKY_BRIDGE_ABOVE_WARP",
+"from_location": "SKY_BRIDGE_MAIN",
+"entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
@@ -1592,8 +1820,8 @@
 
 {
 "item": "EGG_AQUARIUM",
-"from_location": "AQUARIUM_WEST",
-"entry_prereq": "DARKNESS | SLIDING_POWDER",
+"from_location": "AQUARIUM_WEST_LOWER",
+"entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
@@ -1607,7 +1835,7 @@
 {
 "item": "EGG_SNOWLAND_WARP",
 "from_location": "SNOWLAND_CHRISTMAS_TREE",
-"entry_prereq": "RABI_SLIPPERS | AIR_JUMP | AIR_DASH | ADV_HARD",
+"entry_prereq": "RABI_SLIPPERS | AIR_JUMP | AIR_DASH | SLIDE_JUMP_BUNSTRIKE | ADV_HARD",
 "exit_prereq": "NONE",
 }
 
@@ -1615,6 +1843,13 @@
 "item": "EGG_ICY_SUMMIT_NIXIE",
 "from_location": "ICY_SUMMIT_NIXIE",
 "entry_prereq": "NONE",
+"exit_prereq": "NONE",
+}
+
+{
+"item": "EGG_SNOWLAND_SPIKES_ROOM",
+"from_location": "SNOWLAND_SPIKE_ROOM",
+"entry_prereq": "DARKNESS",
 "exit_prereq": "NONE",
 }
 
@@ -1631,7 +1866,15 @@
 "entry_prereq": "
     AIR_JUMP | WATER_ORB | WHIRL_BONK | WALL_JUMP_LV2
     | (WALL_JUMP & (RABI_SLIPPERS | (AIR_DASH & ITM_HARD)))
-    | (ADV_STUPID & MANY_AMULET_FOOD)
+    | (ADV_VHARD & (
+        AIR_DASH_LV3
+        | (BORING & RABI_SLIPPERS) // dboost
+    ))
+    | (ADV_EXT & (
+        6_AMULET_FOOD // wimpy, 6 velocity cancels, bounce
+        | (2_AMULET_FOOD & (AIR_DASH | WALL_JUMP))
+        | (BORING & CONSUMABLE_USE) // 3 dboosts
+    ))
 ",
 "exit_prereq": "NONE",
 }
@@ -1647,9 +1890,10 @@
 "item": "EGG_RIVERBANK_WALL",
 "from_location": "RIVERBANK_LEVEL2",
 "entry_prereq": "
-    WHIRL_BONK | AIR_JUMP | AIR_DASH | SLIDING_POWDER
-    | (ADV_VHARD & RABI_SLIPPERS & AMULET_FOOD)
-    | (ADV_STUPID & WALL_JUMP_LV2 & 2_AMULET_FOOD)
+    WHIRL_BONK | SLIDE_JUMP_BUNSTRIKE | (ADV_HARD & SLIDING_POWDER)
+    | 5TILE_WALL_CLIMB
+    // 0% method : walljump, damage boost off red uprprc bullets, wallkick, amulet
+    | (ADV_STUPID & AMULET_FOOD)
     ",
 "exit_prereq": "NONE",
 }
@@ -1662,8 +1906,15 @@
 }
 
 {
+"item": "EGG_LAB_ENTRANCE",
+"from_location": "LAB_ENTRANCE",
+"entry_prereq": "SLIDING_POWDER & (5TILE_WALL_CLIMB | SLIDE_JUMP_BUNSTRIKE)",
+"exit_prereq": "NONE",
+}
+
+{
 "item": "EGG_EVERNIGHT_MID",
-"from_location": "EVERNIGHT_SAYA",
+"from_location": "EVERNIGHT_NORTHWEST",
 "entry_prereq": "EXPLOSIVES_ENEMY",
 "exit_prereq": "NONE",
 }
@@ -1672,7 +1923,7 @@
 "item": "EGG_EVERNIGHT_SAYA",
 "from_location": "EVERNIGHT_SAYA",
 "entry_prereq": "
-    ADV_STUPID // softlock potential. get item via saya blocks
+    ADV_EXT // softlock potential. get item via saya blocks
     | AIR_JUMP
     | SLIDE_JUMP_BUNSTRIKE
     | WHIRL_BONK
@@ -1687,7 +1938,14 @@
 {
 "item": "EGG_TOWN",
 "from_location": "TOWN_MAIN",
-"entry_prereq": "AIR_JUMP & (RABI_SLIPPERS | SLIDE_JUMP_BUNSTRIKE_CANCEL)",
+"entry_prereq": "
+    AIR_JUMP & (
+        RABI_SLIPPERS
+        | (SLIDE_JUMP_BUNSTRIKE_CANCEL | (OBS_VHARD & SLIDE_JUMP_BUNSTRIKE))
+        // giant buff + slide airjump
+        | (OBS_VHARD & TM_SAYA & 3TM & SLIDING_POWDER)
+    )
+",
 "exit_prereq": "NONE",
 }
 
@@ -1721,15 +1979,39 @@
 
 {
 "item": "EGG_MEMORIES_SYSINT",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "POST_GAME & EXPLOSIVES_ENEMY",
+"from_location": "HALL_OF_MEMORIES",
+"entry_prereq": "EXPLOSIVES_ENEMY",
+"exit_prereq": "NONE",
+}
+
+{
+"item": "EGG_MEMORIES_CARS_ROOM",
+"from_location": "HALL_OF_MEMORIES",
+"entry_prereq": "
+    // get into the room
+    (WATER_ORB | AIR_JUMP | WALL_JUMP | RABI_SLIPPERS | WHIRL_BONK)
+    & EXPLOSIVES
+    // wait, then jump to the alcove
+    & (
+        (AIR_JUMP & (ITM_HARD | RABI_SLIPPERS))
+        | (AIR_DASH & (
+            (RABI_SLIPPERS | SLIDE_JUMP_BUNSTRIKE_CANCEL)
+            | (ADV_VHARD & WALL_JUMP & (AMULET_FOOD | OBSCURE))
+            | (OBS_EXT & AIR_DASH & BUNNY_AMULET & (BUNNY_AMULET_LV2 | (ITEM_MENU & RUMI_DONUT) | STUPID))
+        ))
+        | (ADV_VHARD & AIR_DASH_LV3 & AMULET_FOOD) // wimpy, air dash, bounce, amulet
+        | (ADV_EXT & (
+            (RABI_SLIPPERS & SLIDE_JUMP_BUNSTRIKE_CANCEL & 2_AMULET_FOOD)
+            | (WALL_JUMP_LV2 & MANY_AMULET_FOOD)
+        ))
+    )",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "EGG_MEMORIES_RAVINE",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "POST_GAME & EXPLOSIVES_ENEMY",
+"from_location": "HALL_OF_MEMORIES",
+"entry_prereq": "EXPLOSIVES_ENEMY",
 "exit_prereq": "NONE",
 }
 
@@ -1744,12 +2026,17 @@
 "item": "EGG_VOLCANIC_NE",
 "from_location": "VOLCANIC_MAIN",
 "entry_prereq": "
-    AIR_JUMP | AIR_DASH | BUNNY_STRIKE |
-    // 0% ADV_STUPID jump: walljump off left wall, damage boost off dog, wallkick off left wall, amulet
-    (ADV_STUPID & AMULET_FOOD) |
-    WHIRL_BONK |
-    (SLIDING_POWDER & (RABI_SLIPPERS | WALL_JUMP | ITM_HARD)) |
-    (RABI_SLIPPERS & WALL_JUMP)
+    AIR_JUMP | AIR_DASH | SLIDE_JUMP_BUNSTRIKE
+    // pure 0% jump: walljump off left wall, damage boost off dog, wallkick off left wall
+    | ADV_EXT
+    | WHIRL_BONK
+    | (SLIDING_POWDER & (RABI_SLIPPERS | WALL_JUMP | ITM_HARD))
+    | (ITM_HARD & SPEED5)
+    | (RABI_SLIPPERS & WALL_JUMP)
+    | (ADV_VHARD &
+        (WALL_JUMP & SPEED1) // quickdrop jump
+        | WALL_JUMP_LV2 // buffered wimpy launch
+    )
 ",
 "exit_prereq": "NONE",
 }
@@ -1763,22 +2050,24 @@
 
 {
 "item": "EGG_CRESPIRIT",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "WARP_DESTINATION",
+"from_location": "WARP_DESTINATION_OUTSIDE",
+"entry_prereq": "NONE",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "EGG_HOSPITAL_WALL",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "WARP_DESTINATION & POST_GAME & EXPLOSIVES",
+"from_location": "WARP_DESTINATION_HOSPITAL",
+"entry_prereq": "NONE",
+//"entry_prereq": "EXPLOSIVES",
 "exit_prereq": "NONE",
 }
 
 {
 "item": "EGG_HOSPITAL_BOX",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "WARP_DESTINATION & POST_GAME & EXPLOSIVES",
+"from_location": "WARP_DESTINATION_HOSPITAL",
+"entry_prereq": "NONE",
+//"entry_prereq": "EXPLOSIVES | BLOCK_CLIP",
 "exit_prereq": "NONE",
 }
 
@@ -1791,12 +2080,26 @@
 
 {
 "item": "EGG_SYSINT2",
-"from_location": "UNREACHABLE_LOCATION",
-"entry_prereq": "POST_GAME & IMPOSSIBLE",
+"from_location": "SYSINT2_EGG_ROOM",
+"entry_prereq": "POST_GAME",
 "exit_prereq": "NONE",
 }
 
+{
+"item": "EGG_SYSINT2_LONG_JUMP",
+"from_location": "SYSINT2_END",
+"entry_prereq": "
+    // you can launch over the 5 tile wall
+    (AIR_DASH | AIR_JUMP | BUNNY_STRIKE | RABI_SLIPPERS | (ITM_HARD & WALL_JUMP & SPEED2) | ADV_VHARD)
+    & EXPLOSIVES
+    & (SLIDING_POWDER | HAMMER_ROLL_ZIP)
+",
+"exit_prereq": "NONE",
+}
+
+
 // Shufflable Gift Items
+
 {
 "item": "SPEED_BOOST",
 "from_location": "TOWN_SHOP",
@@ -1807,7 +2110,7 @@
 {
 "item": "BUNNY_STRIKE",
 "from_location": "TOWN_SHOP",
-"entry_prereq": "SLIDING_POWDER",
+"entry_prereq": "SLIDING_POWDER & TM_CICINI",
 "exit_prereq": "NONE",
 }
 
