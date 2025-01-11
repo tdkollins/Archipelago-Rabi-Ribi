@@ -86,8 +86,7 @@ def patch_map_files(ctx: RabiRibiContext):
     randomizer_data = RandomizerData(settings)
     item_modifier = ItemModifier(
         area_ids,
-        map_source_dir,
-        no_load=True
+        map_source_dir
     )
     allocation = Allocation(ctx, randomizer_data)
     map_modifications = allocation.map_modifications
