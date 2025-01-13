@@ -180,7 +180,8 @@ def can_recruit_seana(state: CollectionState, player: int):
 
 def can_recruit_lilith(state: CollectionState, player: int):
     """Player can recruit lilith"""
-    return state.can_reach(LocationName.sky_island_main, "Region", player)
+    return state.has(ItemName.cicini_recruit, player) and \
+        state.can_reach(LocationName.sky_island_main, "Region", player)
 
 def can_recruit_vanilla(state: CollectionState, player: int):
     """Player can recruit vanilla"""

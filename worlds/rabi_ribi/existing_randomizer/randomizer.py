@@ -45,7 +45,8 @@ def parse_args():
     args.add_argument('-num-hard-to-reach', default=5, type=int, help='Number of hard to reach items/eggs. Default is 5.')
     args.add_argument('--debug-visualize', action='store_true', help='Output debug info and node graph image.')
 
-    return args.parse_args(sys.argv[1:])
+    # AP Change: Don't pass args from generation, as they're for Archipelago
+    return args.parse_args([])
 
 
 def apply_item_specific_fixes(mod, allocation):

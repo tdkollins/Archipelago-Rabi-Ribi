@@ -35,6 +35,10 @@ class Allocation(object):
         # Shuffle Constraints
         self.choose_constraint_templates(data, settings)
 
+        # Shuffle Map Transitions
+        # AP Change: Moved from construct_graph and refactored to a new method
+        self.shuffle_map_transitions(settings)
+
         # Shuffle Locations
         self.construct_graph(data, settings)
 
@@ -119,13 +123,15 @@ class Allocation(object):
                     new_templates.append(t)
                 templates = new_templates
 
-
-
         self.picked_templates = picked_templates
         for template in picked_templates:
             for change in template.changes:
                 self.edge_replacements[(change.from_location, change.to_location)] = change
             self.map_modifications.append(template.template_file)
+
+    def shuffle_map_transitions(self, settings):
+        if settings.shuffle_map_transitions:
+            self.random.shuffle(self.walking_left_transitions)
 
     def construct_graph(self, data, settings):
         edges = list(data.initial_edges)
@@ -150,9 +156,8 @@ class Allocation(object):
             edge_id += 1
 
         # Map Transitions
+        # AP Change: Moved shuffling of map transitions to a separate method in init
         if settings.shuffle_map_transitions:
-            self.random.shuffle(self.walking_left_transitions)
-
             edge_id = data.transition_edges_id
             for ltr in self.walking_left_transitions:
                 edges[edge_id].to_location = ltr.origin_location

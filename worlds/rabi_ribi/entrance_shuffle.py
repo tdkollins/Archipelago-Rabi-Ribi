@@ -25,6 +25,9 @@ class MapAllocation(Allocation):
         # Shuffle Constraints
         self.choose_constraint_templates(data, settings)
 
+        # Shuffle Map Transitions
+        self.shuffle_map_transitions(settings)
+
         # Shuffle Locations
         self.construct_graph(data, settings)
 
@@ -44,8 +47,7 @@ class MapAllocation(Allocation):
                 self.edge_replacements[(change.from_location, change.to_location)] = change
             self.map_modifications.append(template.template_file)
 
-        # Disable map transition shuffle and apply the selected shuffle
-        settings.shuffle_map_transitions = False
+        # Apply the selected map transition shuffle for the graph
         self.walking_left_transitions = [data.walking_left_transitions[i] for i in map_transition_shuffle_order]
 
         self.construct_graph(data, settings)
