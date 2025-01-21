@@ -7,4 +7,3 @@ converter/*.txt
 converter/generated/
 converter/modified/
 converter/original/
-!minimap_raw.png
