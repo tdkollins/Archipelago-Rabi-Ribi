@@ -404,8 +404,10 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
         - OpOr
         - OpNot
         - OpBacktrack
-    For simplicity, I did not implement backtrack (yet), since its kind of hacky, complex, 
-    and theres not too much benefit (used in 3 non-critical places).
+
+    OpBacktrack exists in the standalone randomizer for two-way entrances that can only be opened
+    from one side. Since AP logic assumes the player can warp to the starting location,
+    these entrances add nothing to the graph and can be safely ignored.
 
     OpLit is used to evaluate a single literal statement. This can be having an item, or
     can be more complex (e.g. conjunction of literals), which is combined into a single literal
@@ -540,7 +542,6 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
         expr_l = convert_existing_rando_rule_to_ap_rule(existing_rule.exprL, player, regions, options)
         expr_r = convert_existing_rando_rule_to_ap_rule(existing_rule.exprR, player, regions, options)
         return lambda state: expr_l(state) and expr_r(state)
-    # TODO: Convert backtracking logic to be handled in AP
     elif isinstance(existing_rule, OpBacktrack):
         return lambda _: False
     raise ValueError("Invalid Expression recieved.")
