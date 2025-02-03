@@ -25,8 +25,14 @@ class MapAllocation(Allocation):
         # Shuffle Constraints
         self.choose_constraint_templates(data, settings)
 
+        # Shuffle Map Transitions
+        self.shuffle_map_transitions(settings)
+
         # Shuffle Locations
         self.construct_graph(data, settings)
+
+        # Choose Starting Location
+        self.choose_starting_location(data, settings)
 
     def construct_set_seed(self, data, settings, picked_templates:List[str], map_transition_shuffle_order: List[int]):
         self.map_modifications = list(data.default_map_modifications)
@@ -41,8 +47,7 @@ class MapAllocation(Allocation):
                 self.edge_replacements[(change.from_location, change.to_location)] = change
             self.map_modifications.append(template.template_file)
 
-        # Disable map transition shuffle and apply the selected shuffle
-        settings.shuffle_map_transitions = False
+        # Apply the selected map transition shuffle for the graph
         self.walking_left_transitions = [data.walking_left_transitions[i] for i in map_transition_shuffle_order]
 
         self.construct_graph(data, settings)
@@ -103,7 +108,7 @@ class MapAnalyzer(Analyzer):
         reachable, unreachable, levels, _ = self.verify_reachable_items(starting_variables, backward_exitable)
 
         # Convert item locations back to actual names
-        item_location_reachable = {convert_existing_rando_name_to_ap_name(name[4:]) for name in reachable}
+        item_location_reachable = {convert_existing_rando_name_to_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
 
         if not self.locations_to_reach.issubset(item_location_reachable):
             self.error_message = 'Not all locations are reachable.'

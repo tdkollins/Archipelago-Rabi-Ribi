@@ -1,12 +1,12 @@
 import argparse, random, sys
-from worlds.rabi_ribi.existing_randomizer.utility import *
-from worlds.rabi_ribi.existing_randomizer.generator import Generator
-from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
-import worlds.rabi_ribi.existing_randomizer.mapfileio as mapfileio
-import worlds.rabi_ribi.existing_randomizer.musicrandomizer as musicrandomizer
-import worlds.rabi_ribi.existing_randomizer.backgroundrandomizer as backgroundrandomizer
-import worlds.rabi_ribi.existing_randomizer.converter.diffgenerator as diffgenerator
-import worlds.rabi_ribi.existing_randomizer.versioncheck as versioncheck
+from . import mapfileio
+from . import musicrandomizer
+from . import backgroundrandomizer
+from . import versioncheck
+from .utility import *
+from .generator import Generator
+from .dataparser import RandomizerData
+from .converter import diffgenerator as diffgenerator
 
 def parse_args():
     args = argparse.ArgumentParser(description='Rabi-Ribi Randomizer - %s' % versioncheck.VERSION_STRING)
@@ -25,7 +25,10 @@ def parse_args():
     args.add_argument('--shuffle-backgrounds', action='store_true', help='Shuffles the backgrounds in the map.')
     args.add_argument('--shuffle-map-transitions', action='store_true', help='Shuffles map transitions between maps.')
     args.add_argument('--shuffle-gift-items', action='store_true', help='Shuffles certain gift items in the maps.')
-    args.add_argument('-constraint-changes', default=0, type=float, help='Expected number of changed map constraints')
+    args.add_argument('--shuffle-start-location', action='store_true', help='Shuffle start area.')
+    args.add_argument('-constraint-changes', default=0, type=float, help='Average number of changed map constraints')
+    args.add_argument('-min-constraint-changes', default=-1, type=float, help='Min number of changed map constraints')
+    args.add_argument('-max-constraint-changes', default=-1, type=float, help='Max number of changed map constraints')
     args.add_argument('--no-laggy-backgrounds', action='store_true', help='Don\'t include laggy backgrounds in background shuffle.')
     args.add_argument('--no-difficult-backgrounds', action='store_true', help='Don\'t include backgrounds in background shuffle that interfere with visibility.')
     args.add_argument('--super-attack-mode', action='store_true', help='Start the game with a bunch of attack ups, so you do lots more damage.')
@@ -40,25 +43,44 @@ def parse_args():
     args.add_argument('--egg-goals', action='store_true', help='Egg goals mode. Hard-to-reach items are replaced with easter eggs. All other eggs are removed from the map.')
     args.add_argument('-extra-eggs', default=0, type=int, help='Number of extra randomly-chosen eggs for egg-goals mode (in addition to the hard-to-reach eggs)')
     args.add_argument('-num-hard-to-reach', default=5, type=int, help='Number of hard to reach items/eggs. Default is 5.')
+    args.add_argument('--debug-visualize', action='store_true', help='Output debug info and node graph image.')
 
-    return args.parse_args("")
+    # AP Change: Don't pass args from generation, as they're for Archipelago
+    return args.parse_args([])
 
 
 def apply_item_specific_fixes(mod, allocation):
     item_at_location = allocation.item_at_item_location
 
-    if is_egg(item_at_location['PURE_LOVE']):
+    # AP Change: Added more robust method for checking if a location
+    #            an egg, as the location may not exist in AP.
+    def is_egg_at_location(location_name):
+        return location_name in item_at_location \
+            and is_egg(item_at_location[location_name])
+
+    if is_egg_at_location('PURE_LOVE'):
         data = mod.stored_datas[1]
         data.tiledata_event[xy_to_index(404,12)] = 3
 
-    if is_egg(item_at_location['ATK_UP_SNOWLAND']):
+    if is_egg_at_location('ATK_UP_SNOWLAND'):
         data = mod.stored_datas[3]
         data.tiledata_event[xy_to_index(93,119)] = 3
 
-    if is_egg(item_at_location['HP_UP_NORTH_FOREST']):
+    if is_egg_at_location('HP_UP_NORTH_FOREST'):
         data = mod.stored_datas[0]
         data.tiledata_map[xy_to_index(271,51)] = 0
         data.tiledata_tiles1[xy_to_index(271,51)] = 0
+
+    if is_egg_at_location('EGG_HOSPITAL_BOX'):
+        data = mod.stored_datas[8]
+        data.tiledata_map[xy_to_index(486,73)] = 0
+        data.tiledata_tiles1[xy_to_index(486,73)] = 0
+
+    if is_egg_at_location('EGG_HOSPITAL_WALL'):
+        data = mod.stored_datas[8]
+        data.tiledata_map[xy_to_index(438,64)] = 0
+        data.tiledata_tiles1[xy_to_index(438,64)] = 0
+
 
 def apply_fixes_for_randomizer(areaid, data):
     if areaid == 0:
@@ -107,15 +129,19 @@ def apply_fixes_for_randomizer(areaid, data):
         for y in range(186,189):
             data.tiledata_event[xy_to_index(310,y)] = 0
 
+    if areaid == 6:
+        # Add EV_NOEVENT0 at plurk warp stone
+        data.tiledata_event[xy_to_index(188,38)] = 524
+
     if areaid == 7:
         # Remove redundant map transition
         for y in range(37,43):
             for x in range(96,101):
                 data.tiledata_event[xy_to_index(x,y)] = 0
 
-    if areaid == 8:
-        # Remove autosaves from warp destination
-        data.tiledata_event = [0 if x==42 else x for x in data.tiledata_event]
+#    if areaid == 8:
+#        # Remove autosaves from warp destination
+#        data.tiledata_event = [0 if x==42 else x for x in data.tiledata_event]
 
 
 def apply_open_mode_fixes(areaid, data):
@@ -126,6 +152,198 @@ def apply_open_mode_fixes(areaid, data):
         # Trigger blocking going to beach from start
         data.tiledata_event = [0 if x==301 else x for x in data.tiledata_event]
 
+
+def apply_post_game_fixes(areaid, data):
+    # library
+    if areaid == 1:
+        # entrance
+        for x in range(281, 286):
+            data.tiledata_map[xy_to_index(x, 64)] = 0
+            data.tiledata_tiles1[xy_to_index(x, 64)] = 0
+            data.tiledata_event[xy_to_index(x, 64)] = 0
+        for x in range(295, 302):
+            data.tiledata_map[xy_to_index(x, 61)] = 0
+            data.tiledata_tiles1[xy_to_index(x, 61)] = 0
+            data.tiledata_event[xy_to_index(x, 61)] = 0
+
+        # lower area and hitbox down
+        data.tiledata_map[xy_to_index(352, 51)] = 0
+        data.tiledata_tiles1[xy_to_index(352, 51)] = 0
+        data.tiledata_event[xy_to_index(352, 51)] = 0
+
+        data.tiledata_event[xy_to_index(354, 61)] = 0
+        data.tiledata_event[xy_to_index(354, 62)] = 0
+
+        data.tiledata_event[xy_to_index(376, 63)] = 0
+        data.tiledata_event[xy_to_index(376, 64)] = 0
+
+        data.tiledata_event[xy_to_index(359, 34)] = 0
+        data.tiledata_event[xy_to_index(359, 35)] = 0
+
+        data.tiledata_event[xy_to_index(343, 40)] = 0
+        data.tiledata_event[xy_to_index(343, 40)] = 0
+
+        # large gaps to mid lower area
+        for x in range(327, 330):
+            data.tiledata_map[xy_to_index(x, 48)] = 0
+            data.tiledata_tiles1[xy_to_index(x, 48)] = 0
+            data.tiledata_event[xy_to_index(x, 48)] = 0
+
+        data.tiledata_event[xy_to_index(334, 52)] = 0
+        data.tiledata_event[xy_to_index(334, 53)] = 0
+
+        for x in range(303, 305):
+            data.tiledata_map[xy_to_index(x, 39)] = 0
+            data.tiledata_tiles1[xy_to_index(x, 39)] = 0
+            data.tiledata_event[xy_to_index(x, 39)] = 0
+        for y in range(38, 40):
+            data.tiledata_map[xy_to_index(308, y)] = 0
+            data.tiledata_tiles1[xy_to_index(308, y)] = 0
+            data.tiledata_event[xy_to_index(308, y)] = 0
+        for y in range(35, 43):
+            data.tiledata_map[xy_to_index(312, y)] = 0
+            data.tiledata_tiles1[xy_to_index(312, y)] = 0
+            data.tiledata_event[xy_to_index(312, y)] = 0
+
+        data.tiledata_event[xy_to_index(310, 49)] = 0
+        data.tiledata_event[xy_to_index(310, 50)] = 0
+
+        # library zip and 8 tile walljump room
+        data.tiledata_map[xy_to_index(223, 31)] = 0
+        data.tiledata_tiles1[xy_to_index(223, 31)] = 0
+        data.tiledata_event[xy_to_index(223, 31)] = 0
+
+        data.tiledata_map[xy_to_index(232, 34)] = 0
+        data.tiledata_tiles1[xy_to_index(232, 34)] = 0
+        data.tiledata_event[xy_to_index(232, 34)] = 0
+
+        data.tiledata_map[xy_to_index(235, 42)] = 0
+        data.tiledata_tiles1[xy_to_index(235, 42)] = 0
+        data.tiledata_event[xy_to_index(235, 42)] = 0
+
+        data.tiledata_map[xy_to_index(236, 36)] = 0
+        data.tiledata_tiles1[xy_to_index(236, 36)] = 0
+        data.tiledata_event[xy_to_index(236, 36)] = 0
+
+        data.tiledata_map[xy_to_index(231, 27)] = 0
+        data.tiledata_tiles1[xy_to_index(231, 27)] = 0
+        data.tiledata_event[xy_to_index(231, 27)] = 0
+
+        for x in range(224, 231):
+            data.tiledata_map[xy_to_index(x, 42)] = 0
+            data.tiledata_tiles1[xy_to_index(x, 42)] = 0
+            data.tiledata_event[xy_to_index(x, 42)] = 0
+
+        # beneath auto trigger
+        for x in range(293, 297):
+            data.tiledata_map[xy_to_index(x, 31)] = 0
+            data.tiledata_tiles1[xy_to_index(x, 31)] = 0
+            data.tiledata_event[xy_to_index(x, 31)] = 0
+
+        data.tiledata_event[xy_to_index(291, 32)] = 0
+        data.tiledata_event[xy_to_index(291, 33)] = 0
+
+        data.tiledata_event[xy_to_index(297, 30)] = 0
+        data.tiledata_event[xy_to_index(297, 31)] = 0
+
+        # mid upper to irisu
+        data.tiledata_map[xy_to_index(330, 30)] = 0
+        data.tiledata_tiles1[xy_to_index(330, 30)] = 0
+        data.tiledata_event[xy_to_index(330, 30)] = 0
+
+        data.tiledata_map[xy_to_index(335, 27)] = 0
+        data.tiledata_tiles1[xy_to_index(335, 27)] = 0
+        data.tiledata_event[xy_to_index(335, 27)] = 0
+
+        data.tiledata_map[xy_to_index(336, 24)] = 0
+        data.tiledata_tiles1[xy_to_index(336, 24)] = 0
+        data.tiledata_event[xy_to_index(336, 24)] = 0
+
+        data.tiledata_map[xy_to_index(337, 21)] = 0
+        data.tiledata_tiles1[xy_to_index(337, 21)] = 0
+        data.tiledata_event[xy_to_index(337, 21)] = 0
+
+        data.tiledata_event[xy_to_index(327, 30)] = 0
+        data.tiledata_event[xy_to_index(327, 31)] = 0
+
+        data.tiledata_event[xy_to_index(333, 30)] = 0
+        data.tiledata_event[xy_to_index(333, 31)] = 0
+
+        data.tiledata_event[xy_to_index(309, 16)] = 0
+        data.tiledata_event[xy_to_index(309, 17)] = 0
+
+    # warp destination
+    if areaid == 8:
+        # replace hospital bomb block to ribbon block for prevent softlock
+
+        # box room
+        data.tiledata_event[xy_to_index(485, 73)] = 6
+        data.tiledata_event[xy_to_index(486, 73)] = 6
+
+        # wall
+        data.tiledata_event[xy_to_index(438, 64)] = 6
+        data.tiledata_event[xy_to_index(438, 65)] = 6
+
+    # sysint2
+    if areaid == 9:
+        # entrance
+        data.tiledata_event[xy_to_index(197, 73)] = 0
+        data.tiledata_event[xy_to_index(197, 74)] = 0
+
+        # before the egg room
+        data.tiledata_event[xy_to_index(150, 156)] = 0
+        data.tiledata_event[xy_to_index(150, 157)] = 0
+
+        data.tiledata_event[xy_to_index(144, 156)] = 0
+        data.tiledata_event[xy_to_index(144, 157)] = 0
+
+        data.tiledata_event[xy_to_index(108, 154)] = 0
+        data.tiledata_event[xy_to_index(108, 155)] = 0
+
+        data.tiledata_event[xy_to_index(112, 154)] = 0
+        data.tiledata_event[xy_to_index(112, 155)] = 0
+
+        data.tiledata_event[xy_to_index(88, 151)] = 0
+        data.tiledata_event[xy_to_index(88, 152)] = 0
+
+        data.tiledata_event[xy_to_index(137, 141)] = 0
+        data.tiledata_event[xy_to_index(137, 142)] = 0
+
+        data.tiledata_event[xy_to_index(54, 130)] = 0
+        data.tiledata_event[xy_to_index(54, 131)] = 0
+
+        # after the egg room
+        data.tiledata_event[xy_to_index(130, 188)] = 0
+        data.tiledata_event[xy_to_index(130, 189)] = 0
+
+        data.tiledata_event[xy_to_index(158, 185)] = 0
+        data.tiledata_event[xy_to_index(158, 186)] = 0
+
+        data.tiledata_event[xy_to_index(167, 185)] = 0
+        data.tiledata_event[xy_to_index(167, 186)] = 0
+
+        data.tiledata_event[xy_to_index(177, 185)] = 0
+        data.tiledata_event[xy_to_index(177, 186)] = 0
+
+        data.tiledata_event[xy_to_index(190, 185)] = 0
+        data.tiledata_event[xy_to_index(190, 186)] = 0
+
+        data.tiledata_event[xy_to_index(200, 185)] = 0
+        data.tiledata_event[xy_to_index(200, 186)] = 0
+
+        data.tiledata_event[xy_to_index(209, 185)] = 0
+        data.tiledata_event[xy_to_index(209, 186)] = 0
+
+        data.tiledata_event[xy_to_index(215, 185)] = 0
+        data.tiledata_event[xy_to_index(215, 186)] = 0
+
+        data.tiledata_event[xy_to_index(208, 152)] = 0
+        data.tiledata_event[xy_to_index(208, 153)] = 0
+
+        data.tiledata_event[xy_to_index(203, 129)] = 0
+        data.tiledata_event[xy_to_index(203, 130)] = 0
+        # the last trampoline is left alone (296, 121-122)
+
 def configure_shaft(mod, settings):
     events_list = []
 
@@ -134,6 +352,10 @@ def configure_shaft(mod, settings):
     if settings.apply_fixes:
         # Turn on warp stones from the start
         event_flag_set_list += [(281,)]
+
+    if settings.shuffle_start_location:
+        # Disable starting forest warp from the start
+        event_flag_set_list += [(297,), (298,)]
 
     if settings.shuffle_gift_items:
         # Disable event where miriam gives you speed boost and bunny strike.
@@ -160,51 +382,58 @@ def configure_shaft(mod, settings):
     # Build shaft only if there is something to build.
     if len(events_list) > 0:
         for areaid, data in mod.stored_datas.items():
-            build_start_game_shaft(areaid, data, events_list)
+            build_start_game_shaft(areaid, data, events_list, settings)
 
 
-def build_start_game_shaft(areaid, data, events_list):
+def build_start_game_shaft(areaid, data, events_list, settings):
     # area 0 only.
     if areaid != 0: return
 
-    MAX_EVENTS = 37
+    bx, by, shaftx = 100, 0, 11
+    if settings.shuffle_start_location:
+        bx, by, shaftx = 60, 45, 10
+    MAX_EVENTS = 39
     EVENT_COUNT = len(events_list)
     if EVENT_COUNT > MAX_EVENTS:
         fail('Too many events in start game shaft: %d/%d' % (EVENT_COUNT, MAX_EVENTS))
 
     # EV_MOVEDOWN event to move erina down to start position
-    data.tiledata_event[xy_to_index(111,43)] = 554
+    data.tiledata_event[xy_to_index(bx + shaftx, by + 43)] = 554
 
     # Place events in shaft
     for i, ev_tuple in enumerate(events_list):
-        y = 43 - EVENT_COUNT + i
+        y = by + 43 - EVENT_COUNT + i
         for dx, ev in enumerate(ev_tuple):
-            data.tiledata_event[xy_to_index(111+dx,y)] = ev
+            data.tiledata_event[xy_to_index(bx + shaftx + dx,y)] = ev
 
     # Remove old start event
     data.tiledata_event[xy_to_index(113,98)] = 0
     # Place new start event
-    data.tiledata_event[xy_to_index(111,42-EVENT_COUNT)] = 34
+    data.tiledata_event[xy_to_index(bx + shaftx, by + 42 - EVENT_COUNT)] = 34
+
+    # Remove OoB light event
+    data.tiledata_event[xy_to_index(68,90)] = 0
 
     # Add collision data
-    data.tiledata_map[xy_to_index(110,44)] = 1
-    data.tiledata_map[xy_to_index(111,44)] = 1
-    data.tiledata_map[xy_to_index(112,44)] = 1
+    data.tiledata_map[xy_to_index(bx + shaftx - 1, by + 44)] = 1
+    data.tiledata_map[xy_to_index(bx + shaftx + 0, by + 44)] = 1
+    data.tiledata_map[xy_to_index(bx + shaftx + 1, by + 44)] = 1
     for i in range(0,EVENT_COUNT+5):
-        y = 43-i
-        data.tiledata_map[xy_to_index(110,y)] = 1
-        data.tiledata_map[xy_to_index(112,y)] = 1
-    data.tiledata_map[xy_to_index(111,43-EVENT_COUNT-4)] = 1
+        y = by + 43 - i
+        data.tiledata_map[xy_to_index(bx + shaftx - 1, y)] = 1
+        data.tiledata_map[xy_to_index(bx + shaftx + 1, y)] = 1
+    data.tiledata_map[xy_to_index(bx + shaftx, by + 43 - EVENT_COUNT - 4)] = 1
 
     # Blanket with black graphical tiles
-    for y in range(0,45):
-        for x in range(100,120):
-            data.tiledata_tiles1[xy_to_index(x,y)] = 33
+    for y in range(by, by + 45):
+        for x in range(bx, bx + 20):
+            data.tiledata_tiles2[xy_to_index(x,y)] = 33
 
     # Change room type and background
-    for y in range(0,4):
-        data.tiledata_roombg[to_tile_index(5,y)] = 56
-        data.tiledata_roomtype[to_tile_index(5,y)] = 3
+    mapy = round(by / 11.25 + 0.5)
+    for y in range(mapy, mapy + 4):
+        data.tiledata_roombg[to_tile_index(bx // 20, y)] = 56
+        data.tiledata_roomtype[to_tile_index(bx // 20, y)] = 3
 
 
 def apply_diff_patch_fixes(mod, diff_patch_files):
@@ -236,21 +465,25 @@ def apply_diff_patch_fixes(mod, diff_patch_files):
         for areaid, diffs in diff_data.area_diffs.items():
             apply_diff(area_arrays[areaid], diffs)
 
-def pre_modify_map_data(mod, settings, diff_patch_files):
+def pre_modify_map_data(mod, settings, diff_patch_files, config):
     # apply rando fixes
     if settings.apply_fixes:
         for areaid, data in mod.stored_datas.items():
             apply_fixes_for_randomizer(areaid, data)
+        # AP Change: Use os.path.join
         diff_patch_files += [
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_cicini_to_ravine.txt'),
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_forest_to_beach.txt'),
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_town_to_riverbank.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_rumi_no_give_items.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_sandbag_no_boost.txt'),
         ]
         print_ln('Map fixes applied')
 
     # Note: because musicrandomizer requires room color info, the music
     # must be shuffled before the room colors!
 
+    # AP Change: Ensure music and background shuffle are consistent by seed
     rng = random.Random(settings.random_seed)
     if settings.shuffle_music:
         musicrandomizer.shuffle_music(mod.stored_datas, rng)
@@ -264,6 +497,12 @@ def pre_modify_map_data(mod, settings, diff_patch_files):
     # Apply map patches from list of patches. We apply this only after everything else has been applied.
     apply_diff_patch_fixes(mod, diff_patch_files)
     print_ln('Map patches applied')
+
+    # Apply post game adjustments - remove tramplines and low% blocks
+    if config.settings["POST_GAME_ALLOWED"]:
+        for areaid, data in mod.stored_datas.items():
+            apply_post_game_fixes(areaid, data)
+        print_ln('Post Game map fixes applied')
 
     # Apply open mode after map patches because all it does is remove IDs 300 and 301.
     if settings.open_mode:
@@ -300,6 +539,33 @@ def apply_map_transition_shuffle(mod, data, settings, allocation):
         set_target_in_map(ltr, rtr.area_current, rtr.entry_current)
 
 
+def apply_start_location_shuffle(mod, settings, allocation):
+    if not settings.shuffle_start_location: return
+    # Add start warp room and remove FC2 warp stone
+    # AP Change: Use os.path.join
+    apply_diff_patch_fixes(mod, [
+        os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_start_room.txt'),
+        os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_fc2_to_start.txt'),
+    ])
+
+    start_area = allocation.start_location.area
+    for areaid, data in mod.stored_datas.items():
+        if areaid == 0:
+            # Add warp exit point to original start position
+            data.tiledata_event[xy_to_index(112, 91)] = 218
+            data.tiledata_event[xy_to_index(112, 92)] = 240
+
+            cross_map_event_id = 242 + start_area
+            for y in range(130, 133):
+                for x in range(73, 78):
+                    if data.tiledata_event[xy_to_index(x, y)] == 243:
+                        data.tiledata_event[xy_to_index(x, y)] = cross_map_event_id
+        if areaid == start_area:
+            # Add warp exit point to the random start location
+            x, y = allocation.start_location.position
+            data.tiledata_event[xy_to_index(x, y)] = 220
+            data.tiledata_event[xy_to_index(x, y + 1)] = 240
+
 def insert_items_into_map(mod, data, settings, allocation):
     """
     AP Changes:
@@ -318,12 +584,6 @@ def insert_items_into_map(mod, data, settings, allocation):
 
     mod.clear_items()
     for original_item in data.items:
-        if original_item.name in [
-            "UNKNOWN_ITEM_1",
-            "UNKNOWN_ITEM_2",
-            "UNKNOWN_ITEM_3"
-        ]:
-            continue
         item = original_item.copy()
         if item.name not in allocation.item_at_item_location:
             continue
@@ -359,7 +619,7 @@ def display_hash(settings):
     print_ln('Hash: %s' % hash_digest)
 
 
-def generate_analysis_file(data, allocation, analyzer, difficulty_analysis, settings):
+def generate_analysis_file(data, allocation, analyzer, difficulty_analysis, settings, seed):
     analysis_lines = []
     def print_to_analysis(line=''):
         print_ln(line)
@@ -374,10 +634,20 @@ def generate_analysis_file(data, allocation, analyzer, difficulty_analysis, sett
     def print_setting_int(setting_name, setting_int):
         print_to_analysis_only('%s: %d' % (setting_name, setting_int))
 
+    low = int(0.5 * settings.constraint_changes)
+    high = int(1.5 * settings.constraint_changes + 2)
+    if settings.constraint_changes <= 0:
+        high = 0
+    if settings.min_constraint_changes >= 0:
+        low = int(settings.min_constraint_changes)
+    if settings.max_constraint_changes >= 0:
+        high = int(settings.max_constraint_changes + 2)
+    changes = int((high + low) / 2 - 1)
+
     print_to_analysis_only('--- Randomizer Flags ---')
     print_setting_bool('Shuffle Gift Items', settings.shuffle_gift_items)
     print_setting_bool('Shuffle Map Transitions', settings.shuffle_map_transitions)
-    print_setting_int('Approximate Number of Constraint Changes', settings.constraint_changes)
+    print_setting_int('Approximate Number of Constraint Changes', changes)
     print_setting_bool('Shuffle Music', settings.shuffle_music)
     print_setting_bool('Shuffle Backgrounds', settings.shuffle_backgrounds)
     print_setting_bool('No Laggy Backgrounds', settings.no_laggy_backgrounds)
@@ -415,6 +685,7 @@ def generate_analysis_file(data, allocation, analyzer, difficulty_analysis, sett
     if not settings.hide_difficulty:
         print_to_analysis('Difficulty: %.2f' % difficulty_analysis.difficulty_score)
         print_to_analysis('Sequence Break Potential: %.2f' % difficulty_analysis.breakability_score)
+        print_to_analysis('Seed: %x' % seed)
         print_to_analysis_only()
 
 
@@ -423,14 +694,59 @@ def generate_analysis_file(data, allocation, analyzer, difficulty_analysis, sett
         f.write('\n'.join(analysis_lines))
         f.close()
 
+    if settings.debug_visualize:
+        levels = analyzer.levels
+        f = open('%s/spoiler/%s' % (settings.output_dir, 'chain.txt'), 'w+')
+
+        item_location_at_item = {}
+        for k, v in allocation.item_at_item_location.items():
+            if v != None:
+                item_location_at_item[v] = k
+
+        f.write("start location: %s\n\n" % allocation.start_location.location)
+        f.write("picked templates: %s\n\t" % len(allocation.picked_templates))
+        f.write("\n\t".join(sorted([t.name for t in allocation.picked_templates])))
+        f.write("\n\n")
+
+        lv = 0
+        while len(levels) > lv:
+            f.write("--- chain %d ---\n" % (lv/2))
+            if len(levels[lv]) > 0:
+                f.write("\npseudo items:\n\t")
+                f.write("\n\t".join(levels[lv]))
+
+            level = levels[lv+1]
+
+            locs = set(name for name in level if name in data.locations_set)
+            objs = sorted(set(level) - locs)
+            eggs = list(name for name in objs if is_egg(name))
+            items = list(name for name in objs if not is_potion(name) and not is_egg(name))
+            potions = list(name for name in objs if is_potion(name))
+
+            sorted_items = eggs + items + potions
+            if len(sorted_items) > 0:
+                f.write("\nitems:\t")
+                for v in sorted_items:
+                    k = "[Additional items]"
+                    if v in item_location_at_item:
+                        k = item_location_at_item[v]
+                    f.write("\n\t%s @ %s" % (v, k))
+            if len(locs) > 0:
+                f.write("\nlocations:\n\t")
+                f.write("\n\t".join(sorted(locs)))
+            f.write("\n\n")
+
+            lv += 2
+
+        f.close()
+
 def run_randomizer(seed, settings):
-    if seed != None: random.seed(seed)
     randomizer_data = RandomizerData(settings)
     generator = Generator(randomizer_data, settings)
-    allocation, analyzer, difficulty_analysis = generator.generate_seed()
+    allocation, analyzer, difficulty_analysis, seed = generator.generate_seed(seed)
     #print_ln('done')
 
-    generate_analysis_file(randomizer_data, allocation, analyzer, difficulty_analysis, settings)
+    generate_analysis_file(randomizer_data, allocation, analyzer, difficulty_analysis, settings, seed)
 
     if settings.no_write:
         print_ln('No maps generated as no-write flag is on.')
@@ -443,10 +759,11 @@ def run_randomizer(seed, settings):
 
     mapfileio.grab_original_maps(settings.source_dir, settings.output_dir)
     print_ln('Maps copied...')
-    mod = mapfileio.ItemModifier(areaids, source_dir=settings.source_dir, no_load=True)
-    pre_modify_map_data(mod, settings, allocation.map_modifications)
+    mod = mapfileio.ItemModifier(areaids, source_dir=settings.source_dir)
+    pre_modify_map_data(mod, settings, allocation.map_modifications, randomizer_data.config_data)
     apply_item_specific_fixes(mod, allocation)
     apply_map_transition_shuffle(mod, randomizer_data, settings, allocation)
+    apply_start_location_shuffle(mod, settings, allocation)
     insert_items_into_map(mod, randomizer_data, settings, allocation)
 
     mod.save(settings.output_dir)
@@ -470,5 +787,5 @@ def run_randomizer(seed, settings):
 #         reset_maps(args.source_dir, args.output_dir)
 #     else:
 #         if args.seed == None: seed = None
-#         else: seed = string_to_integer_seed('%s_hd:%s' % (args.seed, args.hide_difficulty))
+#         else: seed = string_to_integer_seed(args)
 #         run_randomizer(seed, args)

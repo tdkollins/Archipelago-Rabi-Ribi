@@ -86,15 +86,14 @@ def patch_map_files(ctx: RabiRibiContext):
     randomizer_data = RandomizerData(settings)
     item_modifier = ItemModifier(
         area_ids,
-        map_source_dir,
-        no_load=True
+        map_source_dir
     )
     allocation = Allocation(ctx, randomizer_data)
     map_modifications = allocation.map_modifications
     for template in picked_templates:
         map_modifications.append(os.path.join('existing_randomizer', 'maptemplates', 'constraint_shuffle', f'CS_{template}.txt'))
 
-    pre_modify_map_data(item_modifier, settings, map_modifications)
+    pre_modify_map_data(item_modifier, settings, map_modifications, randomizer_data.config_data)
     apply_item_specific_fixes(item_modifier, allocation)
     apply_map_transition_shuffle(item_modifier, randomizer_data, settings, allocation)
     insert_items_into_map(item_modifier, randomizer_data, settings, allocation)
