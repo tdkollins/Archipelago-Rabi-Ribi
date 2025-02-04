@@ -22,12 +22,13 @@ from worlds.rabi_ribi.logic_helpers import convert_ap_name_to_existing_rando_nam
 from worlds.rabi_ribi.items import lookup_item_id_to_name
 from worlds.rabi_ribi.locations import lookup_location_id_to_name
 from worlds.rabi_ribi.existing_randomizer.randomizer import (
-    get_default_areaids,
-    pre_modify_map_data,
-    parse_args,
     apply_item_specific_fixes,
     apply_map_transition_shuffle,
-    insert_items_into_map
+    apply_start_location_shuffle,
+    get_default_areaids,
+    insert_items_into_map,
+    parse_args,
+    pre_modify_map_data
 )
 
 class Allocation():
@@ -44,10 +45,15 @@ class Allocation():
             ctx.locations_info
         )
 
-        map_transition_shuffle_order: List[int] = ctx.slot_data["map_transition_shuffle_order"]
+        if ctx.slot_data:
+            map_transition_shuffle_order: List[int] = ctx.slot_data["map_transition_shuffle_order"]
 
-        self.map_modifications += randomizer_data.default_map_modifications
-        self.walking_left_transitions = [randomizer_data.walking_left_transitions[x] for x in map_transition_shuffle_order]
+            self.map_modifications += randomizer_data.default_map_modifications
+            self.walking_left_transitions = [randomizer_data.walking_left_transitions[x] for x in map_transition_shuffle_order]
+
+            start_location_name = convert_ap_name_to_existing_rando_name(ctx.slot_data["start_location"])
+            self.start_location = next((location for location in randomizer_data.start_locations
+                                        if location.location == start_location_name), randomizer_data.start_locations[0])
 
     def set_location_info(self, slot_num, location_info):
         return {
@@ -63,6 +69,9 @@ def patch_map_files(ctx: RabiRibiContext):
 
     :RabiRibiContext ctx: The Rabi Ribi Context instance.
     """
+    if not ctx.slot_data or not ctx.custom_seed_subdir:
+        return
+
     map_source_dir = f"{RabiRibiWorld.settings.game_installation_path}/data/area"
     grab_original_maps(map_source_dir, ctx.custom_seed_subdir)
     settings = parse_args()
@@ -73,6 +82,7 @@ def patch_map_files(ctx: RabiRibiContext):
     settings.random_seed = ctx.seed_player
     settings.shuffle_music = ctx.slot_data["shuffle_music"]
     settings.shuffle_backgrounds = ctx.slot_data["shuffle_backgrounds"]
+    settings.shuffle_start_location = ctx.slot_data["shuffle_start_location"]
 
     settings.no_laggy_backgrounds = True
     settings.no_difficult_backgrounds = True
@@ -96,8 +106,12 @@ def patch_map_files(ctx: RabiRibiContext):
     pre_modify_map_data(item_modifier, settings, map_modifications, randomizer_data.config_data)
     apply_item_specific_fixes(item_modifier, allocation)
     apply_map_transition_shuffle(item_modifier, randomizer_data, settings, allocation)
+    apply_start_location_shuffle(item_modifier, settings, allocation)
     insert_items_into_map(item_modifier, randomizer_data, settings, allocation)
-    item_modifier.save(ctx.custom_seed_subdir)
+
+    if (ctx.custom_seed_subdir):
+        item_modifier.save(ctx.custom_seed_subdir)
+
     embed_seed_player_into_mapdata(ctx, item_modifier)
 
 def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
@@ -120,8 +134,9 @@ def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
     f.close()
 
 def embed_seed_player_into_mapdata(ctx: RabiRibiContext, item_modifier):
-    for area_id, _ in item_modifier.stored_datas.items():
-        f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
-        f.seek(MAP_TILES0_OFFSET)
-        f.write(ctx.seed_player_id.encode())
-        f.close()
+    if ctx.seed_player_id:
+        for area_id, _ in item_modifier.stored_datas.items():
+            f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
+            f.seek(MAP_TILES0_OFFSET)
+            f.write(ctx.seed_player_id.encode())
+            f.close()
