@@ -45,15 +45,17 @@ class Allocation():
             ctx.locations_info
         )
 
-        if ctx.slot_data:
-            map_transition_shuffle_order: List[int] = ctx.slot_data["map_transition_shuffle_order"]
+        if not ctx.slot_data:
+            raise RuntimeError("Missing slot data while attempting to patch maps")
 
-            self.map_modifications += randomizer_data.default_map_modifications
-            self.walking_left_transitions = [randomizer_data.walking_left_transitions[x] for x in map_transition_shuffle_order]
+        map_transition_shuffle_order: List[int] = ctx.slot_data["map_transition_shuffle_order"]
 
-            start_location_name = convert_ap_name_to_existing_rando_name(ctx.slot_data["start_location"])
-            self.start_location = next((location for location in randomizer_data.start_locations
-                                        if location.location == start_location_name), randomizer_data.start_locations[0])
+        self.map_modifications += randomizer_data.default_map_modifications
+        self.walking_left_transitions = [randomizer_data.walking_left_transitions[x] for x in map_transition_shuffle_order]
+
+        start_location_name = convert_ap_name_to_existing_rando_name(ctx.slot_data["start_location"])
+        self.start_location = next((location for location in randomizer_data.start_locations
+                                    if location.location == start_location_name), randomizer_data.start_locations[0])
 
     def set_location_info(self, slot_num, location_info):
         return {
@@ -70,7 +72,7 @@ def patch_map_files(ctx: RabiRibiContext):
     :RabiRibiContext ctx: The Rabi Ribi Context instance.
     """
     if not ctx.slot_data or not ctx.custom_seed_subdir:
-        return
+        raise RuntimeError("Missing seed info while attempting to patch maps")
 
     map_source_dir = f"{RabiRibiWorld.settings.game_installation_path}/data/area"
     grab_original_maps(map_source_dir, ctx.custom_seed_subdir)
@@ -134,9 +136,11 @@ def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
     f.close()
 
 def embed_seed_player_into_mapdata(ctx: RabiRibiContext, item_modifier):
-    if ctx.seed_player_id:
-        for area_id, _ in item_modifier.stored_datas.items():
-            f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
-            f.seek(MAP_TILES0_OFFSET)
-            f.write(ctx.seed_player_id.encode())
-            f.close()
+    if not ctx.seed_player_id:
+        raise RuntimeError("Missing seed player ID while embedding seed in map")
+
+    for area_id, _ in item_modifier.stored_datas.items():
+        f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
+        f.seek(MAP_TILES0_OFFSET)
+        f.write(ctx.seed_player_id.encode())
+        f.close()
