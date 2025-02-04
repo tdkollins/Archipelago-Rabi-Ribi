@@ -12,6 +12,7 @@ from .existing_randomizer.utility import GraphEdge
 from .items import RabiRibiItem
 from .locations import RabiRibiLocation, all_locations, setup_locations
 from .logic_helpers import (
+    convert_ap_name_to_existing_rando_name,
     convert_existing_rando_name_to_ap_name,
     convert_existing_rando_rule_to_ap_rule,
     is_at_least_advanced_knowledge,
@@ -106,23 +107,24 @@ class RegionDef:
     location_table: Dict[str, int]
     unreachable_regions: Set[str]
 
-    def __init__(self, multiworld: MultiWorld, player: int, options: RabiRibiOptions):
-        self.player = player
-        self.multiworld = multiworld
-        self.options = options
+    def __init__(self, world: "RabiRibiWorld"):
+        self.world = world
+        self.player = self.world.player
+        self.multiworld = self.world.multiworld
+        self.options = self.world.options
 
-        self.existing_randomizer_args: Any = self._convert_options_to_existing_randomizer_args(options)
+        self.existing_randomizer_args: Any = self._convert_options_to_existing_randomizer_args(self.options)
         self.randomizer_data = RandomizerData(self.existing_randomizer_args)
 
         self.location_table = setup_locations(self.options)
 
     def generate_seed(self):
-        generator: MapGenerator = MapGenerator(self.randomizer_data, self.existing_randomizer_args, set(self.location_table.keys()), self.multiworld.random)
+        generator: MapGenerator = MapGenerator(self.randomizer_data, self.existing_randomizer_args, set(self.location_table.keys()), self.world.random)
         self.allocation, _ = generator.generate_seed()
-        self.map_transition_shuffle_order = [self.randomizer_data.walking_left_transitions.index(x) for x in self.allocation.walking_left_transitions]
 
         self.picked_templates = self.allocation.picked_templates
-        self.map_transition_shuffle_order = self.map_transition_shuffle_order
+        self.map_transition_shuffle_order = [self.randomizer_data.walking_left_transitions.index(x) for x in self.allocation.walking_left_transitions]
+        self.start_location = convert_existing_rando_name_to_ap_name(self.allocation.start_location.location)
 
     def regenerate_seed_for_universal_tracker(self, passthrough: Dict[str, Any]):
         """
@@ -131,11 +133,13 @@ class RegionDef:
         """
         self.picked_templates = passthrough["picked_templates"]
         self.map_transition_shuffle_order = passthrough["map_transition_shuffle_order"]
+        self.start_location = passthrough["start_location"]
         self.generate_set_seed()
 
     def generate_set_seed(self):
-        self.allocation = MapAllocation(self.randomizer_data, self.existing_randomizer_args, self.multiworld.random)
-        self.allocation.construct_set_seed(self.randomizer_data, self.existing_randomizer_args, self.picked_templates, self.map_transition_shuffle_order)
+        existing_rando_start_location = convert_ap_name_to_existing_rando_name(self.start_location)
+        self.allocation = MapAllocation(self.randomizer_data, self.existing_randomizer_args, self.world.random)
+        self.allocation.construct_set_seed(self.randomizer_data, self.existing_randomizer_args, self.picked_templates, self.map_transition_shuffle_order, existing_rando_start_location)
 
     def _convert_options_to_existing_randomizer_args(self, options: RabiRibiOptions):
         args = parse_args()
@@ -143,6 +147,7 @@ class RegionDef:
         args.open_mode = options.open_mode.value
         args.shuffle_gift_items = options.randomize_gift_items.value
         args.shuffle_map_transitions = options.shuffle_map_transitions.value
+        args.shuffle_start_location = options.shuffle_start_location.value
 
         if options.enable_constraint_changes.value:
             args.constraint_changes = options.number_of_constraint_changes.value
@@ -196,7 +201,7 @@ class RegionDef:
 
         :returns: None
         """
-        self.multiworld.get_region("Menu", self.player).connect(self._get_region(LocationName.forest_start))
+        self.multiworld.get_region("Menu", self.player).connect(self._get_region(self.start_location))
     
         edge_constraints: List[GraphEdge] = self.allocation.edges
 
@@ -424,6 +429,7 @@ class RegionDef:
     def configure_slot_data(self, world: "RabiRibiWorld"):
         world.picked_templates = [template.name for template in self.allocation.picked_templates]
         world.map_transition_shuffle_order = self.map_transition_shuffle_order
+        world.start_location = self.start_location
 
     def configure_region_spoiler_log_data(self, world: "RabiRibiWorld"):
         world.map_transition_shuffle_spoiler = []

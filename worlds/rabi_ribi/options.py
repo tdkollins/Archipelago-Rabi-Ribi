@@ -168,6 +168,12 @@ class ShuffleBackgrounds(Toggle):
     """
     display_name = "Shuffle Backgrounds"
 
+class ShuffleStartLocation(Toggle):
+    """
+    If this flag is true, the randomizer will start the player at one of several locations
+    around Rabi Rabi Island.
+    """
+    display_name = "Shuffle Start Location"
 
 @dataclass
 class RabiRibiOptions(PerGameCommonOptions):
@@ -193,5 +199,6 @@ class RabiRibiOptions(PerGameCommonOptions):
     enable_constraint_changes: EnableConstraintChanges
     number_of_constraint_changes: NumberOfConstraintChanges
     shuffle_map_transitions: ShuffleMapTransitions
+    shuffle_start_location: ShuffleStartLocation
     shuffle_music: ShuffleMusic
     shuffle_backgrounds: ShuffleBackgrounds

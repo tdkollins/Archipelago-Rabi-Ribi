@@ -104,7 +104,7 @@ class RabiRibiWorld(World):
         """
         self.topology_present = bool(self.options.shuffle_map_transitions.value)
 
-        region_def = RegionDef(self.multiworld, self.player, self.options)
+        region_def = RegionDef(self)
 
         # Generate a world seed using the existing randomizer
         if self.should_regenerate_seed_for_universal_tracker():
@@ -148,6 +148,8 @@ class RabiRibiWorld(World):
             "plurkwood_reachable": bool(self.options.plurkwood_reachable.value),
             "picked_templates": self.picked_templates,
             "map_transition_shuffle_order": self.map_transition_shuffle_order,
+            "shuffle_start_location": bool(self.options.shuffle_start_location.value),
+            "start_location": self.start_location,
             "shuffle_music": bool(self.options.shuffle_music.value),
             "shuffle_backgrounds": bool(self.options.shuffle_backgrounds.value)
         }
@@ -171,6 +173,8 @@ class RabiRibiWorld(World):
                 self.multiworld.get_location(LocationName.p_hairpin, self.player).place_locked_item(self.create_item(ItemName.p_hairpin))
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:
+        spoiler_handle.write(f'\nStart Location: {self.start_location}\n')
+
         spoiler_handle.write(f'\nApplied Map Constraints:\n')
         for template in self.picked_templates:
             spoiler_handle.write(f'\n{convert_existing_rando_name_to_ap_name(template)}')

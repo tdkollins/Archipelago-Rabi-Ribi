@@ -34,7 +34,7 @@ class MapAllocation(Allocation):
         # Choose Starting Location
         self.choose_starting_location(data, settings)
 
-    def construct_set_seed(self, data, settings, picked_templates:List[str], map_transition_shuffle_order: List[int]):
+    def construct_set_seed(self, data, settings, picked_templates:List[str], map_transition_shuffle_order: List[int], start_location: str):
         self.map_modifications = list(data.default_map_modifications)
 
         # Apply the selected templates for the graph
@@ -52,6 +52,7 @@ class MapAllocation(Allocation):
 
         self.construct_graph(data, settings)
 
+        self.start_location = next((location for location in data.start_locations if location.location == start_location), data.start_locations[0])
 
 class MapGenerator(object):
     """The MapAnalyzer class is an reimplementation of the Generator class with simplified validation,
