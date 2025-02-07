@@ -588,11 +588,13 @@ def insert_items_into_map(mod, data, settings, allocation):
         if item.name not in allocation.item_at_item_location:
             continue
         item_at_location = allocation.item_at_item_location[item.name]
-        if item_at_location != None and item_at_location != "NOTHING":
+        # AP Change: Place player's own "Nothing" as an AP item
+        # to behave better with AP's hint point system.
+        if item_at_location != None:
             if item_at_location in cur_stat_boost_ids:
                 item.itemid = cur_stat_boost_ids[item_at_location]
                 cur_stat_boost_ids[item_at_location] += 1
-            elif item_at_location == "ANOTHER_PLAYERS_ITEM":
+            elif item_at_location == "ANOTHER_PLAYERS_ITEM" or item_at_location == "NOTHING":
                 item.itemid = 43
             elif item_at_location == "EASTER_EGG":
                 item.itemid = -250
