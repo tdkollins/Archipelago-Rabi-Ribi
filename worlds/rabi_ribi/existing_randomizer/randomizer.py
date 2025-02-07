@@ -590,7 +590,6 @@ def insert_items_into_map(mod, data, settings, allocation):
         item_at_location = allocation.item_at_item_location[item.name]
         # AP Change: Place player's own "Nothing" as an AP item
         # to behave better with AP's hint point system.
-        # TODO: Stop the item from reappearing after collection.
         if item_at_location != None:
             if item_at_location in cur_stat_boost_ids:
                 item.itemid = cur_stat_boost_ids[item_at_location]
