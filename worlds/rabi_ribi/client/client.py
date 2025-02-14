@@ -503,7 +503,7 @@ async def check_for_locations(ctx: RabiRibiContext):
 
         try:
             network_item = await asyncio.wait_for(ctx.obtained_items_queue.get(), timeout=15)
-            if network_item.player != ctx.slot:
+            if network_item.player != ctx.slot or (network_item.player == ctx.slot and ctx.item_names.lookup_in_game(network_item.item) == "Nothing"):
                 await remove_exclamation_point(ctx, coordinates)
         except TimeoutError:
             logger.warning("Never received response to scout request for ap_location_id %d", ap_location_id)
