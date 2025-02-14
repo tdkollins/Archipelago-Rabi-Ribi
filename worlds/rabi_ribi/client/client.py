@@ -22,6 +22,8 @@ from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.utility import load_text_file
 from NetUtils import NetworkItem, ClientStatus
 
+STRANGE_BOX_ITEM_ID = 30
+
 class RabiRibiContext(CommonContext):
     """Rabi Ribi Game Context"""
     def __init__(self, server_address: Optional[str], password: Optional[str]) -> None:
@@ -317,21 +319,30 @@ class RabiRibiContext(CommonContext):
 
     def in_state_where_can_give_items(self):
         cur_time = time.time()
-        if (
+        return (
             (cur_time - self.time_since_last_paused >= 2) and
             (cur_time - self.time_since_last_warp_menu >= 5.5) and
             (cur_time - self.time_since_last_costume_menu >= 2) and
             not self.rr_interface.is_player_frozen() and
             self.is_item_queued()
-        ):
-            return True
-        return False
+        )
+
+    def in_state_where_should_open_warp_menu(self):
+        cur_time = time.time()
+        return (
+            (cur_time - self.time_since_last_paused >= 2) and
+            (cur_time - self.time_since_last_warp_menu >= 5.5) and
+            (cur_time - self.time_since_last_costume_menu >= 2) and
+            not self.rr_interface.is_player_frozen() and
+            not self.is_item_queued() and
+            self.rr_interface.get_item_state(STRANGE_BOX_ITEM_ID) == -1
+        )
 
     async def watch_for_menus(self):
         """
-        run this on a faster loop. We want to detect pauses really fast since players
-          can reload a save really fast with quick save reload. We want to make sure that
-          we dont give items too soon after a save load since this lags the game hard.
+        Run this on a faster loop. We want to detect pauses really fast since players
+        can reload a save really fast with quick save reload. We want to make sure that
+        we dont give items too soon after a save load since this lags the game hard.
         """
         while self.rr_interface.is_connected() and not self.exit_event.is_set():
             self.is_player_paused()
@@ -344,6 +355,11 @@ class RabiRibiContext(CommonContext):
         if on_main_menu:
             self.time_since_main_menu = time.time()
         return on_main_menu
+
+    def open_warp_menu(self):
+        # Reenable the Strange Box first.
+        self.rr_interface.set_item_state(STRANGE_BOX_ITEM_ID, 1)
+        self.rr_interface.open_warp_menu()
 
     def find_closest_item_location(self):
         """
@@ -453,6 +469,9 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
             ctx.handle_egg_changes()
             await check_for_locations(ctx)
+
+            if ctx.in_state_where_should_open_warp_menu():
+                ctx.open_warp_menu()
 
             if ctx.in_state_where_can_give_items():
                 await ctx.give_item()
