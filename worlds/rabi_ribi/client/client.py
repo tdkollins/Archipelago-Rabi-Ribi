@@ -330,9 +330,7 @@ class RabiRibiContext(CommonContext):
     def in_state_where_should_open_warp_menu(self):
         cur_time = time.time()
         return (
-            (cur_time - self.time_since_last_paused >= 2) and
-            (cur_time - self.time_since_last_warp_menu >= 5.5) and
-            (cur_time - self.time_since_last_costume_menu >= 2) and
+            (cur_time - self.time_since_last_paused >= .5) and
             not self.rr_interface.is_player_frozen() and
             not self.is_item_queued() and
             self.rr_interface.get_item_state(STRANGE_BOX_ITEM_ID) == -1
