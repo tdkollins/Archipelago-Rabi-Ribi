@@ -369,6 +369,9 @@ def configure_shaft(mod, settings):
         # Add ribbon
         events_list.append((558, 5008, 5001))
 
+    # AP Change: Give player Strange Box, used to return to start.
+    events_list.append((558, 5030, 5001))
+
     # Add attack ups
     if settings.hyper_attack_mode:
         for i in range(0,30):

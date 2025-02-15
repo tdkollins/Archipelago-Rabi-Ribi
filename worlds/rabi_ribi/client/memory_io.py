@@ -21,7 +21,6 @@ OFFSET_PLAYER_Y = int(0x013AFDB4)
 OFFSET_GIVE_ITEM_FUNC = int(0x15A90)
 OFFSET_PLAYER_FROZEN = int(0x1031DDC)
 OFFSET_ITEM_MAP = int(0xDFFB3C)
-OFFSET_INVENTORY_EXCLAMATION_POINT = int(0x1673050)
 OFFSET_INVENTORY_START = int(0x1672FA4)
 OFFSET_MAX_HEALTH = int(0x16E6D24)
 OFFSET_EGG_COUNT = int(0x1675CCC)
@@ -30,6 +29,8 @@ OFFSET_SCENERIO_INDICATOR = int(0xE30880)
 OFFSET_IN_ITEM_GET_ANIMATION = int(0x1682ACA)
 OFFSET_IN_WARP_MENU = int(0x16E5BB8)
 OFFSET_IN_COSTUME_MENU = int(0x16E6B20)
+OFFSET_CURRENT_WARP_ID = int(0x016E6D08)
+EXCLAMATION_POINT_ITEM_ID = 43
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -243,20 +244,49 @@ class RabiRibiMemoryIO():
 
     def remove_exclamation_point_from_inventory(self):
         """
-        This removes the exclamation point item (the item that represents other worlds' items
-        to false, and takes it away from the player after its recieved)
+        Removes the exclamation point item (used to represent items from other worlds)
+        from the player's inventory.
         """
-        self.rr_mem.write_bytes(
-            self.rr_mem.base_address + OFFSET_INVENTORY_EXCLAMATION_POINT,
-            b'\x00\x00\x00\x00',
-            4
-        )
+        self.set_item_state(EXCLAMATION_POINT_ITEM_ID, 0)
 
     def does_player_have_item_id(self, item_id) -> bool:
         """
         Returns true if player currently has item_id in their inventory.
         """
         return self._read_4_byte_bool(OFFSET_INVENTORY_START + (4 * int(item_id)))
+
+    def get_item_state(self, item_id) -> int:
+        """
+        Returns the state of an item in the player's inventory.
+
+        If 0, the player does not have the item.
+        If 1, the player does have the item.
+        If 2 or 3, the player has the item, along with an upgrade.
+        If -1, -2, or -3, the player has the item, but has disabled it.
+        """
+        return self._read_int(OFFSET_INVENTORY_START + (4 * int(item_id)))
+
+    def set_item_state(self, item_id, state):
+        """
+        Returns the state of an item in the player's inventory.
+
+        If 0, the player does not have the item.
+        If 1, the player does have the item.
+        If 2 or 3, the player has the item, along with an upgrade.
+        If -1, -2, or -3, the player has the item, but has disabled it.
+        """
+        self.rr_mem.write_int(self.rr_mem.base_address + OFFSET_INVENTORY_START + (4 * int(item_id)), state)
+
+    def open_warp_menu(self):
+        """
+        Opens the warp menu.
+        """
+        self.rr_mem.write_int(self.rr_mem.base_address + OFFSET_IN_WARP_MENU, 1)
+
+        # When using the warp menu, the player cannot select to warp to their current location.
+        # Since we're opening the menu in a random location, we need to set the current location to not be 0
+        # to allow warping to Starting Forest. We use Forgotten Cave 2, as it's an unnecessary warp.
+        self.rr_mem.write_int(self.rr_mem.base_address + OFFSET_CURRENT_WARP_ID, 13)
 
     def get_number_of_eggs_collected(self) -> int:
         """
