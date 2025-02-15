@@ -123,7 +123,7 @@ class RabiRibiMemoryIO():
         :returns: The data represented as a float.
         """
         data = self._read_word(offset)
-        if (struct.unpack("<i", data)[0] == 0):
+        if (struct.unpack("i", data)[0] == 0):
             return False
         return True
 
