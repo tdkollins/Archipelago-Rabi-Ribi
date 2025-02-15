@@ -197,11 +197,12 @@ class RabiRibiContext(CommonContext):
             await asyncio.sleep(1)
             logger.info("Received initial data from server!")
             logger.info("****************************************************")
-            logger.info("Please press f5 on the main menu and start scenario:")
+            logger.info("Please press F5 on the main menu and start scenario:")
             logger.info("       %s - %s",
                 self.seed_name,
                 self.auth)
             logger.info("****************************************************")
+            logger.info("Softlocked? Disable the Strange Box in your inventory and unpause to open the warp menu!")
 
     def patch_if_recieved_all_data(self):
         """
