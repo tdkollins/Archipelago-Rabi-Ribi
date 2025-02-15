@@ -2,10 +2,13 @@
 from typing import Dict, List, NamedTuple, Optional, Set
 
 from BaseClasses import Item, ItemClassification
-from .existing_randomizer.visualizer import load_item_locs
+from .existing_randomizer.dataparser import RandomizerData
 from .names import ItemName
 from .options import RabiRibiOptions
-from .utility import get_rabi_ribi_base_id
+from .utility import (
+    get_rabi_ribi_base_id,
+    convert_existing_rando_name_to_ap_name
+)
 
 class RabiRibiItem(Item):
     """Rabi Ribi Item Definition"""
@@ -44,7 +47,14 @@ upgrades_table: Dict[str, RabiRibiItemData] = {
     ItemName.spike_barrier      : RabiRibiItemData(get_rabi_ribi_base_id() + 0x16, ItemClassification.filler),
     ItemName.super_carrot       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x17, ItemClassification.filler),
     ItemName.wall_jump          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x18, ItemClassification.progression),
-    ItemName.water_orb          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x19, ItemClassification.progression)
+    ItemName.water_orb          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x19, ItemClassification.progression),
+
+    ItemName.book_of_carrot     : RabiRibiItemData(get_rabi_ribi_base_id() + 0x46, ItemClassification.filler),
+    ItemName.bunny_amulet       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x47, ItemClassification.progression),
+    ItemName.max_bracelet       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x48, ItemClassification.filler),
+    ItemName.soul_heart         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x49, ItemClassification.filler),
+    # Remove Strange Box for now, as the player starts with it
+    #ItemName.strange_box        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x4A, ItemClassification.filler),
 }
 
 magic_table: Dict[str, RabiRibiItemData] = {
@@ -90,21 +100,35 @@ badges_table: Dict[str, RabiRibiItemData] = {
 }
 
 collectables_table: Dict[str, RabiRibiItemData] = {
-     ItemName.attack_up         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x3E, ItemClassification.filler),
-     ItemName.easter_egg        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x3F, ItemClassification.progression_skip_balancing),
-     ItemName.gold_carrot       : RabiRibiItemData(get_rabi_ribi_base_id() + 0x40, ItemClassification.filler),
-     ItemName.hp_up             : RabiRibiItemData(get_rabi_ribi_base_id() + 0x41, ItemClassification.filler),
-     ItemName.mp_up             : RabiRibiItemData(get_rabi_ribi_base_id() + 0x42, ItemClassification.filler),
-     ItemName.nothing           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x43, ItemClassification.filler),
-     ItemName.pack_up           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x44, ItemClassification.filler),
-     ItemName.regen_up          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x45, ItemClassification.filler)
+    ItemName.attack_up          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x3E, ItemClassification.filler),
+    ItemName.easter_egg         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x3F, ItemClassification.progression_skip_balancing),
+    # Moved Gold Carrot to consumables
+    ItemName.hp_up              : RabiRibiItemData(get_rabi_ribi_base_id() + 0x41, ItemClassification.filler),
+    ItemName.mp_up              : RabiRibiItemData(get_rabi_ribi_base_id() + 0x42, ItemClassification.filler),
+    ItemName.nothing            : RabiRibiItemData(get_rabi_ribi_base_id() + 0x43, ItemClassification.filler),
+    ItemName.pack_up            : RabiRibiItemData(get_rabi_ribi_base_id() + 0x44, ItemClassification.filler),
+    ItemName.regen_up           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x45, ItemClassification.filler),
+}
+
+consumable_table: Dict[str, RabiRibiItemData] = {
+    ItemName.gold_carrot        : RabiRibiItemData(get_rabi_ribi_base_id() + 0x40, ItemClassification.progression_skip_balancing),
+
+    ItemName.cocoa_bomb         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x4B, ItemClassification.progression_skip_balancing),
+    ItemName.rumi_cake          : RabiRibiItemData(get_rabi_ribi_base_id() + 0x4C, ItemClassification.progression_skip_balancing),
+    ItemName.rumi_donut         : RabiRibiItemData(get_rabi_ribi_base_id() + 0x4D, ItemClassification.progression_skip_balancing),
+}
+
+trap_table: Dict[str, RabiRibiItemData] = {
+    ItemName.pbpb_box           : RabiRibiItemData(get_rabi_ribi_base_id() + 0x4E, ItemClassification.trap)
 }
 
 item_data_table : Dict[str, RabiRibiItemData] = {
     **upgrades_table,
     **magic_table,
     **badges_table,
-    **collectables_table
+    **collectables_table,
+    **consumable_table,
+    **trap_table
 }
 
 item_table: Dict[str, int] = {name: data.code for name, data in item_data_table.items() if data.code is not None }
@@ -115,7 +139,8 @@ item_groups: Dict[str, Set[str]] = {
     "Upgrades": set(upgrades_table.keys()),
     "Magic": set(magic_table.keys()),
     "Badges": set(badges_table.keys()),
-    "Collectables": set(collectables_table.keys())
+    "Collectables": set(collectables_table.keys()),
+    "Consumables": set(consumable_table.keys())
 }
 
 recruit_table: Set[str] = {
@@ -137,19 +162,6 @@ recruit_table: Set[str] = {
     ItemName.keke_bunny_recruit
 }
 
-consumable_items = {
-    ItemName.rumi_donut,
-    ItemName.rumi_cake,
-    ItemName.cocoa_bomb,
-    ItemName.gold_carrot
-}
-
-normal_consumable_items = {
-    ItemName.rumi_cake,
-    ItemName.cocoa_bomb,
-    ItemName.gold_carrot
-}
-
 shufflable_gift_items = {
     ItemName.speed_boost,
     ItemName.bunny_strike
@@ -159,7 +171,7 @@ shufflable_gift_items_plurkwood = {
     ItemName.p_hairpin
 }
 
-def get_base_item_list(options: RabiRibiOptions) -> List[str]:
+def get_base_item_list(data: RandomizerData) -> List[str]:
     """
     Get the base list of items in the game.
     No options are configurable at the moment.
@@ -169,40 +181,30 @@ def get_base_item_list(options: RabiRibiOptions) -> List[str]:
     item_list = []
 
     # load list of all game items from existing randomizer.
-    item_locs = load_item_locs()
-
+    item_names: List[str] = data.to_shuffle
+    item_names += data.included_additional_items
+    item_names.sort()
     # Use a set amount of easter eggs
     for _ in range(5):
         item_list.append("Easter Egg")
 
-    for item in item_locs.keys():
+    for item in item_names:
         # If we want to include the item, convert to the AP item id.
         # Otherwise, pass and dont include it.
-        if item.startswith("ITEM_EGG"):
+        if item.startswith("EGG"):
             pass
-        elif item.startswith("ITEM_ATK_UP"):
+        elif item.startswith("ATK_UP"):
             item_list.append("Attack Up")
-        elif item.startswith("ITEM_HP_UP"):
+        elif item.startswith("HP_UP"):
             item_list.append("HP Up")
-        elif item.startswith("ITEM_MP_UP"):
+        elif item.startswith("MP_UP"):
             item_list.append("MP Up")
-        elif item.startswith("ITEM_PACK_UP"):
+        elif item.startswith("PACK_UP"):
             item_list.append("Pack Up")
-        elif item.startswith("ITEM_REGEN_UP"):
+        elif item.startswith("REGEN_UP"):
             item_list.append("Regen Up")
-        elif item in [
-            "ITEM_UNKNOWN_ITEM_1",
-            "ITEM_UNKNOWN_ITEM_2",
-            "ITEM_UNKNOWN_ITEM_3",
-            "ITEM_PBPB_BOX",
-        ]:
-            pass
-        elif not options.plurkwood_reachable and item.startswith("ITEM_P_HAIRPIN"):
-            pass
         else:
             # Format the item string and then add to the item list
-            item = item.split("_")
-            item = " ".join(word.capitalize() for word in item[1:])
-            item_list.append(item)
+            item_list.append(convert_existing_rando_name_to_ap_name(item))
 
     return item_list

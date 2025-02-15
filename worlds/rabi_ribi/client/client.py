@@ -15,12 +15,15 @@ from CommonClient import (
     server_loop,
     gui_enabled,
 )
+from NetUtils import ClientStatus
+
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
-from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
 from worlds.rabi_ribi.names import ItemName
-from worlds.rabi_ribi.utility import load_text_file
-from NetUtils import NetworkItem, ClientStatus
+from worlds.rabi_ribi.utility import (
+    load_text_file,
+    convert_existing_rando_name_to_ap_name
+)
 
 STRANGE_BOX_ITEM_ID = 30
 
