@@ -26,6 +26,7 @@ from worlds.rabi_ribi.utility import (
 )
 
 STRANGE_BOX_ITEM_ID = 30
+PBPB_BOX_ITEM_ID = 58
 
 class RabiRibiContext(CommonContext):
     """Rabi Ribi Game Context"""
@@ -45,6 +46,7 @@ class RabiRibiContext(CommonContext):
         self.state_giving_item = False
         self.egg_incremented_flag = False
         self.current_egg_count = 0
+        self.received_pbpb_box = False
         self.seed_name = None
         self.slot_data = None
 
@@ -85,33 +87,51 @@ class RabiRibiContext(CommonContext):
         }
         locations_items_file = os.path.join('existing_randomizer', 'locations_items.txt')
         f = load_text_file(locations_items_file)
-        reading = False
+        readingItems = False
+        readingAdditionalItems = False
         for line in f.splitlines():
             if '===Items===' in line or '===ShufflableGiftItems===' in line:
-                reading = True
+                readingItems = True
+                continue
+            elif '===AdditionalItems===' in line:
+                readingAdditionalItems = True
                 continue
             elif '===' in line:
-                reading = False
+                readingItems = False
+                readingAdditionalItems = False
                 continue
-            if not reading: continue
-            l = line
-            if '//' in line:
-                l = l[:l.find('//')]
-            l = l.strip()
-            if len(l) == 0: continue
-            coords, areaid, rabi_ribi_item_id, name = (x.strip() for x in l.split(':'))
+            if readingItems:
+                l = line
+                if '//' in line:
+                    l = l[:l.find('//')]
+                l = l.strip()
+                if len(l) == 0: continue
+                coords, areaid, rabi_ribi_item_id, name = (x.strip() for x in l.split(':'))
 
-            # Set location coordinate to location name mapping
-            area_id = int(areaid)
-            x, y = ast.literal_eval(coords)
-            ap_name = convert_existing_rando_name_to_ap_name(name)
-            if area_id not in coordinate_to_location_name:
-                coordinate_to_location_name[area_id] = {(x, y): ap_name}
-            else:
-                coordinate_to_location_name[area_id][(x, y)] = ap_name
+                # Set location coordinate to location name mapping
+                area_id = int(areaid)
+                x, y = ast.literal_eval(coords)
+                ap_name = convert_existing_rando_name_to_ap_name(name)
+                if area_id not in coordinate_to_location_name:
+                    coordinate_to_location_name[area_id] = {(x, y): ap_name}
+                else:
+                    coordinate_to_location_name[area_id][(x, y)] = ap_name
 
-            # Set item name to rabi ribi item id mapping
-            item_name_to_rabi_ribi_item_id[ap_name] = rabi_ribi_item_id
+                # Set item name to rabi ribi item id mapping
+                item_id = int(rabi_ribi_item_id)
+                item_name_to_rabi_ribi_item_id[ap_name] = item_id
+            if readingAdditionalItems:
+                l = line
+                if '//' in line:
+                    l = l[:l.find('//')]
+                l = l.strip()
+                if len(l) == 0: continue
+                name, rabi_ribi_item_id = (x.strip() for x in line.split(':'))
+
+                # Only set item name to rabi ribi item id mapping
+                ap_name = convert_existing_rando_name_to_ap_name(name)
+                item_id = int(rabi_ribi_item_id)
+                item_name_to_rabi_ribi_item_id[ap_name] = item_id
 
         return coordinate_to_location_name, item_name_to_rabi_ribi_item_id
 
@@ -233,6 +253,11 @@ class RabiRibiContext(CommonContext):
             cur_item_id = item_id
             if item_id == -1:  # junk/nothing
                 continue
+            # PBPB Box resets its state on room load, only send once
+            if item_id == PBPB_BOX_ITEM_ID:
+                if self.received_pbpb_box:
+                    continue
+                self.received_pbpb_box = True
             if not self.rr_interface.does_player_have_item_id(cur_item_id):
                 break
         self.rr_interface.give_item(cur_item_id)
@@ -414,6 +439,7 @@ class RabiRibiContext(CommonContext):
         self.state_giving_item = False
         self.egg_incremented_flag = False
         self.current_egg_count = 0
+        self.received_pbpb_box = False
         self.seed_name = None
         self.slot_data = None
 
