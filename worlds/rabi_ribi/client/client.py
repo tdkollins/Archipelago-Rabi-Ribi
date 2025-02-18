@@ -46,7 +46,7 @@ class RabiRibiContext(CommonContext):
         self.state_giving_item = False
         self.egg_incremented_flag = False
         self.current_egg_count = 0
-        self.received_pbpb_box = False
+        self.last_received_item_index = -1
         self.seed_name = None
         self.slot_data = None
 
@@ -247,28 +247,23 @@ class RabiRibiContext(CommonContext):
 
         :NetworkItem item: The item to give to the player
         """
-        # find the first item id that the player has not recieved yet
-        cur_item_id = 0
-        for item_id in self.items_received_rabi_ribi_ids:
-            cur_item_id = item_id
-            if item_id == -1:  # junk/nothing
-                continue
-            # PBPB Box resets its state on room load, only send once
-            if item_id == PBPB_BOX_ITEM_ID:
-                if self.received_pbpb_box:
-                    continue
-                self.received_pbpb_box = True
-            if not self.rr_interface.does_player_have_item_id(cur_item_id):
-                break
-        self.rr_interface.give_item(cur_item_id)
-        await asyncio.sleep(1)
-        await self.wait_until_out_of_item_receive_animation()
+        self.last_received_item_index = self.rr_interface.get_last_received_item_index()
+
+        # Find the first item ID that the player has not recieved yet
+        remaining_items = self.items_received_rabi_ribi_ids[self.last_received_item_index:]
+        skipped_items, cur_item_id = next(((idx, item_id) for idx, item_id in enumerate(remaining_items) if item_id != -1), (-1, -1))
+
+        if cur_item_id != 0:
+            self.rr_interface.give_item(cur_item_id)
+            self.rr_interface.set_last_received_item_index(self.last_received_item_index + skipped_items + 1)
+            await asyncio.sleep(1)
+            await self.wait_until_out_of_item_receive_animation()
 
     async def set_received_rabi_ribi_item_ids(self):
         async with self.critical_section_lock:
             self.items_received_rabi_ribi_ids = []
             potion_ids = {
-                ItemName.attack_up: 193, #  sub 30 since those are reserved for super / hyper attack modes
+                ItemName.attack_up: 193, # Subtract 30, as those IDs are reserved for super / hyper attack modes
                 ItemName.mp_up: 287,
                 ItemName.regen_up: 351,
                 ItemName.hp_up: 159,
@@ -439,7 +434,7 @@ class RabiRibiContext(CommonContext):
         self.state_giving_item = False
         self.egg_incremented_flag = False
         self.current_egg_count = 0
-        self.received_pbpb_box = False
+        self.last_received_item_index = -1
         self.seed_name = None
         self.slot_data = None
 
