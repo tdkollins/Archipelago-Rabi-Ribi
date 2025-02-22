@@ -253,7 +253,7 @@ class RabiRibiContext(CommonContext):
         remaining_items = self.items_received_rabi_ribi_ids[self.last_received_item_index:]
         skipped_items, cur_item_id = next(((idx, item_id) for idx, item_id in enumerate(remaining_items) if item_id != -1), (-1, -1))
 
-        if cur_item_id != 0:
+        if cur_item_id > 0:
             self.rr_interface.give_item(cur_item_id)
             self.rr_interface.set_last_received_item_index(self.last_received_item_index + skipped_items + 1)
             await asyncio.sleep(1)
