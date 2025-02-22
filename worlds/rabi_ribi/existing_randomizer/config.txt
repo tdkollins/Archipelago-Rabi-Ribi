@@ -29,7 +29,7 @@
     "HEALING_STAFF",
     "MAX_BRACELET",
     "BUNNY_STRIKE",
-    "STRANGE_BOX",
+    //"STRANGE_BOX", AP Change: Given to player at the start.
     "BUNNY_AMULET",
     "RUMI_DONUT",
     "RUMI_CAKE",

@@ -5,7 +5,7 @@ from typing import Any, List, Set, Tuple
 from .existing_randomizer.analyzer import Analyzer
 from .existing_randomizer.dataparser import RandomizerData
 from .existing_randomizer.allocation import Allocation
-from .logic_helpers import convert_existing_rando_name_to_ap_name
+from .utility import convert_existing_rando_name_to_ap_name
 
 logger = logging.getLogger('Rabi-Ribi')
 

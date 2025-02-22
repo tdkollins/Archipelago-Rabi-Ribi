@@ -7,7 +7,7 @@ import struct
 from typing import List
 
 from worlds.rabi_ribi import RabiRibiWorld
-from worlds.rabi_ribi.options import AttackMode
+from worlds.rabi_ribi.client.client import RabiRibiContext
 from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
 from worlds.rabi_ribi.existing_randomizer.mapfileio import (
     ItemModifier,
@@ -16,11 +16,6 @@ from worlds.rabi_ribi.existing_randomizer.mapfileio import (
     MAP_TILES0_OFFSET,
     MAP_SIZE
 )
-from worlds.rabi_ribi.existing_randomizer.utility import to_index
-from worlds.rabi_ribi.client.client import RabiRibiContext
-from worlds.rabi_ribi.logic_helpers import convert_ap_name_to_existing_rando_name
-from worlds.rabi_ribi.items import lookup_item_id_to_name
-from worlds.rabi_ribi.locations import lookup_location_id_to_name
 from worlds.rabi_ribi.existing_randomizer.randomizer import (
     apply_item_specific_fixes,
     apply_map_transition_shuffle,
@@ -30,6 +25,11 @@ from worlds.rabi_ribi.existing_randomizer.randomizer import (
     parse_args,
     pre_modify_map_data
 )
+from worlds.rabi_ribi.existing_randomizer.utility import to_index
+from worlds.rabi_ribi.items import lookup_item_id_to_name
+from worlds.rabi_ribi.locations import lookup_location_id_to_name
+from worlds.rabi_ribi.options import AttackMode
+from worlds.rabi_ribi.utility import convert_ap_name_to_existing_rando_name
 
 class Allocation():
     """

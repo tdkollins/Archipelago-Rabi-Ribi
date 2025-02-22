@@ -12,14 +12,16 @@ from .existing_randomizer.utility import GraphEdge
 from .items import RabiRibiItem
 from .locations import RabiRibiLocation, all_locations, setup_locations
 from .logic_helpers import (
-    convert_ap_name_to_existing_rando_name,
-    convert_existing_rando_name_to_ap_name,
     convert_existing_rando_rule_to_ap_rule,
     is_at_least_advanced_knowledge,
     is_at_least_v_hard_difficulty,
 )
 from .names import ItemName, LocationName
 from .options import RabiRibiOptions
+from .utility import (
+    convert_existing_rando_name_to_ap_name,
+    convert_ap_name_to_existing_rando_name
+)
 
 if TYPE_CHECKING:
     from . import RabiRibiWorld
@@ -98,7 +100,7 @@ advanced_v_hard_regions: Set[str] = {
     "Sky Island Oob",
 }
 
-class RegionDef:
+class RegionHelper:
     """
     This class provides methods associated with defining and connecting regions, locations,
     and the access rules for those regions and locations.
@@ -113,8 +115,8 @@ class RegionDef:
         self.multiworld = self.world.multiworld
         self.options = self.world.options
 
-        self.existing_randomizer_args: Any = self._convert_options_to_existing_randomizer_args(self.options)
-        self.randomizer_data = RandomizerData(self.existing_randomizer_args)
+        self.existing_randomizer_args: Any = self.world.existing_randomizer_args
+        self.randomizer_data = self.world.randomizer_data
 
         self.location_table = setup_locations(self.options)
 
@@ -410,21 +412,6 @@ class RegionDef:
         add_rule(chapter_5,
                  lambda state: logic.can_reach_chapter_5(state, self.player) and
                     state.has("Chapter 4", self.player))
-
-        rumi_donut = RabiRibiLocation(self.player, ItemName.rumi_donut, None, self._get_region(LocationName.town_shop))
-        rumi_donut.place_locked_item(RabiRibiItem(ItemName.rumi_donut, ItemClassification.progression, None, self.player))
-        self._get_region(LocationName.town_shop).locations.append(rumi_donut)
-        add_rule(rumi_donut, lambda state: logic.can_purchase_food(state, self.player))
-
-        rumi_cake = RabiRibiLocation(self.player, ItemName.rumi_cake, None, self._get_region(LocationName.town_shop))
-        rumi_cake.place_locked_item(RabiRibiItem(ItemName.rumi_cake, ItemClassification.progression, None, self.player))
-        self._get_region(LocationName.town_shop).locations.append(rumi_cake)
-        add_rule(rumi_cake, lambda state: logic.can_purchase_food(state, self.player))
-
-        cocoa_bomb = RabiRibiLocation(self.player, ItemName.cocoa_bomb, None, self._get_region(LocationName.town_main))
-        cocoa_bomb.place_locked_item(RabiRibiItem(ItemName.cocoa_bomb, ItemClassification.progression, None, self.player))
-        self._get_region(LocationName.town_main).locations.append(cocoa_bomb)
-        add_rule(rumi_cake, lambda state: logic.can_purchase_cocoa_bomb(state, self.player))
 
     def configure_slot_data(self, world: "RabiRibiWorld"):
         world.picked_templates = [template.name for template in self.allocation.picked_templates]

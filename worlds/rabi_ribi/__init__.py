@@ -9,14 +9,17 @@ from BaseClasses import ItemClassification, Tutorial
 from Fill import swap_location_item
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, Type, components, launch_subprocess
-from worlds.rabi_ribi.entrance_shuffle import MapAllocation
+from .existing_randomizer.dataparser import RandomizerData
+from .existing_randomizer.randomizer import parse_args
 from .items import RabiRibiItem, RabiRibiItemData, item_data_table, item_groups, shufflable_gift_items, shufflable_gift_items_plurkwood, item_table, get_base_item_list
 from .locations import all_locations, location_groups
-from .logic_helpers import convert_existing_rando_name_to_ap_name
 from .names import ItemName, LocationName
 from .options import RabiRibiOptions
-from .regions import RegionDef
-from .utility import get_rabi_ribi_base_id
+from .regions import RegionHelper
+from .utility import (
+    get_rabi_ribi_base_id,
+    convert_existing_rando_name_to_ap_name
+)
 
 logger = logging.getLogger('Rabi-Ribi')
 
@@ -73,19 +76,24 @@ class RabiRibiWorld(World):
     item_name_to_id = item_table
     location_name_to_id: Dict[str, int] = all_locations
 
+    start_location: str
     picked_templates: List[str]
+    total_locations: int
     map_transition_shuffle_order: List[int]
     map_transition_shuffle_spoiler: List[str]
-
-    def __init__(self, multiworld, player):
-        super().__init__(multiworld, player)
-        self.total_locations = 0
+    existing_randomizer_args: Any
+    randomizer_data: RandomizerData
 
     def generate_early(self) -> None:
         """Set world specific generation properties"""
+        self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
+        self.randomizer_data = RandomizerData(self.existing_randomizer_args)
 
         # Will be configurable later, but for now always force eggs to be local.
         self.options.local_items.value.add(ItemName.easter_egg)
+
+        # Force consumable items to be local, as the player may need to pick them up multiple times.
+        self.options.local_items.value.update(item_groups["Consumables"])
 
     def create_item(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
@@ -104,27 +112,27 @@ class RabiRibiWorld(World):
         """
         self.topology_present = bool(self.options.shuffle_map_transitions.value)
 
-        region_def = RegionDef(self)
+        region_helper = RegionHelper(self)
 
         # Generate a world seed using the existing randomizer
         if self.should_regenerate_seed_for_universal_tracker():
             # Universal Tracker: Regenerate the seed used on the connected server
             passthrough = self.multiworld.re_gen_passthrough["Rabi-Ribi"] # type: ignore
-            region_def.regenerate_seed_for_universal_tracker(passthrough)
+            region_helper.regenerate_seed_for_universal_tracker(passthrough)
         else:
             # Use standard generation
-            region_def.generate_seed()
+            region_helper.generate_seed()
 
-        region_def.set_regions()
-        region_def.connect_regions()
-        self.total_locations = region_def.set_locations()
-        region_def.set_events()
+        region_helper.set_regions()
+        region_helper.connect_regions()
+        self.total_locations = region_helper.set_locations()
+        region_helper.set_events()
 
-        region_def.configure_slot_data(self)
-        region_def.configure_region_spoiler_log_data(self)
+        region_helper.configure_slot_data(self)
+        region_helper.configure_region_spoiler_log_data(self)
 
     def create_items(self) -> None:
-        base_item_list = get_base_item_list(self.options)
+        base_item_list = get_base_item_list(self.randomizer_data)
 
         for item in map(self.create_item, base_item_list):
             if (not self.options.randomize_hammer.value) and (item.name == ItemName.piko_hammer):
@@ -156,7 +164,7 @@ class RabiRibiWorld(World):
 
     def set_rules(self) -> None:
         """
-        Set remaining rules (for now this is just the win condition). 
+        Set remaining rules (for now this is just the win condition).
         """
         self.multiworld.completion_condition[self.player] = \
             lambda state: state.has(ItemName.easter_egg, self.player, 5)
@@ -182,6 +190,19 @@ class RabiRibiWorld(World):
         spoiler_handle.write(f'\n\nMap Transitions:\n')
         for entrance in self.map_transition_shuffle_spoiler:
             spoiler_handle.write(f'\n{entrance}')
+
+    def _convert_options_to_existing_randomizer_args(self):
+        args = parse_args()
+        args.ap_options = self.options
+        args.open_mode = self.options.open_mode.value
+        args.shuffle_gift_items = self.options.randomize_gift_items.value
+        args.shuffle_map_transitions = self.options.shuffle_map_transitions.value
+        args.shuffle_start_location = self.options.shuffle_start_location.value
+
+        if self.options.enable_constraint_changes.value:
+            args.constraint_changes = self.options.number_of_constraint_changes.value
+
+        return args
 
     @staticmethod
     def _handle_encourage_eggs_in_late_spheres(multiworld):

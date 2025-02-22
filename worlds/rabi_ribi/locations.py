@@ -165,6 +165,8 @@ eastern_highlands_locations = {
     LocationName.atk_up_east_lab              : get_rabi_ribi_base_id() + 0x8C,
     LocationName.pack_up_lab                  : get_rabi_ribi_base_id() + 0x8D,
     LocationName.hammer_roll                  : get_rabi_ribi_base_id() + 0x8E,
+
+    LocationName.pbpb_box                     : get_rabi_ribi_base_id() + 0xDE,
 }
 
 subterranean_area_locations = {
@@ -191,7 +193,6 @@ shufflable_gift_item_town_locations = {
     LocationName.speed_boost                  : get_rabi_ribi_base_id() + 0x99,
     LocationName.bunny_strike                 : get_rabi_ribi_base_id() + 0x9A,
 }
-
 
 # Egg Locations
 southern_woodland_egg_locations = {
@@ -221,6 +222,8 @@ island_core_egg_locations = {
     LocationName.egg_sky_bridge_by_vanilla    : get_rabi_ribi_base_id() + 0xAC,
     LocationName.egg_ravine_above_chocolate   : get_rabi_ribi_base_id() + 0xAD,
     LocationName.egg_ravine_mid               : get_rabi_ribi_base_id() + 0xAE,
+
+    LocationName.egg_sky_bridge_above_warp    : get_rabi_ribi_base_id() + 0xDF,
 }
 
 northern_tundra_egg_locations = {
@@ -232,6 +235,8 @@ northern_tundra_egg_locations = {
     LocationName.egg_icy_summit_nixie         : get_rabi_ribi_base_id() + 0xB4,
     LocationName.egg_icy_summit_warp          : get_rabi_ribi_base_id() + 0xB5,
     LocationName.egg_snowland_lake            : get_rabi_ribi_base_id() + 0xB6,
+
+    LocationName.egg_snowland_spikes_room     : get_rabi_ribi_base_id() + 0xE0,
 }
 
 eastern_highlands_egg_locations = {
@@ -240,6 +245,8 @@ eastern_highlands_egg_locations = {
     LocationName.egg_lab                      : get_rabi_ribi_base_id() + 0xB9,
     LocationName.egg_evernight_mid            : get_rabi_ribi_base_id() + 0xBA,
     LocationName.egg_evernight_saya           : get_rabi_ribi_base_id() + 0xBB,
+
+    LocationName.egg_lab_entrance             : get_rabi_ribi_base_id() + 0xE1,
 }
 
 rabi_rabi_town_egg_locations = {
@@ -283,6 +290,8 @@ subterranean_area_post_game_locations = {
     LocationName.carrot_shooter               : get_rabi_ribi_base_id() + 0xCB,
     LocationName.egg_memories_sysint          : get_rabi_ribi_base_id() + 0xCC,
     LocationName.egg_memories_ravine          : get_rabi_ribi_base_id() + 0xCD,
+
+    LocationName.egg_memories_cars_room       : get_rabi_ribi_base_id() + 0xE2,
 }
 
 warp_destination_post_game_locations = {
@@ -293,6 +302,8 @@ warp_destination_post_game_locations = {
 system_interior_post_game_locations = {
     LocationName.cyber_flower                 : get_rabi_ribi_base_id() + 0xD0,
     LocationName.egg_sysint2                  : get_rabi_ribi_base_id() + 0xD1,
+
+    LocationName.egg_sysint2_long_jump        : get_rabi_ribi_base_id() + 0xE3
 }
 
 # Post Iris Locations

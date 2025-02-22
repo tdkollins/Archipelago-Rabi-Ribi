@@ -337,6 +337,7 @@ atk_up_evernight             = "Atk Up Evernight"
 atk_up_east_lab              = "Atk Up East Lab"
 pack_up_lab                  = "Pack Up Lab"
 hammer_roll                  = "Hammer Roll"
+pbpb_box                     = "Pbpb Box"
 
 # Area 5: Rabi Rabi Town
 ribbon_badge                 = "Ribbon Badge"
