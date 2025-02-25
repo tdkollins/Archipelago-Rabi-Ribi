@@ -15,14 +15,18 @@ from CommonClient import (
     server_loop,
     gui_enabled,
 )
+from NetUtils import ClientStatus
+
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
-from worlds.rabi_ribi.logic_helpers import convert_existing_rando_name_to_ap_name
 from worlds.rabi_ribi.names import ItemName
-from worlds.rabi_ribi.utility import load_text_file
-from NetUtils import NetworkItem, ClientStatus
+from worlds.rabi_ribi.utility import (
+    load_text_file,
+    convert_existing_rando_name_to_ap_name
+)
 
 STRANGE_BOX_ITEM_ID = 30
+PBPB_BOX_ITEM_ID = 58
 
 class RabiRibiContext(CommonContext):
     """Rabi Ribi Game Context"""
@@ -42,6 +46,7 @@ class RabiRibiContext(CommonContext):
         self.state_giving_item = False
         self.egg_incremented_flag = False
         self.current_egg_count = 0
+        self.last_received_item_index = -1
         self.seed_name = None
         self.slot_data = None
 
@@ -80,35 +85,62 @@ class RabiRibiContext(CommonContext):
             ItemName.hp_up: 159,
             ItemName.pack_up: 415
         }
+
+        # location_items.txt contains 3 sets of items:
+        #   - Items, for items that can be found lying around.
+        #   - ShufflableGiftItems, for items normally gifted to the player, but have a location
+        #     added by the randomizer.
+        #   - AdditionalItems, for items that are either bought at the shop, or given to the player
+        #     but have not been added as a location to the randomizer
+        # While Items and ShufflableGiftItems have are stored in the same format, AdditionalItems
+        # does not contain location information, so we need to read them separately.
         locations_items_file = os.path.join('existing_randomizer', 'locations_items.txt')
         f = load_text_file(locations_items_file)
-        reading = False
+        reading_items = False
+        reading_additional_items = False
         for line in f.splitlines():
             if '===Items===' in line or '===ShufflableGiftItems===' in line:
-                reading = True
+                reading_items = True
+                continue
+            elif '===AdditionalItems===' in line:
+                reading_additional_items = True
                 continue
             elif '===' in line:
-                reading = False
+                reading_items = False
+                reading_additional_items = False
                 continue
-            if not reading: continue
-            l = line
-            if '//' in line:
-                l = l[:l.find('//')]
-            l = l.strip()
-            if len(l) == 0: continue
-            coords, areaid, rabi_ribi_item_id, name = (x.strip() for x in l.split(':'))
+            if reading_items:
+                l = line
+                if '//' in line:
+                    l = l[:l.find('//')]
+                l = l.strip()
+                if len(l) == 0: continue
+                coords, areaid, rabi_ribi_item_id, name = (x.strip() for x in l.split(':'))
 
-            # Set location coordinate to location name mapping
-            area_id = int(areaid)
-            x, y = ast.literal_eval(coords)
-            ap_name = convert_existing_rando_name_to_ap_name(name)
-            if area_id not in coordinate_to_location_name:
-                coordinate_to_location_name[area_id] = {(x, y): ap_name}
-            else:
-                coordinate_to_location_name[area_id][(x, y)] = ap_name
+                # Set location coordinate to location name mapping
+                area_id = int(areaid)
+                x, y = ast.literal_eval(coords)
+                ap_name = convert_existing_rando_name_to_ap_name(name)
+                if area_id not in coordinate_to_location_name:
+                    coordinate_to_location_name[area_id] = {(x, y): ap_name}
+                else:
+                    coordinate_to_location_name[area_id][(x, y)] = ap_name
 
-            # Set item name to rabi ribi item id mapping
-            item_name_to_rabi_ribi_item_id[ap_name] = rabi_ribi_item_id
+                # Set item name to Rabi Ribi item ID mapping
+                item_id = int(rabi_ribi_item_id)
+                item_name_to_rabi_ribi_item_id[ap_name] = item_id
+            if reading_additional_items:
+                l = line
+                if '//' in line:
+                    l = l[:l.find('//')]
+                l = l.strip()
+                if len(l) == 0: continue
+                name, rabi_ribi_item_id = (x.strip() for x in line.split(':'))
+
+                # Only set item name to Rabi Ribi item ID mapping
+                ap_name = convert_existing_rando_name_to_ap_name(name)
+                item_id = int(rabi_ribi_item_id)
+                item_name_to_rabi_ribi_item_id[ap_name] = item_id
 
         return coordinate_to_location_name, item_name_to_rabi_ribi_item_id
 
@@ -224,23 +256,23 @@ class RabiRibiContext(CommonContext):
 
         :NetworkItem item: The item to give to the player
         """
-        # find the first item id that the player has not recieved yet
-        cur_item_id = 0
-        for item_id in self.items_received_rabi_ribi_ids:
-            cur_item_id = item_id
-            if item_id == -1:  # junk/nothing
-                continue
-            if not self.rr_interface.does_player_have_item_id(cur_item_id):
-                break
-        self.rr_interface.give_item(cur_item_id)
-        await asyncio.sleep(1)
-        await self.wait_until_out_of_item_receive_animation()
+        self.last_received_item_index = self.rr_interface.get_last_received_item_index()
+
+        # Find the first item ID that the player has not recieved yet
+        remaining_items = self.items_received_rabi_ribi_ids[self.last_received_item_index:]
+        skipped_items, cur_item_id = next(((idx, item_id) for idx, item_id in enumerate(remaining_items) if item_id != -1), (-1, -1))
+
+        if cur_item_id > 0:
+            self.rr_interface.give_item(cur_item_id)
+            self.rr_interface.set_last_received_item_index(self.last_received_item_index + skipped_items + 1)
+            await asyncio.sleep(1)
+            await self.wait_until_out_of_item_receive_animation()
 
     async def set_received_rabi_ribi_item_ids(self):
         async with self.critical_section_lock:
             self.items_received_rabi_ribi_ids = []
             potion_ids = {
-                ItemName.attack_up: 193, #  sub 30 since those are reserved for super / hyper attack modes
+                ItemName.attack_up: 193, # Subtract 30, as those IDs are reserved for super / hyper attack modes
                 ItemName.mp_up: 287,
                 ItemName.regen_up: 351,
                 ItemName.hp_up: 159,
@@ -411,6 +443,7 @@ class RabiRibiContext(CommonContext):
         self.state_giving_item = False
         self.egg_incremented_flag = False
         self.current_egg_count = 0
+        self.last_received_item_index = -1
         self.seed_name = None
         self.slot_data = None
 

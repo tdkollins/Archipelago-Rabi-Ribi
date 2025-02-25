@@ -3,15 +3,19 @@ This module defines helper methods used for evaluating rule lambdas.
 Its probably a little haphazardly sorted.. but the method names are descriptive
 enough for it not to be confusing.
 """
-from BaseClasses import CollectionState, Region
-from typing import Callable, Dict, Set
+from BaseClasses import CollectionState
+from typing import Callable, Set
+
 from .existing_randomizer.utility import OpBacktrack, OpLit, OpNot, OpOr, OpAnd
-from .options import RabiRibiOptions, TrickDifficulty, Knowledge
+from .items import recruit_table
 from .names import ItemName, LocationName
-from .items import recruit_table, consumable_items, normal_consumable_items
+from .options import RabiRibiOptions, TrickDifficulty, Knowledge
+from .utility import convert_existing_rando_name_to_ap_name
 
 def has_3_magic_types(state: CollectionState, player: int):
     """Player has at least 3 types of magic"""
+    # While the player can buy Healing Staff from the shop,
+    # that would imply they can access town and already access the item menu.
     return state.count_group_unique("Magic", player) + 1 >= 3
 
 def has_item_menu(state: CollectionState, player: int, options):
@@ -94,7 +98,7 @@ def can_charge_carrot_shooter_entry(state: CollectionState, player: int, options
 
 def can_bunny_amulet(state: CollectionState, player: int):
     """Player can use the bunny amulet skill"""
-    return state.has("Chapter 2", player)
+    return state.has(ItemName.bunny_amulet, player) or state.has("Chapter 2", player)
 
 def can_bunny_amulet_2(state: CollectionState, player: int):
     """Player can use 2 bunny amulet skills"""
@@ -295,7 +299,11 @@ def can_reach_keke_bunny(state: CollectionState, player: int):
 def can_use_consumables(state: CollectionState, player: int, options):
     """Player can use consumable items"""
     return has_item_menu(state, player, options) and \
-        state.has_from_list(consumable_items, player, 1)
+        (
+            state.has_group_unique("Consumables", player) or
+            can_purchase_food(state, player) or
+            can_purchase_cocoa_bomb(state, player)
+        )
 
 def can_purchase_food(state: CollectionState, player: int):
     """Player can purchase food"""
@@ -335,6 +343,17 @@ def is_at_least_obscure_knowledge(options):
     """Knowledge is at least obscure"""
     return options.knowledge >= Knowledge.option_obscure
 
+def count_normal_consumable_items(state: CollectionState, player: int):
+    """Counts which normal consumable items the player can reach, either from locations or purchases."""
+    consumables = 0
+    if state.has(ItemName.rumi_cake, player) or can_purchase_food(state, player):
+        consumables += 1
+    if state.has(ItemName.cocoa_bomb, player) or can_purchase_cocoa_bomb(state, player):
+        consumables += 1
+    if state.has(ItemName.gold_carrot, player):
+        consumables += 1
+    return consumables
+
 def has_enough_amulet_food(state: CollectionState, player: int, options, num_amulet_food: int):
     """Player can utilize enough items to perform a trick"""
     amulet = 0
@@ -350,12 +369,12 @@ def has_enough_amulet_food(state: CollectionState, player: int, options, num_amu
         amulet = 1
     
     if has_item_menu(state, player, options):
-        if state.has(ItemName.rumi_donut, player):
+        if state.has(ItemName.rumi_donut, player) or can_purchase_food(state, player):
             food = 1
             # Eating a Rumi Donut gives an amulet charge
             if can_bunny_amulet(state, player):
                 amulet += 1
-            food += state.count_from_list_unique(normal_consumable_items, player)
+            food += count_normal_consumable_items(state, player)
             if amulet >= 4 and state.has(ItemName.kotri_recruit, player) and \
                 can_recruit_n_town_members(state, 3, player):
                 amulet += 1
@@ -370,30 +389,6 @@ def has_many_amulet_food(state: CollectionState, player: int, options):
 ####################################################
 #           Utility used by other modules
 ####################################################
-
-def convert_existing_rando_name_to_ap_name(name):
-    """
-    Converts a name from the existing randomizer to AP.
-    This converts from capitalized underscore seperation to Captialization with spaces.
-    E.g. MY_ITEM_NAME -> My Item Name
-
-    :string name: The name to convert
-    """
-    ap_name = name.split("_")
-    ap_name = " ".join(word.capitalize() for word in ap_name)
-    return ap_name
-
-def convert_ap_name_to_existing_rando_name(name):
-    """
-    Converts a name from the existing randomizer to AP.
-    This converts from capitalized underscore seperation to Captialization with spaces.
-    E.g. My Item Name -> MY_ITEM_NAME
-
-    :string name: The name to convert
-    """
-    existing_rando_name = name.split(" ")
-    existing_rando_name = "_".join(existing_rando_name).upper()
-    return existing_rando_name
 
 def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, regions: Set[str], options: RabiRibiOptions) -> Callable[[CollectionState], bool]:
     """
@@ -496,9 +491,6 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Knowledge Advanced": lambda _: is_at_least_advanced_knowledge(options),
             "Knowledge Obscure": lambda _: is_at_least_obscure_knowledge(options),
             "Consumable Use": lambda state: can_use_consumables(state, player, options),
-            "Rumi Donut": lambda state: can_purchase_food(state, player),
-            "Rumi Cake": lambda state: can_purchase_food(state, player),
-            "Cocoa Bomb": lambda state: can_purchase_cocoa_bomb(state, player),
             "Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 1),
             "2 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 2),
             "3 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 3),
