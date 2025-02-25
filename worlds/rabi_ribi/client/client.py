@@ -85,22 +85,31 @@ class RabiRibiContext(CommonContext):
             ItemName.hp_up: 159,
             ItemName.pack_up: 415
         }
+
+        # location_items.txt contains 3 sets of items:
+        #   - Items, for items that can be found lying around.
+        #   - ShufflableGiftItems, for items normally gifted to the player, but have a location
+        #     added by the randomizer.
+        #   - AdditionalItems, for items that are either bought at the shop, or given to the player
+        #     but have not been added as a location to the randomizer
+        # While Items and ShufflableGiftItems have are stored in the same format, AdditionalItems
+        # does not contain location information, so we need to read them separately.
         locations_items_file = os.path.join('existing_randomizer', 'locations_items.txt')
         f = load_text_file(locations_items_file)
-        readingItems = False
-        readingAdditionalItems = False
+        reading_items = False
+        reading_additional_items = False
         for line in f.splitlines():
             if '===Items===' in line or '===ShufflableGiftItems===' in line:
-                readingItems = True
+                reading_items = True
                 continue
             elif '===AdditionalItems===' in line:
-                readingAdditionalItems = True
+                reading_additional_items = True
                 continue
             elif '===' in line:
-                readingItems = False
-                readingAdditionalItems = False
+                reading_items = False
+                reading_additional_items = False
                 continue
-            if readingItems:
+            if reading_items:
                 l = line
                 if '//' in line:
                     l = l[:l.find('//')]
@@ -117,10 +126,10 @@ class RabiRibiContext(CommonContext):
                 else:
                     coordinate_to_location_name[area_id][(x, y)] = ap_name
 
-                # Set item name to rabi ribi item id mapping
+                # Set item name to Rabi Ribi item ID mapping
                 item_id = int(rabi_ribi_item_id)
                 item_name_to_rabi_ribi_item_id[ap_name] = item_id
-            if readingAdditionalItems:
+            if reading_additional_items:
                 l = line
                 if '//' in line:
                     l = l[:l.find('//')]
@@ -128,7 +137,7 @@ class RabiRibiContext(CommonContext):
                 if len(l) == 0: continue
                 name, rabi_ribi_item_id = (x.strip() for x in line.split(':'))
 
-                # Only set item name to rabi ribi item id mapping
+                # Only set item name to Rabi Ribi item ID mapping
                 ap_name = convert_existing_rando_name_to_ap_name(name)
                 item_id = int(rabi_ribi_item_id)
                 item_name_to_rabi_ribi_item_id[ap_name] = item_id
