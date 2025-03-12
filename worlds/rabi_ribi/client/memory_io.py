@@ -31,6 +31,7 @@ OFFSET_IN_WARP_MENU = int(0x16E5BB8)
 OFFSET_IN_COSTUME_MENU = int(0x16E6B20)
 OFFSET_CURRENT_WARP_ID = int(0x016E6D08)
 EXCLAMATION_POINT_ITEM_ID = 43
+UNUSED_ITEM_ID_48 = 48
 TILE_LENGTH = 64
 
 class RabiRibiMemoryIO():
@@ -276,6 +277,18 @@ class RabiRibiMemoryIO():
         If -1, -2, or -3, the player has the item, but has disabled it.
         """
         self.rr_mem.write_int(self.rr_mem.base_address + OFFSET_INVENTORY_START + (4 * int(item_id)), state)
+
+    def get_last_received_item_index(self):
+        """
+        Gets the index of the last item received from the recieved items list.
+        """
+        return self.get_item_state(UNUSED_ITEM_ID_48)
+
+    def set_last_received_item_index(self, index):
+        """
+        Sets the index of the last item received from the recieved items list.
+        """
+        self.set_item_state(UNUSED_ITEM_ID_48, index)
 
     def open_warp_menu(self):
         """

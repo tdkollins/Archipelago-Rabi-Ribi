@@ -283,7 +283,8 @@ def parse_expression_logic(line, variable_names_set, default_expressions, curren
         elif next == ')':
             exp = stack.pop()
             assert isExpr(exp)
-            assert stack.pop() == '('
+            top = stack.pop()
+            assert top == '('
             tokens.append(exp)
         else: # string literal
             # Literal parsing
