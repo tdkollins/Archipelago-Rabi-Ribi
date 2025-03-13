@@ -457,7 +457,7 @@ class RabiRibiContext(CommonContext):
         self.location_ap_id_to_name = None
         self.item_name_to_ap_id = None
         self.item_ap_id_to_name = None
-        self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id, self.rabi_ribi_location_names = \
+        self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 
         self.ap_location_name_to_location_coordinates: Dict[str, Tuple[int, int, int]] = {}
