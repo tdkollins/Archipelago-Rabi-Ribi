@@ -10,6 +10,7 @@ in realtime. This is used to:
 """
 import asyncio
 import struct
+from typing import List, Tuple
 
 from pymem import pymem
 
@@ -22,6 +23,7 @@ OFFSET_GIVE_ITEM_FUNC = int(0x15A90)
 OFFSET_PLAYER_FROZEN = int(0x1031DDC)
 OFFSET_ITEM_MAP = int(0xDFFB3C)
 OFFSET_INVENTORY_START = int(0x1672FA4)
+OFFSET_EGG_START = int(0x167CD58)
 OFFSET_MAX_HEALTH = int(0x16E6D24)
 OFFSET_EGG_COUNT = int(0x1675CCC)
 OFFSET_PLAYER_PAUSED = int(0x16E5C40)
@@ -33,6 +35,7 @@ OFFSET_CURRENT_WARP_ID = int(0x016E6D08)
 EXCLAMATION_POINT_ITEM_ID = 43
 UNUSED_ITEM_ID_48 = 48
 TILE_LENGTH = 64
+EGG_ARRAY_LENGTH = 80 * 3 * 2 # 80 eggs stored as 3 shorts
 
 class RabiRibiMemoryIO():
     """
@@ -301,12 +304,25 @@ class RabiRibiMemoryIO():
         # to allow warping to Starting Forest. We use Forgotten Cave 2, as it's an unnecessary warp.
         self.rr_mem.write_int(self.rr_mem.base_address + OFFSET_CURRENT_WARP_ID, 13)
 
+    def get_collected_eggs(self) -> List[Tuple[int, int, int]]:
+        """
+        Returns the locations of all eggs collected by the player.
+        """
+        data = self.rr_mem.read_bytes(self.rr_mem.base_address + OFFSET_EGG_START, EGG_ARRAY_LENGTH)
+        eggs: List[Tuple[int, int, int]] = list(struct.iter_unpack('3h', data))
+        egg_count = eggs.index((0,0,0))
+
+        if egg_count >= 0:
+            eggs = eggs[:egg_count]
+
+        return eggs
+
     def get_number_of_eggs_collected(self) -> int:
         """
         Returns the number of eggs the player currently has
         """
         return self._read_int(OFFSET_EGG_COUNT)
-    
+
     def is_on_correct_scenerio(self, scenerio_id: str) -> bool:
         """
         Used for sanity checking that we're on the correct file.
