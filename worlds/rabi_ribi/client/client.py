@@ -26,7 +26,6 @@ from worlds.rabi_ribi.utility import (
 )
 
 STRANGE_BOX_ITEM_ID = 30
-PBPB_BOX_ITEM_ID = 58
 
 class RabiRibiContext(CommonContext):
     """Rabi Ribi Game Context"""
