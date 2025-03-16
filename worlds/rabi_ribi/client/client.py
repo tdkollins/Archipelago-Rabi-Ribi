@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, Optional, Set, Tuple
 import ast
 import asyncio
 import colorama
@@ -26,7 +26,6 @@ from worlds.rabi_ribi.utility import (
 )
 
 STRANGE_BOX_ITEM_ID = 30
-PBPB_BOX_ITEM_ID = 58
 
 class RabiRibiContext(CommonContext):
     """Rabi Ribi Game Context"""
@@ -43,9 +42,13 @@ class RabiRibiContext(CommonContext):
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 
+        self.ap_location_name_to_location_coordinates: Dict[str, Tuple[int, int, int]] = {}
+        for area, v in self.location_coordinates_to_ap_location_name.items():
+            for (x, y), name in v.items():
+                self.ap_location_name_to_location_coordinates[name] = (area, x, y)
+
         self.state_giving_item = False
-        self.egg_incremented_flag = False
-        self.current_egg_count = 0
+        self.collected_eggs: Set[Tuple[int,int,int]] = set()
         self.last_received_item_index = -1
         self.seed_name = None
         self.slot_data = None
@@ -289,6 +292,11 @@ class RabiRibiContext(CommonContext):
                 elif item_name in potion_ids:
                     self.items_received_rabi_ribi_ids.append(potion_ids[item_name])
                     potion_ids[item_name] -= 1
+                elif item_name == ItemName.easter_egg:
+                    if network_item.player == self.slot:
+                        location_name = self.location_ap_id_to_name[network_item.location]
+                        egg_coordinates = self.ap_location_name_to_location_coordinates[location_name]
+                        self.collected_eggs.add(egg_coordinates)
                 else:
                     self.items_received_rabi_ribi_ids.append(
                         int(self.item_name_to_rabi_ribi_item_id[item_name]))
@@ -326,11 +334,19 @@ class RabiRibiContext(CommonContext):
         if not self.exit_event.is_set():
             await asyncio.sleep(5)
 
-    def handle_egg_changes(self):
-        old_egg_count = self.current_egg_count
-        self.current_egg_count = self.rr_interface.get_number_of_eggs_collected()
-        if self.current_egg_count == (old_egg_count + 1):
-            self.egg_incremented_flag = True
+    async def handle_egg_changes(self):
+        if self.location_name_to_ap_id is None:
+            return
+        player_current_eggs = self.rr_interface.get_collected_eggs()
+        for (area, x, y) in player_current_eggs:
+            if (area, x, y) not in self.collected_eggs:
+                self.collected_eggs.add((area, x, y))
+                if area in self.location_coordinates_to_ap_location_name and (x, y) in self.location_coordinates_to_ap_location_name[area]:
+                    location_name = self.location_coordinates_to_ap_location_name[area][(x, y)]
+                    location_id = self.location_name_to_ap_id[location_name]
+                    if location_id not in self.locations_checked:
+                        self.locations_checked.add(location_id)
+                        await self.send_msgs([{"cmd": 'LocationChecks', "locations": self.locations_checked}])
 
     def is_player_paused(self):
         paused = self.rr_interface.is_player_paused()
@@ -400,11 +416,14 @@ class RabiRibiContext(CommonContext):
 
         :returns int, (int, int, int): the ap id of the closest location and the coordinates of it
         """
-        # Just recieved an egg, mark the closet location as the one found
+        # Just recieved an item, mark the closet location as the one found
         area_id, x, y = self.rr_interface.read_player_tile_position()
         closest_location_id = None
         closest_location_coordinates = None
         closest_distance = 9999
+
+        if self.location_name_to_ap_id is None:
+            return None, None
         if area_id not in self.location_coordinates_to_ap_location_name:
             return None, None
         for coordinate_entry, location_name in self.location_coordinates_to_ap_location_name[area_id].items():
@@ -440,9 +459,13 @@ class RabiRibiContext(CommonContext):
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 
+        self.ap_location_name_to_location_coordinates: Dict[str, Tuple[int, int, int]] = {}
+        for area, v in self.location_coordinates_to_ap_location_name.items():
+            for (x, y), name in v.items():
+                self.ap_location_name_to_location_coordinates[name] = (area, x, y)
+
         self.state_giving_item = False
-        self.egg_incremented_flag = False
-        self.current_egg_count = 0
+        self.collected_eggs = set()
         self.last_received_item_index = -1
         self.seed_name = None
         self.slot_data = None
@@ -484,6 +507,8 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 await asyncio.sleep(0.5)
                 if ctx.exit_event.is_set():
                     break
+                if ctx.seed_player_id is None:
+                    continue
                 if not ctx.rr_interface.is_on_correct_scenerio(ctx.seed_player_id):
                     continue
                 if ctx.is_on_main_menu():
@@ -499,7 +524,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
             cur_time = time.time()
 
-            ctx.handle_egg_changes()
+            await ctx.handle_egg_changes()
             await check_for_locations(ctx)
 
             if ctx.in_state_where_should_open_warp_menu():
@@ -520,7 +545,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
         except Exception as err:  # Rabi Ribi Process closed?
             logger.warning("*******************************")
-            logger.warning("Encountered error. Please post a message to the RabiRibi thread on the AP discord")
+            logger.warning("Encountered error. Please post a message to the Rabi-Ribi thread on the AP discord")
             logger.warning("*******************************")
             logger.exception(str(err))
             # attempt to reconnect at the top of the loop
@@ -559,18 +584,6 @@ async def check_for_locations(ctx: RabiRibiContext):
         except TimeoutError:
             logger.warning("Never received response to scout request for ap_location_id %d", ap_location_id)
 
-    if ctx.egg_incremented_flag:
-        # Just recieved an egg, mark the closet location as the one found
-        ap_location_id, _ = ctx.find_closest_item_location()
-        if not ap_location_id:
-            logger.warning("Detected egg obtained, but unable to find location.")
-            ctx.egg_incremented_flag = False
-            return
-        if ap_location_id not in ctx.locations_checked:
-            ctx.locations_checked.add(ap_location_id)
-            await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": ctx.locations_checked}])
-        ctx.egg_incremented_flag = False
-
 async def remove_exclamation_point(ctx: RabiRibiContext, coordinates):
     ctx.rr_interface.remove_item_from_in_memory_map(coordinates[0], coordinates[1], coordinates[2])
     from worlds.rabi_ribi.client.patch import remove_item_from_map
@@ -588,13 +601,15 @@ def launch():
         Launch a client instance (threaded)
         """
         ctx = RabiRibiContext(args.connect, args.password)
-        ctx.server_task = asyncio.create_task(server_loop(ctx), name="rabi ribi server loop")
+        ctx.server_task = asyncio.create_task(server_loop(ctx), name="Rabi-Ribi Server Loop")
+
         if gui_enabled:
             ctx.run_gui()
         ctx.run_cli()
+
         watcher = asyncio.create_task(
             rabi_ribi_watcher(ctx),
-            name="RabiRibiProgressionWatcher"
+            name="Rabi-Ribi Progression Watcher"
         )
         await ctx.exit_event.wait()
         await watcher
