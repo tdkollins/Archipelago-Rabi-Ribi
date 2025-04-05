@@ -313,7 +313,7 @@ rabi_rabi_town_post_iris_locations = {
 }
 
 # DLC Locations
-western_coast_dlc_locations = {
+western_coast_halloween_locations = {
     LocationName.egg_halloween_cicini_room    : get_rabi_ribi_base_id() + 0xD4,
     LocationName.egg_halloween_west           : get_rabi_ribi_base_id() + 0xD5,
     LocationName.egg_halloween_mid            : get_rabi_ribi_base_id() + 0xD6,
@@ -330,11 +330,14 @@ western_coast_dlc_locations = {
 southern_woodland_table = {
     **southern_woodland_locations,
     **southern_woodland_egg_locations,
+    **southern_woodland_post_game_locations,
 }
 
 western_coast_table = {
     **western_coast_locations,
     **western_coast_egg_locations,
+    **western_coast_post_game_locations,
+    **western_coast_halloween_locations,
 }
 
 island_core_table = {
@@ -363,6 +366,7 @@ plurkwood_table = {
 subterranean_area_table = {
     **subterranean_area_locations,
     **subterranean_area_egg_locations,
+    **subterranean_area_post_game_locations,
 }
 
 warp_destination_table = {
@@ -372,6 +376,7 @@ warp_destination_table = {
 system_interior_table = {
     **system_interior_locations,
     **system_interior_egg_locations,
+    **system_interior_post_game_locations
 }
 
 shufflable_gift_item_table = {
@@ -389,8 +394,27 @@ all_locations = {
     **rabi_rabi_town_table,
     **plurkwood_table,
     **subterranean_area_table,
+    **warp_destination_table,
     **system_interior_table,
     **shufflable_gift_item_table
+}
+
+default_locations = {
+    **southern_woodland_locations,
+    **southern_woodland_egg_locations,
+    **western_coast_locations,
+    **western_coast_egg_locations,
+    **island_core_locations,
+    **island_core_egg_locations,
+    **northern_tundra_locations,
+    **northern_tundra_egg_locations,
+    **eastern_highlands_locations,
+    **eastern_highlands_egg_locations,
+    **rabi_rabi_town_egg_locations,
+    **subterranean_area_locations,
+    **subterranean_area_egg_locations,
+    **system_interior_locations,
+    **system_interior_egg_locations,
 }
 
 lookup_location_id_to_name = {code: name for name, code in all_locations.items()}
@@ -410,22 +434,30 @@ location_groups = {
 
 def setup_locations(options: RabiRibiOptions):
     location_table: Dict[str, int] = {
-        **southern_woodland_table,
-        **western_coast_table,
-        **island_core_table,
-        **northern_tundra_table,
-        **eastern_highlands_table,
-        **rabi_rabi_town_table,
-        **subterranean_area_table,
-        **system_interior_table
+        **default_locations
     }
 
     if options.randomize_gift_items:
         location_table.update(**shufflable_gift_item_town_locations)
-        if options.plurkwood_reachable:
+        if options.include_plurkwood:
             location_table.update(**shufflable_gift_item_plurkwood_locations)
 
-    if options.plurkwood_reachable:
+    if options.include_plurkwood:
         location_table.update(**plurkwood_egg_locations)
+
+    if options.include_warp_destination:
+        location_table.update(**warp_destination_egg_locations)
+        if options.include_post_game:
+            location_table.update(**warp_destination_post_game_locations)
+    
+    if options.include_post_game:
+        location_table.update(**southern_woodland_post_game_locations)
+        location_table.update(**western_coast_post_game_locations)
+        location_table.update(**subterranean_area_post_game_locations)
+        location_table.update(**warp_destination_post_game_locations)
+        location_table.update(**system_interior_post_game_locations)
+
+    if options.include_post_irisu:
+        location_table.update(**rabi_rabi_town_post_iris_locations)
 
     return location_table

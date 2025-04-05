@@ -91,6 +91,24 @@ class ZipsRequired(Toggle):
     """
     display_name = "Zips Required"
 
+class BunstrikeZipsRequired(Toggle):
+    """
+    A bunstrike zip is an obscure zip method performed by using Bunny Strike.
+    If this flag is turned on, reaching some of the items may require
+    bunstrike zips to be performed. If turned off, all the required items
+    can be obtained without the need for bunstrike zips.
+    """
+    display_name = "Bunstrike Zips Required"
+
+class BoringTricksRequired(Toggle):
+    """
+    If this flag is true, some of the items may require performing tricks
+    considered too boring or tedious to normally be included in logic.
+    Note that most of these tricks are still considered to be at least
+    Advanced knowledge and Very Hard difficulty at minimum.
+    """
+    display_name = "Boring Tricks Required"
+
 class DarknessWithoutLightOrb(Toggle):
     """
     If this flag is true, the game might expect you to go into dark areas,
@@ -105,11 +123,37 @@ class UnderwaterWithoutWaterOrb(Toggle):
     """
     display_name = "Underwater Without Water Orb"
 
-class PlurkwoodReachable(Toggle):
+class IncludePlurkwood(Toggle):
     """
     If this flag is true, the game might expect you to go into Plurkwood.
     """
-    display_name = "Plurkwood Reachable"
+    display_name = "IncludePlurkwood"
+
+class IncludeWarpDestination(Toggle):
+    """
+    If this flag is true, locations in the warp destination area are included in the pool.
+    Note that some of these locations may require beating the game to reach again if missed.
+    """
+    display_name = "Include Warp Destination"
+
+class IncludePostGame(Toggle):
+    """
+    If this flag is true, locations only reachable in the post game are included in the pool.
+    """
+    display_name = "Include Post Game"
+
+class IncludePostIrisu(Toggle):
+    """
+    If this flag is true, locations after beating Irisu are included in the pool.
+    """
+    display_name = "Include Post Irisu"
+
+class IncludeHalloween(Toggle):
+    """
+    If this flag is true, the Halloween DLC locations are included in the pool.
+    Requires the "Cinini's Halloween!" DLC.
+    """
+    display_name = "Include Halloween DLC"
 
 class EventWarpsInLogic(Toggle):
     """
@@ -184,6 +228,8 @@ class RabiRibiOptions(PerGameCommonOptions):
     block_clips_required: BlockClipsRequired
     semi_solid_clips_required: SemiSolidClipsRequired
     zips_required: ZipsRequired
+    bunstrike_zips_required: BunstrikeZipsRequired
+    boring_tricks_required: BoringTricksRequired
     darkness_without_light_orb: DarknessWithoutLightOrb
     underwater_without_water_orb: UnderwaterWithoutWaterOrb
     carrot_shooter_in_logic: CarrotShooterInLogic
@@ -194,7 +240,12 @@ class RabiRibiOptions(PerGameCommonOptions):
 
     randomize_hammer: RandomizeHammer
     randomize_gift_items: RandomizeGiftItems
-    plurkwood_reachable: PlurkwoodReachable
+
+    include_plurkwood: IncludePlurkwood
+    include_warp_destination: IncludeWarpDestination
+    include_post_game: IncludePostGame
+    include_post_irisu: IncludePostIrisu
+    include_halloween: IncludeHalloween
 
     enable_constraint_changes: EnableConstraintChanges
     number_of_constraint_changes: NumberOfConstraintChanges

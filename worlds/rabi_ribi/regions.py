@@ -74,7 +74,6 @@ post_game_regions: Set[str] = {
     "Library Irisu",
     "Library Mid Lower",
     "Library Mid Upper",
-    "Library Oob",
     "Sysint2 Egg Room",
     "Sysint2 End",
     "Sysint2 Start",
@@ -96,8 +95,12 @@ post_game_regions: Set[str] = {
 
 # Impossible to reach without being on a high enough difficulty
 # TODO: Ensure Library OOB is updated to only be reachable if Sky Island OOB is reachable.
-advanced_v_hard_regions: Set[str] = {
+adv_vhard_regions: Set[str] = {
     "Sky Island Oob",
+}
+
+adv_vhard_post_game_regions: Set[str] = {
+    "Library Oob",
 }
 
 class RegionHelper:
@@ -175,18 +178,25 @@ class RegionHelper:
         region_names = self._get_region_name_list()
 
         # Remove unreachable regions before adding to the graph
-        self.unreachable_regions = {
-            *warp_destination_regions,
-            *halloween_regions,
-            *post_game_regions
-        }
+        self.unreachable_regions = set()
 
         if not is_at_least_advanced_knowledge(self.options) or \
             not is_at_least_v_hard_difficulty(self.options):
-            self.unreachable_regions.update(advanced_v_hard_regions)
+            self.unreachable_regions.update(adv_vhard_regions)
+        elif not self.options.include_post_game:
+            self.unreachable_regions.update(adv_vhard_post_game_regions)
 
-        if not self.options.plurkwood_reachable:
+        if not self.options.include_plurkwood:
             self.unreachable_regions.update(plurkwood_regions)
+
+        if not self.options.include_warp_destination:
+            self.unreachable_regions.update(warp_destination_regions)
+
+        if not self.options.include_post_game:
+            self.unreachable_regions.update(post_game_regions)
+
+        if not self.options.include_halloween:
+            self.unreachable_regions.update(halloween_regions)
 
         region_names = [r for r in region_names if r not in self.unreachable_regions]
 
@@ -277,7 +287,7 @@ class RegionHelper:
             add_rule(bunny_strike, lambda state: state.has(ItemName.cicini_recruit, self.player) and state.has(ItemName.sliding_powder, self.player))
             total_locations += 2
 
-            if self.options.plurkwood_reachable:
+            if self.options.include_plurkwood:
                 p_hairpin = RabiRibiLocation(self.player, ItemName.p_hairpin, all_locations[LocationName.p_hairpin], self._get_region(LocationName.plurkwood_main))
                 self._get_region(LocationName.plurkwood_main).locations.append(p_hairpin)
                 add_rule(p_hairpin, lambda state: state.has(ItemName.keke_bunny_recruit, self.player))
@@ -374,7 +384,7 @@ class RegionHelper:
         self._get_region(LocationName.volcanic_main).locations.append(kotri_recruit)
         add_rule(kotri_recruit, lambda state: logic.can_recruit_kotri(state, self.player))
 
-        if self.options.plurkwood_reachable:
+        if self.options.include_plurkwood:
             keke_bunny_recruit = RabiRibiLocation(self.player, ItemName.keke_bunny_recruit, None, self._get_region(LocationName.plurkwood_main))
             keke_bunny_recruit.place_locked_item(RabiRibiItem(ItemName.keke_bunny_recruit, ItemClassification.progression, None, self.player))
             self._get_region(LocationName.plurkwood_main).locations.append(keke_bunny_recruit)
@@ -412,6 +422,34 @@ class RegionHelper:
         add_rule(chapter_5,
                  lambda state: logic.can_reach_chapter_5(state, self.player) and
                     state.has("Chapter 4", self.player))
+
+        if (self.options.include_post_game):
+            miriam_recruit = RabiRibiLocation(self.player, ItemName.miriam_recruit, None, self._get_region(LocationName.hall_of_memories))
+            miriam_recruit.place_locked_item(RabiRibiItem(ItemName.miriam_recruit, ItemClassification.progression, None, self.player))
+            self._get_region(LocationName.hall_of_memories).locations.append(miriam_recruit)
+            add_rule(miriam_recruit, lambda state: logic.can_recruit_miriam(state, self.player))
+
+            rumi_recruit = RabiRibiLocation(self.player, ItemName.rumi_recruit, None, self._get_region(LocationName.forgotten_cave_2))
+            rumi_recruit.place_locked_item(RabiRibiItem(ItemName.rumi_recruit, ItemClassification.progression, None, self.player))
+            self._get_region(LocationName.forgotten_cave_2).locations.append(rumi_recruit)
+            add_rule(rumi_recruit, lambda state: logic.can_recruit_rumi(state, self.player))
+
+            irisu_recruit = RabiRibiLocation(self.player, ItemName.irisu_recruit, None, self._get_region(LocationName.library_irisu))
+            irisu_recruit.place_locked_item(RabiRibiItem(ItemName.irisu_recruit, ItemClassification.progression, None, self.player))
+            self._get_region(LocationName.library_irisu).locations.append(irisu_recruit)
+            add_rule(irisu_recruit, lambda state: logic.can_recruit_irisu(state, self.player))
+
+            chapter_6 = RabiRibiLocation(self.player, "Chapter 6", None, self._get_region(LocationName.town_main))
+            chapter_6.place_locked_item(RabiRibiItem("Chapter 6", ItemClassification.progression, None, self.player))
+            self._get_region(LocationName.town_main).locations.append(chapter_6)
+            add_rule(chapter_6, lambda state: state.has("Chapter 5", self.player))
+
+            chapter_7 = RabiRibiLocation(self.player, "Chapter 7", None, self._get_region(LocationName.town_main))
+            chapter_7.place_locked_item(RabiRibiItem("Chapter 7", ItemClassification.progression, None, self.player))
+            self._get_region(LocationName.town_main).locations.append(chapter_7)
+            add_rule(chapter_7,
+                     lambda state: logic.can_reach_chapter_7(state, self.player) and
+                        state.has("Chapter 6", self.player))
 
     def configure_slot_data(self, world: "RabiRibiWorld"):
         world.picked_templates = [template.name for template in self.allocation.picked_templates]

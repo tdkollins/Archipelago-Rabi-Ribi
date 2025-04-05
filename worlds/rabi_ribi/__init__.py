@@ -140,7 +140,7 @@ class RabiRibiWorld(World):
             elif (not self.options.randomize_gift_items.value) and (item.name in shufflable_gift_items):
                 continue
             elif (not self.options.randomize_gift_items) and \
-                self.options.plurkwood_reachable and \
+                self.options.include_plurkwood and \
                 item.name in shufflable_gift_items_plurkwood:
                 continue
             self.multiworld.itempool.append(item)
@@ -153,7 +153,11 @@ class RabiRibiWorld(World):
             "openMode": bool(self.options.open_mode.value),
             "attackMode": self.options.attack_mode.value,
             "randomize_gift_items": bool(self.options.randomize_gift_items.value),
-            "plurkwood_reachable": bool(self.options.plurkwood_reachable.value),
+            "include_plurkwood": bool(self.options.include_plurkwood.value),
+            "include_warp_destination": bool(self.options.include_warp_destination.value),
+            "include_post_game": bool(self.options.include_post_game.value),
+            "include_post_irisu": bool(self.options.include_post_irisu.value),
+            "include_halloween": bool(self.options.include_halloween.value),
             "picked_templates": self.picked_templates,
             "map_transition_shuffle_order": self.map_transition_shuffle_order,
             "shuffle_start_location": bool(self.options.shuffle_start_location.value),
@@ -177,7 +181,7 @@ class RabiRibiWorld(World):
             self.multiworld.get_location(LocationName.speed_boost, self.player).place_locked_item(self.create_item(ItemName.speed_boost))
             self.multiworld.get_location(LocationName.bunny_strike, self.player).place_locked_item(self.create_item(ItemName.bunny_strike))
 
-            if self.options.plurkwood_reachable.value:
+            if self.options.include_plurkwood.value:
                 self.multiworld.get_location(LocationName.p_hairpin, self.player).place_locked_item(self.create_item(ItemName.p_hairpin))
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:
