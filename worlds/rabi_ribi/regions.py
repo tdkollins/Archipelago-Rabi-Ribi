@@ -274,7 +274,7 @@ class RegionHelper:
 
             bunny_strike = RabiRibiLocation(self.player, ItemName.bunny_strike, all_locations[LocationName.bunny_strike], self._get_region(LocationName.town_shop))
             self._get_region(LocationName.town_shop).locations.append(bunny_strike)
-            add_rule(bunny_strike, lambda state: state.has(ItemName.sliding_powder, self.player))
+            add_rule(bunny_strike, lambda state: state.has(ItemName.cicini_recruit, self.player) and state.has(ItemName.sliding_powder, self.player))
             total_locations += 2
 
             if self.options.plurkwood_reachable:
