@@ -159,7 +159,8 @@ class RabiRibiWorld(World):
             "shuffle_start_location": bool(self.options.shuffle_start_location.value),
             "start_location": self.start_location,
             "shuffle_music": bool(self.options.shuffle_music.value),
-            "shuffle_backgrounds": bool(self.options.shuffle_backgrounds.value)
+            "shuffle_backgrounds": bool(self.options.shuffle_backgrounds.value),
+            "death_link": bool(self.options.death_link.value)
         }
 
     def set_rules(self) -> None:

@@ -32,6 +32,10 @@ OFFSET_IN_ITEM_GET_ANIMATION = int(0x1682ACA)
 OFFSET_IN_WARP_MENU = int(0x16E5BB8)
 OFFSET_IN_COSTUME_MENU = int(0x16E6B20)
 OFFSET_CURRENT_WARP_ID = int(0x016E6D08)
+ # returns a memory address where various state is stored
+OFFSET_CURRENT_HEALTH_A = int(0x1682364)
+# offset from the address returned by A
+OFFSET_CURRENT_HEALTH_B = int(0x4E0)
 EXCLAMATION_POINT_ITEM_ID = 43
 UNUSED_ITEM_ID_48 = 48
 TILE_LENGTH = 64
@@ -83,6 +87,7 @@ class RabiRibiMemoryIO():
         :int offset: the offset to read data from.
         :returns: The data represented as a byte string
         """
+        
         data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, 4)
         return data
     
@@ -333,7 +338,7 @@ class RabiRibiMemoryIO():
         """
         True if the player isnt loaded into a game.
         """
-        return not self._read_4_byte_bool(OFFSET_MAX_HEALTH)
+        return not self._read_4_byte_bool(OFFSET_MAX_HEALTH) and not self.is_player_paused()
 
     def is_in_warp_menu(self) -> bool:
         """
@@ -346,3 +351,15 @@ class RabiRibiMemoryIO():
         True if the player is currently selecting a costume
         """
         return self._read_4_byte_bool(OFFSET_IN_COSTUME_MENU)
+
+    def has_zero_health(self) -> bool:
+        """
+        True if the player's health is at 0
+        """
+        return not self._read_4_byte_bool(OFFSET_MAX_HEALTH)
+
+    def set_player_health_to_zero(self):
+        """
+        Sets the player health to 0
+        """
+        self.rr_mem.write_bytes(self._read_int(OFFSET_CURRENT_HEALTH_A) + OFFSET_CURRENT_HEALTH_B, b'\x00\x00\x00\x00', 4)
