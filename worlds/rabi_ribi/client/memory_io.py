@@ -33,9 +33,9 @@ OFFSET_IN_WARP_MENU = int(0x16E5BB8)
 OFFSET_IN_COSTUME_MENU = int(0x16E6B20)
 OFFSET_CURRENT_WARP_ID = int(0x016E6D08)
  # returns a memory address where various state is stored
-OFFSET_CURRENT_HEALTH_A = int(0x1682364)
-# offset from the address returned by A
-OFFSET_CURRENT_HEALTH_B = int(0x4E0)
+OFFSET_PLAYER_STATE = int(0x1682364)
+# offset from the address from OFFSET_PLAYER_STATE
+OFFSET_PLAYER_STATE_HEALTH = int(0x4E0)
 EXCLAMATION_POINT_ITEM_ID = 43
 UNUSED_ITEM_ID_48 = 48
 TILE_LENGTH = 64
@@ -362,4 +362,5 @@ class RabiRibiMemoryIO():
         """
         Sets the player health to 0
         """
-        self.rr_mem.write_bytes(self._read_int(OFFSET_CURRENT_HEALTH_A) + OFFSET_CURRENT_HEALTH_B, b'\x00\x00\x00\x00', 4)
+        player_state_health_address = self._read_int(OFFSET_PLAYER_STATE) + OFFSET_PLAYER_STATE_HEALTH
+        self.rr_mem.write_int(player_state_health_address, 0)
