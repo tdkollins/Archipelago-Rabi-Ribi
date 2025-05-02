@@ -312,7 +312,7 @@ rabi_rabi_town_post_iris_locations = {
     LocationName.erina_badge                  : get_rabi_ribi_base_id() + 0xD3,
 }
 
-# DLC Locations
+# Halloween Locations
 western_coast_halloween_locations = {
     LocationName.egg_halloween_cicini_room    : get_rabi_ribi_base_id() + 0xD4,
     LocationName.egg_halloween_west           : get_rabi_ribi_base_id() + 0xD5,
