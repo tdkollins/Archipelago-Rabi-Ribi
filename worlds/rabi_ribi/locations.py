@@ -370,7 +370,8 @@ subterranean_area_table = {
 }
 
 warp_destination_table = {
-    **warp_destination_egg_locations
+    **warp_destination_egg_locations,
+    **warp_destination_post_game_locations
 }
 
 system_interior_table = {
@@ -454,7 +455,6 @@ def setup_locations(options: RabiRibiOptions):
         location_table.update(**southern_woodland_post_game_locations)
         location_table.update(**western_coast_post_game_locations)
         location_table.update(**subterranean_area_post_game_locations)
-        location_table.update(**warp_destination_post_game_locations)
         location_table.update(**system_interior_post_game_locations)
 
     if options.include_post_irisu:
