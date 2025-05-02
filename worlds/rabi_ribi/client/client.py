@@ -69,6 +69,9 @@ class RabiRibiContext(CommonContext):
 
         self.critical_section_lock = asyncio.Lock()
 
+        self.deathlink_buffer = []
+        self.has_died = False
+
     def read_location_coordinates_and_rr_item_ids(self):
         """
         This method retrieves the location coordinates of each item from
@@ -163,6 +166,7 @@ class RabiRibiContext(CommonContext):
             # if we dont have the seed name from the RoomInfo packet, wait until we do.
             while not self.seed_name:
                 time.sleep(1)
+
             self.seed_player = f"{self.seed_name}-{self.auth}"
             self.seed_player_id = str(hashlib.sha256(self.seed_player.encode()).hexdigest()[:7])
             self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_player}"
@@ -201,6 +205,10 @@ class RabiRibiContext(CommonContext):
                 # request after an item is obtained
                 asyncio.create_task(self.obtained_items_queue.put(args["locations"][0]))
 
+        elif cmd == "Bounced":
+            if 'tags' in args and "DeathLink" in args['tags'] and not self.has_died:
+              self.deathlink_buffer.append(args)
+
     def client_recieved_initial_server_data(self):
         """
         This method waits until the client finishes the initial conversation with the server.
@@ -230,6 +238,8 @@ class RabiRibiContext(CommonContext):
         if not self.exit_event.is_set():
             # wait an extra second to process data
             await asyncio.sleep(1)
+            await  self.update_death_link(bool(self.slot_data['death_link']))
+
             logger.info("Received initial data from server!")
             logger.info("****************************************************")
             logger.info("Please press F5 on the main menu and start scenario:")
@@ -351,6 +361,8 @@ class RabiRibiContext(CommonContext):
     def is_player_paused(self):
         paused = self.rr_interface.is_player_paused()
         if paused:
+            if self.has_zero_health():
+                return False
             self.time_since_last_paused = time.time()
         return paused
     
@@ -373,6 +385,7 @@ class RabiRibiContext(CommonContext):
             (cur_time - self.time_since_last_warp_menu >= 5.5) and
             (cur_time - self.time_since_last_costume_menu >= 2) and
             not self.rr_interface.is_player_frozen() and
+            len(self.deathlink_buffer) == 0 and
             self.is_item_queued()
         )
 
@@ -407,6 +420,25 @@ class RabiRibiContext(CommonContext):
         # Reenable the Strange Box first.
         self.rr_interface.set_item_state(STRANGE_BOX_ITEM_ID, 1)
         self.rr_interface.open_warp_menu()
+
+    def in_deathlink_eligible_state(self):
+        cur_time = time.time()
+        return (
+            (cur_time - self.time_since_last_paused >= 2) and
+            (cur_time - self.time_since_last_warp_menu >= 5.5) and
+            (cur_time - self.time_since_last_costume_menu >= 2) and
+            not self.rr_interface.is_player_frozen() and
+            not self.has_died and
+            len(self.deathlink_buffer) > 0
+        )
+
+    def trigger_death(self):
+        self.rr_interface.set_player_health_to_zero()
+        self.deathlink_buffer = []
+        self.has_died = True
+
+    def has_zero_health(self):
+        return self.rr_interface.has_zero_health()
 
     def find_closest_item_location(self):
         """
@@ -524,7 +556,18 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
             cur_time = time.time()
 
+            if not ctx.has_zero_health():
+                ctx.has_died = False
+
+            if ctx.in_deathlink_eligible_state():
+                ctx.trigger_death()
+
+            if ctx.has_zero_health() and not ctx.has_died and 'DeathLink' in ctx.tags:
+                ctx.has_died = True
+                await ctx.send_death("Rabi-Ribi deathlink sent")
+
             await ctx.handle_egg_changes()
+
             await check_for_locations(ctx)
 
             if ctx.in_state_where_should_open_warp_menu():
@@ -542,6 +585,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
             if ctx.rr_interface.get_number_of_eggs_collected() >= 5:
                 ctx.finished_game = True
                 await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
+                
 
         except Exception as err:  # Rabi Ribi Process closed?
             logger.warning("*******************************")

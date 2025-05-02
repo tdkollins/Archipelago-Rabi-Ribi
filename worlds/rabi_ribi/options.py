@@ -1,7 +1,7 @@
 """This module represents option defintions for Rabi-Ribi"""
 from dataclasses import dataclass
 
-from Options import PerGameCommonOptions, Choice, Range, Toggle
+from Options import PerGameCommonOptions, Choice, Range, Toggle, DeathLink
 
 class OpenMode(Toggle):
     """Gain access to chapter 1 areas without needing to complete the prologue"""
@@ -253,3 +253,4 @@ class RabiRibiOptions(PerGameCommonOptions):
     shuffle_start_location: ShuffleStartLocation
     shuffle_music: ShuffleMusic
     shuffle_backgrounds: ShuffleBackgrounds
+    death_link: DeathLink
