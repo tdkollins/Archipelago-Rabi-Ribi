@@ -306,8 +306,8 @@ system_interior_post_game_locations = {
     LocationName.egg_sysint2_long_jump        : get_rabi_ribi_base_id() + 0xE3
 }
 
-# Post Iris Locations
-rabi_rabi_town_post_iris_locations = {
+# Post Irisu Locations
+rabi_rabi_town_post_irisu_locations = {
     LocationName.ribbon_badge                 : get_rabi_ribi_base_id() + 0xD2,
     LocationName.erina_badge                  : get_rabi_ribi_base_id() + 0xD3,
 }
@@ -357,6 +357,7 @@ eastern_highlands_table = {
 
 rabi_rabi_town_table = {
     **rabi_rabi_town_egg_locations,
+    **rabi_rabi_town_post_iris_locations
 }
 
 plurkwood_table = {
