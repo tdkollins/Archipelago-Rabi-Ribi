@@ -357,7 +357,7 @@ eastern_highlands_table = {
 
 rabi_rabi_town_table = {
     **rabi_rabi_town_egg_locations,
-    **rabi_rabi_town_post_iris_locations
+    **rabi_rabi_town_post_irisu_locations
 }
 
 plurkwood_table = {
@@ -459,6 +459,6 @@ def setup_locations(options: RabiRibiOptions):
         location_table.update(**system_interior_post_game_locations)
 
     if options.include_post_irisu:
-        location_table.update(**rabi_rabi_town_post_iris_locations)
+        location_table.update(**rabi_rabi_town_post_irisu_locations)
 
     return location_table
