@@ -192,7 +192,7 @@ class NumberOfConstraintChanges(Range):
     """
     display_name = "Number of Map Constraint Changes"
     range_start = 0
-    range_end = 30
+    range_end = 70
 
 class ShuffleMapTransitions(Toggle):
     """

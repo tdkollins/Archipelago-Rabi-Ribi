@@ -73,7 +73,7 @@ class MapGenerator(object):
 
             if analyzer.success:
                 success = True
-                logger.info(f'Generated a valid seed after {i} attempts.')
+                logger.debug(f'Generated a valid seed after {i} attempts.')
                 break
 
         if not success:
