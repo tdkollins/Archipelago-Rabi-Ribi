@@ -183,7 +183,10 @@ class RegionHelper:
         if not is_at_least_advanced_knowledge(self.options) or \
             not is_at_least_v_hard_difficulty(self.options):
             self.unreachable_regions.update(adv_vhard_regions)
-        elif not self.options.include_post_game:
+
+        if not is_at_least_advanced_knowledge(self.options) or \
+            not is_at_least_v_hard_difficulty(self.options) or \
+            not self.options.include_post_game:
             self.unreachable_regions.update(adv_vhard_post_game_regions)
 
         if not self.options.include_plurkwood:
