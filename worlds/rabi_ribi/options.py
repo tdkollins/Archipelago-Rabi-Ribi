@@ -4,15 +4,16 @@ from dataclasses import dataclass
 from Options import PerGameCommonOptions, Choice, Range, Toggle, DeathLink
 
 class OpenMode(Toggle):
-    """Gain access to chapter 1 areas without needing to complete the prologue"""
+    """Gain access to Chapter 1 areas without needing to complete the prologue"""
     display_name = "Open Mode"
+    default = True
 
 class RandomizeHammer(Toggle):
     """If set to false, the hammer is at the default location"""
     display_name = "Randomize Hammer"
 
 class RandomizeGiftItems(Toggle):
-    """If set to false, items given by NPCs (Speed Boost, Hammer Strike, P Hairpin) are at their default locations"""
+    """If set to false, items given by NPCs (Speed Boost, Bunny Strike, P Hairpin) are at their default locations"""
     display_name = "Randomize Gift Items"
 
 class CarrotShooterInLogic(Toggle):

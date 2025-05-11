@@ -191,7 +191,7 @@ def can_recruit_vanilla(state: CollectionState, player: int):
 
 def can_recruit_chocolate(state: CollectionState, player: int):
     """Player can recruit Chocolate"""
-    return state.has("Chapter 1", player)and \
+    return state.has("Chapter 1", player) and \
         state.can_reach(LocationName.ravine_chocolate, "Region", player)
 
 def can_recruit_kotri(state: CollectionState, player: int):
@@ -227,7 +227,7 @@ def can_recruit_n_town_members(state: CollectionState, num_town_members: int, pl
     
     :int num_town_members: the number of town members to satisfy the condition
     """
-    return state.count_from_list_unique(recruit_table, player) > num_town_members
+    return state.count_from_list_unique(recruit_table, player) >= num_town_members
 
 def can_be_speedy(state: CollectionState, player: int, options):
     """Player can buy the speedy buff"""
@@ -269,27 +269,36 @@ def can_reach_chapter_1(state: CollectionState, player: int):
 
 def can_reach_chapter_2(state: CollectionState, player: int):
     """Player can reach chapter 2"""
-    return state.can_reach(LocationName.town_main, "Region", player) and \
+    return state.has("Chapter 1", player) and \
+        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 2, player)
 
 def can_reach_chapter_3(state: CollectionState, player: int):
     """Player can reach chapter 3"""
-    return state.can_reach(LocationName.town_main, "Region", player) and \
+    return state.has("Chapter 2", player) and \
+        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 4, player)
 
 def can_reach_chapter_4(state: CollectionState, player: int):
     """Player can reach chapter 4"""
-    return state.can_reach(LocationName.town_main, "Region", player) and \
+    return state.has("Chapter 3", player) and \
+        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 7, player)
 
 def can_reach_chapter_5(state: CollectionState, player: int):
     """Player can reach chapter 5"""
-    return state.can_reach(LocationName.town_main, "Region", player) and \
+    return state.has("Chapter 4", player) and \
+        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 10, player)
+
+def can_reach_chapter_6(state: CollectionState, player: int):
+    """Player can reach chapter 6"""
+    return state.has("Chapter 5", player)
 
 def can_reach_chapter_7(state: CollectionState, player: int):
     """Player can reach chapter 7"""
-    return state.has(ItemName.rumi_recruit, player)
+    return state.has("Chapter 6", player) and \
+        state.has(ItemName.rumi_recruit, player)
 
 def can_move_out_of_prologue_areas(state: CollectionState, player: int, options):
     """Player can reach areas not locked to prologue"""

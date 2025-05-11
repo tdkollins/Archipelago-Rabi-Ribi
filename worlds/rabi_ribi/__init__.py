@@ -128,8 +128,8 @@ class RabiRibiWorld(World):
         self.total_locations = region_helper.set_locations()
         region_helper.set_events()
 
-        region_helper.configure_slot_data(self)
-        region_helper.configure_region_spoiler_log_data(self)
+        region_helper.configure_slot_data()
+        region_helper.configure_region_spoiler_log_data()
 
     def create_items(self) -> None:
         base_item_list = get_base_item_list(self.randomizer_data)
@@ -177,13 +177,6 @@ class RabiRibiWorld(World):
     def pre_fill(self) -> None:
         if not self.options.randomize_hammer.value:
             self.multiworld.get_location(LocationName.piko_hammer, self.player).place_locked_item(self.create_item(ItemName.piko_hammer))
-
-        if not self.options.randomize_gift_items.value:
-            self.multiworld.get_location(LocationName.speed_boost, self.player).place_locked_item(self.create_item(ItemName.speed_boost))
-            self.multiworld.get_location(LocationName.bunny_strike, self.player).place_locked_item(self.create_item(ItemName.bunny_strike))
-
-            if self.options.include_plurkwood.value:
-                self.multiworld.get_location(LocationName.p_hairpin, self.player).place_locked_item(self.create_item(ItemName.p_hairpin))
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:
         spoiler_handle.write(f'\nStart Location: {self.start_location}\n')
