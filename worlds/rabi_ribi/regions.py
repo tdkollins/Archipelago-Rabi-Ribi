@@ -144,19 +144,6 @@ class RegionHelper:
         self.allocation = MapAllocation(self.randomizer_data, self.existing_randomizer_args, self.world.random)
         self.allocation.construct_set_seed(self.randomizer_data, self.existing_randomizer_args, self.picked_templates, self.map_transition_shuffle_order, existing_rando_start_location)
 
-    def _convert_options_to_existing_randomizer_args(self, options: RabiRibiOptions):
-        args = parse_args()
-        args.ap_options = options
-        args.open_mode = options.open_mode.value
-        args.shuffle_gift_items = options.randomize_gift_items.value
-        args.shuffle_map_transitions = options.shuffle_map_transitions.value
-        args.shuffle_start_location = options.shuffle_start_location.value
-
-        if options.enable_constraint_changes.value:
-            args.constraint_changes = options.number_of_constraint_changes.value
-
-        return args
-    
     def _get_region(self, region_name: str):
         return self.multiworld.get_region(region_name, self.player)
 

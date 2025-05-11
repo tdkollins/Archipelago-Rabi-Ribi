@@ -196,9 +196,7 @@ class RabiRibiWorld(World):
         args.shuffle_gift_items = self.options.randomize_gift_items.value
         args.shuffle_map_transitions = self.options.shuffle_map_transitions.value
         args.shuffle_start_location = self.options.shuffle_start_location.value
-
-        if self.options.enable_constraint_changes.value:
-            args.constraint_changes = self.options.number_of_constraint_changes.value
+        args.constraint_changes = self.options.number_of_constraint_changes.value
 
         return args
 

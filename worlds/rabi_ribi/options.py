@@ -248,7 +248,6 @@ class RabiRibiOptions(PerGameCommonOptions):
     include_post_irisu: IncludePostIrisu
     include_halloween: IncludeHalloween
 
-    enable_constraint_changes: EnableConstraintChanges
     number_of_constraint_changes: NumberOfConstraintChanges
     shuffle_map_transitions: ShuffleMapTransitions
     shuffle_start_location: ShuffleStartLocation
