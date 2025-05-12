@@ -1,4 +1,4 @@
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from Options import Option
 from worlds.AutoWorld import World
@@ -50,7 +50,7 @@ MAP_OFFSETS = [
     (1, 2), # System Interior
 ]
 
-def location_icon_coords(index: int, coords:Tuple[int, int]) -> Tuple[int, int, str] | None:
+def location_icon_coords(index: int, coords: Tuple[int, int]) -> Optional[Tuple[int, int, str]]:
     """
     Maps a Rabi-Ribi room to coordinates on the Poptracker map.
     """
@@ -64,7 +64,7 @@ def location_icon_coords(index: int, coords:Tuple[int, int]) -> Tuple[int, int, 
     return x, y, f"images/items/erina_badge.png"
 
 # Maps AP location IDs to the respective names used by Poptracker
-poptracker_name_mapping: dict[str, int] = {
+poptracker_name_mapping: Dict[str, int] = {
     "Nature Orb/Nature Orb"                 : rabi_ribi_base_id + 0x01,
     "Pack Up Forest Night/Pack Up"          : rabi_ribi_base_id + 0x02,
     "HP Up West Spectral/HP Up"             : rabi_ribi_base_id + 0x03,
