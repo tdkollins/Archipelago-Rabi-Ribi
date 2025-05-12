@@ -362,7 +362,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         area_id, x, y = self.rr_interface.read_player_tile_position()
         if self.current_area_id != area_id:
             self.current_area_id = area_id
-            logger.info(f"Updating area to {area_id}!")
             await self.send_msgs(
                 [
                     {
@@ -385,7 +384,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
 
         if self.current_room != (room_x, room_y):
             self.current_room = (room_x, room_y)
-            logger.info(f"Updating room to ({room_x}, {room_y})!")
             await self.send_msgs(
                 [
                     {
