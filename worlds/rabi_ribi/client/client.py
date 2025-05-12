@@ -1,12 +1,11 @@
-from typing import Dict, Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple, TYPE_CHECKING
 import ast
 import asyncio
-import colorama
 import os
-import pymem
 from pathlib import Path
 import time
 import hashlib
+import urllib.parse
 
 from CommonClient import (
     CommonContext,
@@ -19,26 +18,48 @@ from NetUtils import ClientStatus
 
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
+from worlds.rabi_ribi.items import item_table
+from worlds.rabi_ribi.locations import all_locations
 from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.utility import (
     load_text_file,
     convert_existing_rando_name_to_ap_name
 )
 
+if TYPE_CHECKING:
+    from BaseClasses import MultiWorld
+
+try:
+    from worlds.tracker.TrackerClient import TrackerGameContext # type: ignore
+
+    tracker_loaded = True
+except ImportError:
+    class TrackerGameContextMixin:
+        """Expecting the TrackerGameContext to have these methods."""
+        multiworld: "MultiWorld"
+        player_id: int
+
+        def build_gui(self, manager): ...
+        def run_generator(self): ...
+        def load_kv(self): ...
+
+    class TrackerGameContext(CommonContext, TrackerGameContextMixin):
+        pass
+
+    tracker_loaded = False
+
 STRANGE_BOX_ITEM_ID = 30
 
-class RabiRibiContext(CommonContext):
+class RabiRibiContext(TrackerGameContext): # type: ignore
     """Rabi Ribi Game Context"""
+
+    tags = {"AP"}
+
     def __init__(self, server_address: Optional[str], password: Optional[str]) -> None:
         super().__init__(server_address, password)
         self.game = "Rabi-Ribi"
-        self.items_handling = 0b001  # only items from other worlds
+        self.items_handling = 0b101  # local except starting items
         self.rr_interface = RabiRibiMemoryIO()
-        self.location_ids = None
-        self.location_name_to_ap_id = None
-        self.location_ap_id_to_name = None
-        self.item_name_to_ap_id = None
-        self.item_ap_id_to_name = None
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 
@@ -47,6 +68,8 @@ class RabiRibiContext(CommonContext):
             for (x, y), name in v.items():
                 self.ap_location_name_to_location_coordinates[name] = (area, x, y)
 
+        self.current_area_id = -1
+        self.current_room: Tuple[int, int] = (-1, 1)
         self.state_giving_item = False
         self.collected_eggs: Set[Tuple[int,int,int]] = set()
         self.last_received_item_index = -1
@@ -71,6 +94,11 @@ class RabiRibiContext(CommonContext):
 
         self.deathlink_buffer = []
         self.has_died = False
+
+    def make_gui(self):
+        ui = super().make_gui()
+        ui.base_title = f"Rabi-Ribi Client"
+        return ui
 
     def read_location_coordinates_and_rr_item_ids(self):
         """
@@ -157,45 +185,24 @@ class RabiRibiContext(CommonContext):
         await self.send_connect()
 
     def on_package(self, cmd: str, args: dict):
+        super().on_package(cmd, args)
         if cmd == "Connected":
-            self.location_ids = set(args["missing_locations"] + args["checked_locations"])
             self.slot_data = args["slot_data"]
-
-            asyncio.create_task(self.send_msgs([{"cmd": "GetDataPackage", "games": ["Rabi-Ribi"]}]))
-
-            # if we dont have the seed name from the RoomInfo packet, wait until we do.
-            while not self.seed_name:
-                time.sleep(1)
-
             self.seed_player = f"{self.seed_name}-{self.auth}"
             self.seed_player_id = str(hashlib.sha256(self.seed_player.encode()).hexdigest()[:7])
             self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_player}"
+
+            if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
+                asyncio.create_task(self.send_msgs([{
+                    "cmd": "LocationScouts",
+                    "locations": self.server_locations
+                }]))
 
         if cmd == "ReceivedItems":
             asyncio.create_task(self.set_received_rabi_ribi_item_ids())
 
         if cmd == "RoomInfo":
             self.seed_name = args['seed_name']
-
-        elif cmd == "DataPackage":
-            if not self.location_ids:
-                # Connected package not recieved yet, wait for datapackage request after connected package
-                return
-            self.location_name_to_ap_id = args["data"]["games"]["Rabi-Ribi"]["location_name_to_id"]
-            self.location_name_to_ap_id = {
-                name: loc_id for name, loc_id in 
-                self.location_name_to_ap_id.items() if loc_id in self.location_ids
-            }
-            self.location_ap_id_to_name = {v: k for k, v in self.location_name_to_ap_id.items()}
-            self.item_name_to_ap_id = args["data"]["games"]["Rabi-Ribi"]["item_name_to_id"]
-            self.item_ap_id_to_name = {v: k for k, v in self.item_name_to_ap_id.items()}
-
-            # Only request location data if there doesnt appear to be patched game files already
-            if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
-                asyncio.create_task(self.send_msgs([{
-                    "cmd": "LocationScouts",
-                    "locations": self.location_ids
-                }]))
 
         elif cmd == "LocationInfo":
             if len(args["locations"]) > 1:
@@ -220,8 +227,7 @@ class RabiRibiContext(CommonContext):
         """
         return (
             self.custom_seed_subdir and
-            self.slot and
-            self.location_ap_id_to_name
+            self.slot
         )
 
     async def wait_for_initial_connection_info(self):
@@ -238,14 +244,13 @@ class RabiRibiContext(CommonContext):
         if not self.exit_event.is_set():
             # wait an extra second to process data
             await asyncio.sleep(1)
-            await  self.update_death_link(bool(self.slot_data['death_link']))
+            assert self.slot_data
+            await self.update_death_link(bool(self.slot_data['death_link']))
 
             logger.info("Received initial data from server!")
             logger.info("****************************************************")
             logger.info("Please press F5 on the main menu and start scenario:")
-            logger.info("       %s - %s",
-                self.seed_name,
-                self.auth)
+            logger.info(f"       {self.seed_player}")
             logger.info("****************************************************")
             logger.info("Softlocked? Disable the Strange Box in your inventory and unpause to open the warp menu!")
 
@@ -254,8 +259,8 @@ class RabiRibiContext(CommonContext):
         See client_recieved_initial_server_data for wait requirements.
         """
         if self.client_recieved_initial_server_data():
+            assert self.custom_seed_subdir
             # Patch the map files if we haven't done so already
-            self.custom_seed_subdir = f"{RabiRibiWorld.settings.game_installation_path}/custom/{self.seed_name}-{self.auth}"
             if not os.path.isdir(self.custom_seed_subdir):
                 os.mkdir(self.custom_seed_subdir)
             if not os.path.isfile(f"{self.custom_seed_subdir}/area0.map"):
@@ -292,11 +297,8 @@ class RabiRibiContext(CommonContext):
                 ItemName.pack_up: 415
             }
 
-            if not self.item_ap_id_to_name:
-                await self.wait_for_initial_connection_info()
-
             for network_item in self.items_received:
-                item_name = self.item_ap_id_to_name[network_item.item]
+                item_name = self.item_names.lookup_in_game(network_item.item)
                 if item_name == ItemName.nothing:
                     self.items_received_rabi_ribi_ids.append(-1)
                 elif item_name in potion_ids:
@@ -304,7 +306,7 @@ class RabiRibiContext(CommonContext):
                     potion_ids[item_name] -= 1
                 elif item_name == ItemName.easter_egg:
                     if network_item.player == self.slot:
-                        location_name = self.location_ap_id_to_name[network_item.location]
+                        location_name = self.location_names.lookup_in_game(network_item.location)
                         egg_coordinates = self.ap_location_name_to_location_coordinates[location_name]
                         self.collected_eggs.add(egg_coordinates)
                 else:
@@ -345,18 +347,61 @@ class RabiRibiContext(CommonContext):
             await asyncio.sleep(5)
 
     async def handle_egg_changes(self):
-        if self.location_name_to_ap_id is None:
-            return
         player_current_eggs = self.rr_interface.get_collected_eggs()
         for (area, x, y) in player_current_eggs:
             if (area, x, y) not in self.collected_eggs:
                 self.collected_eggs.add((area, x, y))
                 if area in self.location_coordinates_to_ap_location_name and (x, y) in self.location_coordinates_to_ap_location_name[area]:
                     location_name = self.location_coordinates_to_ap_location_name[area][(x, y)]
-                    location_id = self.location_name_to_ap_id[location_name]
+                    location_id = all_locations[location_name]
                     if location_id not in self.locations_checked:
                         self.locations_checked.add(location_id)
                         await self.send_msgs([{"cmd": 'LocationChecks', "locations": self.locations_checked}])
+
+    async def update_player_location(self):
+        area_id, x, y = self.rr_interface.read_player_tile_position()
+        if self.current_area_id != area_id:
+            self.current_area_id = area_id
+            logger.info(f"Updating area to {area_id}!")
+            await self.send_msgs(
+                [
+                    {
+                        "cmd": "Set",
+                        "key": f"{self.slot}_{self.team}_rabi_ribi_area_id",
+                        "default": 0,
+                        "want_reply": False,
+                        "operations": [
+                            {
+                                "operation": "replace",
+                                "value": self.current_area_id
+                            }
+                        ],
+                    }
+                ]
+            )
+
+        room_x = x // 20
+        room_y = 0 if y < 12 else (((y - 12) // 45) * 4) + (((y - 12) % 45) // 11)
+
+        if self.current_room != (room_x, room_y):
+            self.current_room = (room_x, room_y)
+            logger.info(f"Updating room to ({room_x}, {room_y})!")
+            await self.send_msgs(
+                [
+                    {
+                        "cmd": "Set",
+                        "key": f"{self.slot}_{self.team}_rabi_ribi_coords",
+                        "default": 0,
+                        "want_reply": False,
+                        "operations": [
+                            {
+                                "operation": "replace",
+                                "value": self.current_room
+                            }
+                        ],
+                    }
+                ]
+            )
 
     def is_player_paused(self):
         paused = self.rr_interface.is_player_paused()
@@ -454,20 +499,20 @@ class RabiRibiContext(CommonContext):
         closest_location_coordinates = None
         closest_distance = 9999
 
-        if self.location_name_to_ap_id is None:
-            return None, None
         if area_id not in self.location_coordinates_to_ap_location_name:
             return None, None
         for coordinate_entry, location_name in self.location_coordinates_to_ap_location_name[area_id].items():
-            if location_name not in self.location_name_to_ap_id:
-                # location not included with the enabled settings.
+            if location_name.startswith("Unknown Item"):
+                # Skip DLC Items
                 continue
+            location_id = all_locations[location_name]
             distance = abs(x - coordinate_entry[0]) + abs(y - coordinate_entry[1])
             if distance < closest_distance:
                 closest_distance = distance
-                closest_location_id = self.location_name_to_ap_id[location_name]
+                closest_location_id = location_id
                 closest_location_coordinates = (area_id, *coordinate_entry)
-        if closest_distance < 10:
+
+        if closest_distance < 10 and closest_location_id in self.server_locations:
             return closest_location_id, closest_location_coordinates
         return None, None
 
@@ -483,11 +528,6 @@ class RabiRibiContext(CommonContext):
         Reset client back to default values
         """
         self.locations_checked = set()
-        self.location_ids = None
-        self.location_name_to_ap_id = None
-        self.location_ap_id_to_name = None
-        self.item_name_to_ap_id = None
-        self.item_ap_id_to_name = None
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 
@@ -496,6 +536,8 @@ class RabiRibiContext(CommonContext):
             for (x, y), name in v.items():
                 self.ap_location_name_to_location_coordinates[name] = (area, x, y)
 
+        self.current_area_id = -1
+        self.current_room = (-1, -1)
         self.state_giving_item = False
         self.collected_eggs = set()
         self.last_received_item_index = -1
@@ -569,6 +611,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
             await ctx.handle_egg_changes()
 
             await check_for_locations(ctx)
+            await ctx.update_player_location()
 
             if ctx.in_state_where_should_open_warp_menu():
                 ctx.open_warp_menu()
@@ -636,32 +679,43 @@ async def remove_exclamation_point(ctx: RabiRibiContext, coordinates):
         await asyncio.sleep(0.25)
     ctx.rr_interface.remove_exclamation_point_from_inventory()
 
-def launch():
+
+async def main(args):
+    """
+    Launch a client instance (threaded)
+    """
+    ctx = RabiRibiContext(args.connect, args.password)
+    ctx.server_task = asyncio.create_task(server_loop(ctx), name="Rabi-Ribi Server Loop")
+
+    if tracker_loaded:
+        ctx.run_generator()
+    if gui_enabled:
+        ctx.run_gui()
+    ctx.run_cli()
+
+    watcher = asyncio.create_task(
+        rabi_ribi_watcher(ctx),
+        name="Rabi-Ribi Progression Watcher"
+    )
+    await ctx.exit_event.wait()
+    await watcher
+    await ctx.shutdown()
+
+def launch(*args) -> None:
     """
     Launch a client instance (wrapper / args parser)
     """
-    async def main(args):
-        """
-        Launch a client instance (threaded)
-        """
-        ctx = RabiRibiContext(args.connect, args.password)
-        ctx.server_task = asyncio.create_task(server_loop(ctx), name="Rabi-Ribi Server Loop")
-
-        if gui_enabled:
-            ctx.run_gui()
-        ctx.run_cli()
-
-        watcher = asyncio.create_task(
-            rabi_ribi_watcher(ctx),
-            name="Rabi-Ribi Progression Watcher"
-        )
-        await ctx.exit_event.wait()
-        await watcher
-        await ctx.shutdown()
-
     parser = get_base_parser(description="Rabi-Ribi Client")
-    args, _ = parser.parse_known_args()
+    parser.add_argument("--name", default=None, help="Slot Name to connect as.")
+    parser.add_argument("url", nargs="?", help="Archipelago connection url")
+    args = parser.parse_args(args)
 
-    colorama.init()
+    if args.url:
+        url = urllib.parse.urlparse(args.url)
+        args.connect = url.netloc
+        if url.username:
+            args.name = urllib.parse.unquote(url.username)
+        if url.password:
+            args.password = urllib.parse.unquote(url.password)
+
     asyncio.run(main(args))
-    colorama.deinit()

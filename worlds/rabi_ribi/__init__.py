@@ -4,7 +4,7 @@ This module serves as an entrypoint into the Rabi-Ribi AP world.
 import settings
 import logging
 from collections import defaultdict
-from typing import Any, ClassVar, Dict, List, Optional, Set, TextIO
+from typing import Any, ClassVar, Dict, List, Set, TextIO, Union
 from BaseClasses import ItemClassification, Tutorial
 from Fill import swap_location_item
 from worlds.AutoWorld import World, WebWorld
@@ -20,6 +20,7 @@ from .utility import (
     get_rabi_ribi_base_id,
     convert_existing_rando_name_to_ap_name
 )
+from . import ut_helpers
 
 logger = logging.getLogger('Rabi-Ribi')
 
@@ -42,7 +43,15 @@ class RabiRibiSettings(settings.Group):
         """
         description = "Rabi-Ribi Installation Path"
 
+    class UTPackPath(settings.FilePath):
+        """
+        The Poptracker pack for Rabi-Ribi.
+        """
+        description = "Rabi-Ribi Poptracker Path"
+        required = False
+
     game_installation_path: GameInstallationPath = GameInstallationPath("C:/Program Files (x86)/Steam/steamapps/common/Rabi-Ribi")
+    ut_pack_path : Union[UTPackPath, str] = UTPackPath()
 
 class RabiRibiWeb(WebWorld):
     """Web integration for Rabi-Ribi"""
@@ -84,8 +93,15 @@ class RabiRibiWorld(World):
     existing_randomizer_args: Any
     randomizer_data: RandomizerData
 
+    # Universal Tracker Settings
+    ut_can_gen_without_yaml = True
+    tracker_world = ut_helpers.TRACKER_WORLD
+
     def generate_early(self) -> None:
         """Set world specific generation properties"""
+        # Universal Tracker: Load options from slot data instead of YAML
+        ut_helpers.apply_options_from_slot_data_if_available(self)
+
         self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
         self.randomizer_data = RandomizerData(self.existing_randomizer_args)
 
@@ -115,7 +131,7 @@ class RabiRibiWorld(World):
         region_helper = RegionHelper(self)
 
         # Generate a world seed using the existing randomizer
-        if self.should_regenerate_seed_for_universal_tracker():
+        if ut_helpers.should_regenerate_seed_for_universal_tracker(self):
             # Universal Tracker: Regenerate the seed used on the connected server
             passthrough = self.multiworld.re_gen_passthrough["Rabi-Ribi"] # type: ignore
             region_helper.regenerate_seed_for_universal_tracker(passthrough)
@@ -164,7 +180,28 @@ class RabiRibiWorld(World):
             "start_location": self.start_location,
             "shuffle_music": bool(self.options.shuffle_music.value),
             "shuffle_backgrounds": bool(self.options.shuffle_backgrounds.value),
-            "death_link": bool(self.options.death_link.value)
+            "death_link": bool(self.options.death_link.value),
+            "options": self.options.as_dict(
+                "open_mode",
+                "knowledge",
+                "trick_difficulty",
+                "block_clips_required",
+                "semi_solid_clips_required",
+                "zips_required",
+                "darkness_without_light_orb",
+                "underwater_without_water_orb",
+                "carrot_shooter_in_logic",
+                "event_warps_in_logic",
+                "randomize_hammer",
+                "randomize_gift_items",
+                "include_plurkwood",
+                "include_warp_destination",
+                "include_post_game",
+                "include_post_irisu",
+                "include_halloween",
+                "number_of_constraint_changes",
+                "shuffle_map_transitions",
+                "shuffle_start_location")
         }
 
     def set_rules(self) -> None:
@@ -246,10 +283,3 @@ class RabiRibiWorld(World):
         """
         # https://github.com/FarisTheAncient/Archipelago/blob/tracker/worlds/tracker/docs/re-gen-passthrough.md
         return slot_data
-
-    def should_regenerate_seed_for_universal_tracker(self):
-        """
-        If true, this world has information from Universal Tracker that should be used when generating the seed.
-        This ensures that the world state matches the seed used by the connected server.
-        """
-        return hasattr(self.multiworld, "re_gen_passthrough") and "Rabi-Ribi" in self.multiworld.re_gen_passthrough # type: ignore
