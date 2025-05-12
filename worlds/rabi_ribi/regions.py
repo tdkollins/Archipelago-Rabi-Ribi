@@ -318,7 +318,8 @@ class RegionHelper:
         self.add_event(ItemName.kotri_recruit, LocationName.volcanic_main,
                        lambda state: logic.can_recruit_kotri(state, self.player))
 
-        if self.options.include_plurkwood:
+        # Note: While out of logic, the player could go to Plurkwood to recruit Keke Bunny
+        if self.options.include_plurkwood or ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
             self.add_event(ItemName.keke_bunny_recruit, LocationName.plurkwood_main,
                            lambda state: logic.can_recruit_keke_bunny(state, self.player))
 

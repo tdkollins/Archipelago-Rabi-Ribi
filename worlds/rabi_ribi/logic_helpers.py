@@ -39,19 +39,30 @@ def carrot_shooter_in_logic(state: CollectionState, player: int, options):
     return (options.carrot_shooter_in_logic.value or state.has(ItemName.glitched_logic, player)) and \
         state.has(ItemName.carrot_shooter, player)
 
+def can_navigate_darkness_without_light_orb(state: CollectionState, player: int, options):
+    """
+    Player has darkness without light orb turned on.
+    """
+    return options.darkness_without_light_orb.value or \
+        state.has(ItemName.glitched_logic, player)
+
 def can_navigate_darkness(state: CollectionState, player: int, options):
     """
     Player has light orb or has option for darkness without light orb turned on
     """
     return state.has(ItemName.light_orb, player) or \
-        options.darkness_without_light_orb.value or \
+        can_navigate_darkness_without_light_orb(state, player, options)
+
+def can_navigate_underwater_without_water_orb(state: CollectionState, player: int, options):
+    """Player has option for water without water orb turned on"""
+    return state.has(ItemName.water_orb, player) or \
+        options.underwater_without_water_orb.value or \
         state.has(ItemName.glitched_logic, player)
 
 def can_navigate_underwater(state: CollectionState, player: int, options):
     """Player has water orb or has option for water without water orb turned on"""
     return state.has(ItemName.water_orb, player) or \
-        options.underwater_without_water_orb.value or \
-        state.has(ItemName.glitched_logic, player)
+        can_navigate_underwater_without_water_orb(state, player, options)
 
 def can_bunny_strike(state: CollectionState, player: int):
     """Player can use the bunny strike skill"""
@@ -400,6 +411,10 @@ def can_use_event_warps(state: CollectionState, player: int, options):
     """Player can use event warps."""
     return (options.event_warps_in_logic.value) or state.has(ItemName.glitched_logic, player)
 
+def can_enter_plurkwood(state: CollectionState, player: int, options):
+    """Player can enter plurkwood."""
+    return (options.include_plurkwood.value) or state.has(ItemName.glitched_logic, player)
+
 def count_normal_consumable_items(state: CollectionState, player: int):
     """Counts which normal consumable items the player can reach, either from locations or purchases."""
     consumables = 0
@@ -535,9 +550,9 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Boost": lambda state: can_use_boost(state, player, options),
             "Boost Many": lambda state: can_use_boost(state, player, options),
             "Darkness": lambda state: can_navigate_darkness(state, player, options),
-            "Darkness Without Light Orb": lambda _: options.darkness_without_light_orb.value,
+            "Darkness Without Light Orb": lambda state: can_navigate_darkness_without_light_orb(state, player, options),
             "Underwater": lambda state: can_navigate_underwater(state, player, options),
-            "Underwater Without Water Orb": lambda _: options.underwater_without_water_orb.value,
+            "Underwater Without Water Orb": lambda state: can_navigate_underwater_without_water_orb(state, player, options),
             "Prologue Trigger": lambda state: can_move_out_of_prologue_areas(state, player, options),
             "Cocoa 1": lambda state: can_reach_cocoa_1(state, player),
             "Kotri 1": lambda state: can_reach_kotri_1(state, player),
@@ -563,7 +578,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Block Clips Required": lambda state: can_block_clip(state, player, options),
             "Semisolid Clips Required": lambda state: can_semi_solid_clip(state, player, options),
             "Zip Required": lambda state: can_zip(state, player, options),
-            "Plurkwood Reachable": lambda _: options.include_plurkwood.value,
+            "Plurkwood Reachable": lambda state: can_enter_plurkwood(state, player, options),
             "Warp Destination Reachable": lambda _: options.include_warp_destination.value,
             "Post Game Allowed": lambda _: options.include_post_game.value,
             "Post Irisu Allowed": lambda _: options.include_post_irisu.value,
