@@ -503,11 +503,10 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             if location_name.startswith("Unknown Item"):
                 # Skip DLC Items
                 continue
-            location_id = all_locations[location_name]
             distance = abs(x - coordinate_entry[0]) + abs(y - coordinate_entry[1])
             if distance < closest_distance:
                 closest_distance = distance
-                closest_location_id = location_id
+                closest_location_id = all_locations[location_name]
                 closest_location_coordinates = (area_id, *coordinate_entry)
 
         if closest_distance < 10 and closest_location_id in self.server_locations:
