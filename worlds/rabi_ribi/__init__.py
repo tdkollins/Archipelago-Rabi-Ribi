@@ -95,6 +95,7 @@ class RabiRibiWorld(World):
 
     # Universal Tracker Settings
     ut_can_gen_without_yaml = True
+    glitches_item_name = ItemName.glitched_logic
     tracker_world = ut_helpers.TRACKER_WORLD
 
     def generate_early(self) -> None:
@@ -105,14 +106,17 @@ class RabiRibiWorld(World):
         self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
         self.randomizer_data = RandomizerData(self.existing_randomizer_args)
 
-        # Will be configurable later, but for now always force eggs to be local.
+        # Will be configurable later, but for now always force eggs to be local
         self.options.local_items.value.add(ItemName.easter_egg)
 
-        # Force consumable items to be local, as the player may need to pick them up multiple times.
+        # Force consumable items to be local, as the player may need to pick them up multiple times
         self.options.local_items.value.update(item_groups["Consumables"])
 
     def create_item(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
+        # Universal Tracker: Allow creation of a fake event to represent out of logic checks
+        if name == ItemName.glitched_logic:
+            return RabiRibiItem(name, ItemClassification.progression, None, self.player)
 
         data: RabiRibiItemData = item_data_table[name]
         return RabiRibiItem(name, data.classification, data.code, self.player)

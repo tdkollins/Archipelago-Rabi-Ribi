@@ -38,16 +38,16 @@ def map_page_index(data: Any) -> int:
     return data
 
 MAP_OFFSETS = [
-    (1, 2),
-    (1, 3),
-    (3, 3),
-    (2, 2),
-    (1, 2),
-    (2, 0),
-    (1, 2),
-    (1, 2),
-    (0, 5),
-    (1, 2),
+    (1, 2), # Southern Woodland
+    (1, 3), # Western Coast
+    (3, 3), # Island Core
+    (2, 2), # Northern Tundra
+    (1, 2), # Eastern Highlands
+    (2, 0), # Rabi Rabi Town
+    (1, 2), # Plurkwood
+    (1, 2), # Subterranean Area
+    (0, 5), # Warp Destination
+    (1, 2), # System Interior
 ]
 
 def location_icon_coords(index: int, coords:Tuple[int, int]) -> Tuple[int, int, str] | None:

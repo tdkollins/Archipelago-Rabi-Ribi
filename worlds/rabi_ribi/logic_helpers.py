@@ -22,7 +22,7 @@ def has_item_menu(state: CollectionState, player: int, options):
     """Player has access to the item menu"""
     return state.can_reach(LocationName.town_main, "Region", player) or \
         (
-            is_at_least_advanced_knowledge(options) and
+            is_at_least_advanced_knowledge(state, player, options) and
             has_3_magic_types(state, player)
         )
 
@@ -36,17 +36,22 @@ def can_use_boost(state: CollectionState, player: int, options):
 
 def carrot_shooter_in_logic(state: CollectionState, player: int, options):
     """Player has carrot shooter and its not out of logic by options"""
-    return (options.carrot_shooter_in_logic.value) and state.has(ItemName.carrot_shooter, player)
+    return (options.carrot_shooter_in_logic.value or state.has(ItemName.glitched_logic, player)) and \
+        state.has(ItemName.carrot_shooter, player)
 
 def can_navigate_darkness(state: CollectionState, player: int, options):
     """
     Player has light orb or has option for darkness without light orb turned on
     """
-    return state.has(ItemName.light_orb, player) or options.darkness_without_light_orb.value
+    return state.has(ItemName.light_orb, player) or \
+        options.darkness_without_light_orb.value or \
+        state.has(ItemName.glitched_logic, player)
 
 def can_navigate_underwater(state: CollectionState, player: int, options):
     """Player has water orb or has option for water without water orb turned on"""
-    return state.has(ItemName.water_orb, player) or options.underwater_without_water_orb.value
+    return state.has(ItemName.water_orb, player) or \
+        options.underwater_without_water_orb.value or \
+        state.has(ItemName.glitched_logic, player)
 
 def can_bunny_strike(state: CollectionState, player: int):
     """Player can use the bunny strike skill"""
@@ -231,7 +236,7 @@ def can_recruit_n_town_members(state: CollectionState, num_town_members: int, pl
 
 def can_be_speedy(state: CollectionState, player: int, options):
     """Player can buy the speedy buff"""
-    return is_at_least_intermediate_knowledge(options) and \
+    return is_at_least_intermediate_knowledge(state, player, options) and \
         can_recruit_cicini(state, player) and \
         state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 3, player)
@@ -343,41 +348,57 @@ def can_purchase_cocoa_bomb(state: CollectionState, player: int):
         state.has(ItemName.cocoa_recruit, player) and \
         can_recruit_n_town_members(state, 3, player)
 
-def is_at_least_hard_difficulty(options):
+def is_at_least_hard_difficulty(state: CollectionState, player: int, options):
     """Trick difficulty is at least hard"""
-    return options.trick_difficulty >= TrickDifficulty.option_hard
+    return (options.trick_difficulty >= TrickDifficulty.option_hard) or state.has(ItemName.glitched_logic, player)
 
-def is_at_least_v_hard_difficulty(options):
+def is_at_least_v_hard_difficulty(state: CollectionState, player: int, options):
     """Trick difficulty is at least very hard"""
-    return options.trick_difficulty >= TrickDifficulty.option_v_hard
+    return (options.trick_difficulty >= TrickDifficulty.option_v_hard) or state.has(ItemName.glitched_logic, player)
 
-def is_at_least_extreme_difficulty(options):
+def is_at_least_extreme_difficulty(state: CollectionState, player: int, options):
     """Trick difficulty is at least extreme"""
-    return options.trick_difficulty >= TrickDifficulty.option_extreme
+    return (options.trick_difficulty >= TrickDifficulty.option_extreme) or state.has(ItemName.glitched_logic, player)
 
-def is_at_least_stupid_difficulty(options):
+def is_at_least_stupid_difficulty(state: CollectionState, player: int, options):
     """Trick difficulty is at least stupid"""
-    return options.trick_difficulty >= TrickDifficulty.option_stupid
+    return (options.trick_difficulty >= TrickDifficulty.option_stupid) or state.has(ItemName.glitched_logic, player)
 
-def is_at_least_intermediate_knowledge(options):
+def is_at_least_intermediate_knowledge(state: CollectionState, player: int, options):
     """Knowledge is at least intermediate"""
-    return options.knowledge >= Knowledge.option_intermediate
+    return (options.knowledge >= Knowledge.option_intermediate) or state.has(ItemName.glitched_logic, player)
 
-def is_at_least_advanced_knowledge(options):
+def is_at_least_advanced_knowledge(state: CollectionState, player: int, options):
     """Knowledge is at least advanced"""
-    return options.knowledge >= Knowledge.option_advanced
+    return (options.knowledge >= Knowledge.option_advanced) or state.has(ItemName.glitched_logic, player)
 
-def is_at_least_obscure_knowledge(options):
+def is_at_least_obscure_knowledge(state: CollectionState, player: int, options):
     """Knowledge is at least obscure"""
-    return options.knowledge >= Knowledge.option_obscure
+    return (options.knowledge >= Knowledge.option_obscure) or state.has(ItemName.glitched_logic, player)
 
-def can_bunstrike_zip(options):
+def can_block_clip(state: CollectionState, player: int, options):
+    """Player can perform block clips."""
+    return (options.block_clips_required.value) or state.has(ItemName.glitched_logic, player)
+
+def can_semi_solid_clip(state: CollectionState, player: int, options):
+    """Player can perform semisolid clips."""
+    return (options.semi_solid_clips_required.value) or state.has(ItemName.glitched_logic, player)
+
+def can_zip(state: CollectionState, player: int, options):
+    """Player can perform zips."""
+    return (options.zips_required.value) or state.has(ItemName.glitched_logic, player)
+
+def can_bunstrike_zip(state: CollectionState, player: int, options):
     """Player can perform bunstrike zips."""
-    return options.bunstrike_zips_required.value
+    return (options.bunstrike_zips_required.value) or state.has(ItemName.glitched_logic, player)
 
-def can_do_boring_tricks(options):
+def can_do_boring_tricks(state: CollectionState, player: int, options):
     """Player can perform boring tricks."""
-    return options.boring_tricks_required.value
+    return (options.boring_tricks_required.value) or state.has(ItemName.glitched_logic, player)
+
+def can_use_event_warps(state: CollectionState, player: int, options):
+    """Player can use event warps."""
+    return (options.event_warps_in_logic.value) or state.has(ItemName.glitched_logic, player)
 
 def count_normal_consumable_items(state: CollectionState, player: int):
     """Counts which normal consumable items the player can reach, either from locations or purchases."""
@@ -522,15 +543,15 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Kotri 1": lambda state: can_reach_kotri_1(state, player),
             "Ashuri 2": lambda state: can_reach_ashuri_2(state, player),
             "Boss Ribbon": lambda state: can_reach_ribbon(state, player),
-            "Difficulty Hard": lambda _: is_at_least_hard_difficulty(options),
-            "Difficulty V Hard": lambda _: is_at_least_v_hard_difficulty(options),
-            "Difficulty Extreme": lambda _: is_at_least_extreme_difficulty(options),
-            "Difficulty Stupid": lambda _: is_at_least_stupid_difficulty(options),
-            "Knowledge Intermediate": lambda _: is_at_least_intermediate_knowledge(options),
-            "Knowledge Advanced": lambda _: is_at_least_advanced_knowledge(options),
-            "Knowledge Obscure": lambda _: is_at_least_obscure_knowledge(options),
-            "Boring Tricks Required": lambda _: can_do_boring_tricks(options),
-            "Bunstrike Zip Required": lambda _: can_bunstrike_zip(options),
+            "Difficulty Hard": lambda state: is_at_least_hard_difficulty(state, player, options),
+            "Difficulty V Hard": lambda state: is_at_least_v_hard_difficulty(state, player, options),
+            "Difficulty Extreme": lambda state: is_at_least_extreme_difficulty(state, player, options),
+            "Difficulty Stupid": lambda state: is_at_least_stupid_difficulty(state, player, options),
+            "Knowledge Intermediate": lambda state: is_at_least_intermediate_knowledge(state, player, options),
+            "Knowledge Advanced": lambda state: is_at_least_advanced_knowledge(state, player, options),
+            "Knowledge Obscure": lambda state: is_at_least_obscure_knowledge(state, player, options),
+            "Boring Tricks Required": lambda state: can_do_boring_tricks(state, player, options),
+            "Bunstrike Zip Required": lambda state: can_bunstrike_zip(state, player, options),
             "Consumable Use": lambda state: can_use_consumables(state, player, options),
             "Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 1),
             "2 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 2),
@@ -539,16 +560,16 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "6 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 6),
             "Many Amulet Food": lambda state: has_many_amulet_food(state, player, options),
             "Open Mode": lambda _: options.open_mode.value,
-            "Block Clips Required": lambda _: options.block_clips_required.value,
-            "Semisolid Clips Required": lambda _: options.semi_solid_clips_required.value,
-            "Zip Required": lambda _: options.zips_required.value,
+            "Block Clips Required": lambda state: can_block_clip(state, player, options),
+            "Semisolid Clips Required": lambda state: can_semi_solid_clip(state, player, options),
+            "Zip Required": lambda state: can_zip(state, player, options),
             "Plurkwood Reachable": lambda _: options.include_plurkwood.value,
             "Warp Destination Reachable": lambda _: options.include_warp_destination.value,
             "Post Game Allowed": lambda _: options.include_post_game.value,
             "Post Irisu Allowed": lambda _: options.include_post_irisu.value,
             "Halloween Reachable": lambda _: options.include_halloween.value,
             "Boss Keke Bunny" : lambda state: can_reach_keke_bunny(state, player),
-            "Event Warps Required" : lambda _: options.event_warps_in_logic.value,
+            "Event Warps Required" : lambda state: can_use_event_warps(state, player, options),
         }
         if literal in literal_eval_map:
             return literal_eval_map[literal]
