@@ -118,61 +118,59 @@ def can_bunny_amulet_3(state: CollectionState, player: int):
 
 def can_bunny_amulet_4(state: CollectionState, player: int, options):
     """Player can use 4 bunny amulet skills"""
-    # TODO: Add with post game
-    return False
-    # return options.post_game_allowed.value and \
-    #     can_bunny_amulet(state, player) and \
-    #     state.has(ItemName.rumi_recruit, player)
+    return options.include_post_game.value and \
+        can_bunny_amulet(state, player) and \
+        state.has(ItemName.rumi_recruit, player)
 
 def can_recruit_cocoa(state: CollectionState, player: int):
-    """Player can recruit cocoa"""
+    """Player can recruit Cocoa"""
     return state.has(ItemName.cocoa_1, player) and \
         state.has(ItemName.kotri_1, player) and \
         state.can_reach(LocationName.cave_cocoa, "Region", player)
 
 def can_recruit_ashuri(state: CollectionState, player: int):
-    """Player can recruit ashuri"""
+    """Player can recruit Ashuri"""
     return state.can_reach(LocationName.riverbank_level3, "Region", player) and \
         state.can_reach(LocationName.town_main, "Region", player) and \
         state.can_reach(LocationName.spectral_west, "Region", player)
 
 def can_recruit_rita(state: CollectionState, player: int):
-    """Player can recruit rita"""
+    """Player can recruit Rita"""
     return state.can_reach(LocationName.snowland_rita, "Region", player)
 
 def can_recruit_cicini(state: CollectionState, player: int):
-    """Player can recruit cicini"""
+    """Player can recruit Cicini"""
     return state.can_reach(LocationName.spectral_cicini_room, "Region", player)
 
 def can_recruit_saya(state: CollectionState, player: int):
-    """Player can recruit saya"""
+    """Player can recruit Saya"""
     return state.can_reach(LocationName.evernight_saya, "Region", player) and \
         state.can_reach(LocationName.evernight_east_of_warp, "Region", player)
 
 def can_recruit_syaro(state: CollectionState, player: int):
-    """Player can recruit syaro"""
+    """Player can recruit Syaro"""
     return state.can_reach(LocationName.system_interior_main, "Region", player)
 
 def can_recruit_pandora(state: CollectionState, player: int):
-    """Player can recruit pandora"""
+    """Player can recruit Pandora"""
     return state.can_reach(LocationName.pyramid_main, "Region", player)
 
 def can_recruit_nieve(state: CollectionState, player: int):
-    """Player can recruit nieve"""
+    """Player can recruit Nieve"""
     return state.can_reach(LocationName.palace_level_5, "Region", player) and \
         state.can_reach(LocationName.icy_summit_main, "Region", player)
 
 def can_recruit_nixie(state: CollectionState, player: int):
-    """Player can recruit nixie"""
+    """Player can recruit Nixie"""
     return state.can_reach(LocationName.palace_level_5, "Region", player) and \
         state.can_reach(LocationName.icy_summit_main, "Region", player)
 
 def can_recruit_aruraune(state: CollectionState, player: int):
-    """Player can recruit aruraune"""
+    """Player can recruit Aruraune"""
     return state.can_reach(LocationName.forest_night_west, "Region", player)
 
 def can_recruit_seana(state: CollectionState, player: int):
-    """Player can recruit seana"""
+    """Player can recruit Seana"""
     return state.has(ItemName.vanilla_recruit, player) and \
         state.has(ItemName.chocolate_recruit, player) and \
         state.has(ItemName.cicini_recruit, player) and \
@@ -183,28 +181,45 @@ def can_recruit_seana(state: CollectionState, player: int):
         state.can_reach(LocationName.park_town_entrance, "Region", player)
 
 def can_recruit_lilith(state: CollectionState, player: int):
-    """Player can recruit lilith"""
+    """Player can recruit Lilith"""
     return state.has(ItemName.cicini_recruit, player) and \
         state.can_reach(LocationName.sky_island_main, "Region", player)
 
 def can_recruit_vanilla(state: CollectionState, player: int):
-    """Player can recruit vanilla"""
+    """Player can recruit Vanilla"""
     return state.can_reach(LocationName.sky_bridge_east_lower, "Region", player)
 
 def can_recruit_chocolate(state: CollectionState, player: int):
-    """Player can recruit chocolate"""
-    return state.has("Chapter 1", player)and \
+    """Player can recruit Chocolate"""
+    return state.has("Chapter 1", player) and \
         state.can_reach(LocationName.ravine_chocolate, "Region", player)
 
 def can_recruit_kotri(state: CollectionState, player: int):
-    """Player can recruit kotri"""
+    """Player can recruit Kotri"""
     return state.has(ItemName.kotri_2, player) and \
         state.can_reach(LocationName.volcanic_main, "Region", player)
 
 def can_recruit_keke_bunny(state: CollectionState, player: int):
-    """Player can recruit keke bunny"""
+    """Player can recruit Keke Bunny"""
     return state.can_reach(LocationName.plurkwood_main, "Region", player) and \
         state.can_reach(LocationName.town_main, "Region", player)
+
+def can_recruit_miriam(state: CollectionState, player: int):
+    """Player can recruit Miriam"""
+    return state.can_reach(LocationName.hall_of_memories, "Region", player)
+
+def can_recruit_rumi(state: CollectionState, player: int):
+    """Player can recruit Rumi"""
+    return state.can_reach(LocationName.forgotten_cave_2, "Region", player)
+
+def can_recruit_irisu(state: CollectionState, player: int):
+    """Player can recruit Irisu"""
+    return state.can_reach(LocationName.warp_destination_hospital, "Region", player) and \
+        state.has("Chapter 5", player) and \
+        can_recruit_n_town_members(state, 15, player) and \
+        state.has(ItemName.miriam_recruit, player) and \
+        state.has(ItemName.rumi_recruit, player) and \
+        state.can_reach(LocationName.library_irisu, "Region", player)
 
 def can_recruit_n_town_members(state: CollectionState, num_town_members: int, player: int):
     """
@@ -212,7 +227,7 @@ def can_recruit_n_town_members(state: CollectionState, num_town_members: int, pl
     
     :int num_town_members: the number of town members to satisfy the condition
     """
-    return state.count_from_list_unique(recruit_table, player) > num_town_members
+    return state.count_from_list_unique(recruit_table, player) >= num_town_members
 
 def can_be_speedy(state: CollectionState, player: int, options):
     """Player can buy the speedy buff"""
@@ -254,23 +269,36 @@ def can_reach_chapter_1(state: CollectionState, player: int):
 
 def can_reach_chapter_2(state: CollectionState, player: int):
     """Player can reach chapter 2"""
-    return state.can_reach(LocationName.town_main, "Region", player) and \
+    return state.has("Chapter 1", player) and \
+        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 2, player)
 
 def can_reach_chapter_3(state: CollectionState, player: int):
     """Player can reach chapter 3"""
-    return state.can_reach(LocationName.town_main, "Region", player) and \
+    return state.has("Chapter 2", player) and \
+        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 4, player)
 
 def can_reach_chapter_4(state: CollectionState, player: int):
     """Player can reach chapter 4"""
-    return state.can_reach(LocationName.town_main, "Region", player) and \
+    return state.has("Chapter 3", player) and \
+        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 7, player)
 
 def can_reach_chapter_5(state: CollectionState, player: int):
     """Player can reach chapter 5"""
-    return state.can_reach(LocationName.town_main, "Region", player) and \
+    return state.has("Chapter 4", player) and \
+        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 10, player)
+
+def can_reach_chapter_6(state: CollectionState, player: int):
+    """Player can reach chapter 6"""
+    return state.has("Chapter 5", player)
+
+def can_reach_chapter_7(state: CollectionState, player: int):
+    """Player can reach chapter 7"""
+    return state.has("Chapter 6", player) and \
+        state.has(ItemName.rumi_recruit, player)
 
 def can_move_out_of_prologue_areas(state: CollectionState, player: int, options):
     """Player can reach areas not locked to prologue"""
@@ -342,6 +370,14 @@ def is_at_least_advanced_knowledge(options):
 def is_at_least_obscure_knowledge(options):
     """Knowledge is at least obscure"""
     return options.knowledge >= Knowledge.option_obscure
+
+def can_bunstrike_zip(options):
+    """Player can perform bunstrike zips."""
+    return options.bunstrike_zips_required.value
+
+def can_do_boring_tricks(options):
+    """Player can perform boring tricks."""
+    return options.boring_tricks_required.value
 
 def count_normal_consumable_items(state: CollectionState, player: int):
     """Counts which normal consumable items the player can reach, either from locations or purchases."""
@@ -458,6 +494,9 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Tm Chocolate": lambda state: state.has(ItemName.chocolate_recruit, player),
             "Tm Kotri": lambda state: state.has(ItemName.kotri_recruit, player),
             "Tm Keke Bunny": lambda state: state.has(ItemName.keke_bunny_recruit, player),
+            "Tm Miriam": lambda state: state.has(ItemName.miriam_recruit, player),
+            "Tm Rumi": lambda state: state.has(ItemName.rumi_recruit, player),
+            "Tm Irisu": lambda state: state.has(ItemName.irisu_recruit, player),
             "Speedy": lambda state: can_be_speedy(state, player, options),
             "Speed1": lambda state: can_use_speed_1(state, player, options),
             "Speed2": lambda state: can_use_speed_2(state, player, options),
@@ -490,6 +529,8 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Knowledge Intermediate": lambda _: is_at_least_intermediate_knowledge(options),
             "Knowledge Advanced": lambda _: is_at_least_advanced_knowledge(options),
             "Knowledge Obscure": lambda _: is_at_least_obscure_knowledge(options),
+            "Boring Tricks Required": lambda _: can_do_boring_tricks(options),
+            "Bunstrike Zip Required": lambda _: can_bunstrike_zip(options),
             "Consumable Use": lambda state: can_use_consumables(state, player, options),
             "Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 1),
             "2 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 2),
@@ -501,19 +542,13 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Block Clips Required": lambda _: options.block_clips_required.value,
             "Semisolid Clips Required": lambda _: options.semi_solid_clips_required.value,
             "Zip Required": lambda _: options.zips_required.value,
-            "Plurkwood Reachable": lambda _: options.plurkwood_reachable.value,
+            "Plurkwood Reachable": lambda _: options.include_plurkwood.value,
+            "Warp Destination Reachable": lambda _: options.include_warp_destination.value,
+            "Post Game Allowed": lambda _: options.include_post_game.value,
+            "Post Irisu Allowed": lambda _: options.include_post_irisu.value,
+            "Halloween Reachable": lambda _: options.include_halloween.value,
             "Boss Keke Bunny" : lambda state: can_reach_keke_bunny(state, player),
             "Event Warps Required" : lambda _: options.event_warps_in_logic.value,
-            # TODO: Add options for missing settings and states
-            "Boring Tricks Required": lambda _: False,
-            "Bunstrike Zip Required": lambda _: False,
-            "Post Irisu Allowed": lambda _: False,
-            "Post Game Allowed": lambda _: False,
-            "Halloween Reachable": lambda _: False,
-            "Warp Destination Reachable": lambda _: False,
-            "Tm Irisu": lambda _: False,
-            "Tm Miriam": lambda _: False,
-            "Tm Rumi": lambda _: False,
         }
         if literal in literal_eval_map:
             return literal_eval_map[literal]

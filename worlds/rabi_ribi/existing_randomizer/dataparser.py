@@ -705,12 +705,12 @@ def read_ap_config_settings(config_settings, ap_options):
     config_settings['ZIP_REQUIRED'] = bool(ap_options.zips_required.value)
     config_settings['SEMISOLID_CLIPS_REQUIRED'] = bool(ap_options.semi_solid_clips_required.value)
     config_settings['BLOCK_CLIPS_REQUIRED'] = bool(ap_options.block_clips_required.value)
-    config_settings['PLURKWOOD_REACHABLE'] = bool(ap_options.plurkwood_reachable.value)
+    config_settings['PLURKWOOD_REACHABLE'] = bool(ap_options.include_plurkwood.value)
+    config_settings['WARP_DESTINATION_REACHABLE'] = bool(ap_options.include_warp_destination.value)
+    config_settings['POST_GAME_ALLOWED'] = bool(ap_options.include_post_game.value)
+    config_settings['POST_IRISU_ALLOWED'] = bool(ap_options.include_post_irisu.value)
+    config_settings['HALLOWEEN_REACHABLE'] = bool(ap_options.include_halloween.value)
     config_settings['EVENT_WARPS_REQUIRED'] = bool(ap_options.event_warps_in_logic.value)
-    config_settings['POST_GAME_ALLOWED'] = False
-    config_settings['POST_IRISU_ALLOWED'] = False
-    config_settings['HALLOWEEN_REACHABLE'] = False
-    config_settings['WARP_DESTINATION_REACHABLE'] = False
 
 def parse_item_from_string(line):
     pos, areaid, itemid, name = (s.strip() for s in line.split(':', 3))
