@@ -72,7 +72,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.current_room: Tuple[int, int] = (-1, 1)
         self.state_giving_item = False
         self.collected_eggs: Set[Tuple[int,int,int]] = set()
-        self.last_received_item_index = -1
         self.seed_name = None
         self.slot_data = None
 
@@ -274,15 +273,14 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
 
         :NetworkItem item: The item to give to the player
         """
-        self.last_received_item_index = self.rr_interface.get_last_received_item_index()
-
         # Find the first item ID that the player has not recieved yet
-        remaining_items = self.items_received_rabi_ribi_ids[self.last_received_item_index:]
+        last_received_item_index = self.rr_interface.get_last_received_item_index()
+        remaining_items = self.items_received_rabi_ribi_ids[last_received_item_index:]
         skipped_items, cur_item_id = next(((idx, item_id) for idx, item_id in enumerate(remaining_items) if item_id != -1), (-1, -1))
 
         if cur_item_id > 0:
             self.rr_interface.give_item(cur_item_id)
-            self.rr_interface.set_last_received_item_index(self.last_received_item_index + skipped_items + 1)
+            self.rr_interface.set_last_received_item_index(last_received_item_index + skipped_items + 1)
             await asyncio.sleep(1)
             await self.wait_until_out_of_item_receive_animation()
 
@@ -319,7 +317,9 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         currently has it in their inventory
         """
         if self.items_received:
-            for item_id in self.items_received_rabi_ribi_ids[::-1]:
+            last_received_item_index = self.rr_interface.get_last_received_item_index()
+            remaining_items = self.items_received_rabi_ribi_ids[last_received_item_index:]
+            for item_id in remaining_items:
                 if item_id != -1:
                     return not self.rr_interface.does_player_have_item_id(item_id)
         return False
@@ -537,7 +537,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.current_room = (-1, -1)
         self.state_giving_item = False
         self.collected_eggs = set()
-        self.last_received_item_index = -1
         self.seed_name = None
         self.slot_data = None
 
