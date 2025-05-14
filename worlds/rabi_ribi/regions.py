@@ -4,9 +4,9 @@ import logging
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set
 from BaseClasses import CollectionState, Region, ItemClassification
 from worlds.generic.Rules import add_rule
+from worlds.rabi_ribi import ut_helpers
 from . import logic_helpers as logic
 from .entrance_shuffle import MapAllocation, MapGenerator
-from .existing_randomizer.randomizer import parse_args
 from .existing_randomizer.utility import GraphEdge
 from .items import RabiRibiItem
 from .locations import RabiRibiLocation, setup_locations
@@ -16,7 +16,7 @@ from .logic_helpers import (
     is_at_least_v_hard_difficulty,
 )
 from .names import ItemName, LocationName
-from .options import RabiRibiOptions
+from .options import Knowledge, TrickDifficulty
 from .utility import (
     convert_existing_rando_name_to_ap_name,
     convert_ap_name_to_existing_rando_name
@@ -165,13 +165,15 @@ class RegionHelper:
         # Remove unreachable regions before adding to the graph
         self.unreachable_regions = set()
 
-        if not is_at_least_advanced_knowledge(self.options) or \
-            not is_at_least_v_hard_difficulty(self.options):
+        if self.options.knowledge < Knowledge.option_advanced or \
+            self.options.trick_difficulty < TrickDifficulty.option_v_hard or \
+            not ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
             self.unreachable_regions.update(adv_vhard_regions)
 
-        if not is_at_least_advanced_knowledge(self.options) or \
-            not is_at_least_v_hard_difficulty(self.options) or \
-            not self.options.include_post_game:
+        if self.options.knowledge < Knowledge.option_advanced or \
+            self.options.trick_difficulty < TrickDifficulty.option_v_hard or \
+            not self.options.include_post_game or \
+            not ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
             self.unreachable_regions.update(adv_vhard_post_game_regions)
 
         if not self.options.include_plurkwood:
@@ -316,7 +318,8 @@ class RegionHelper:
         self.add_event(ItemName.kotri_recruit, LocationName.volcanic_main,
                        lambda state: logic.can_recruit_kotri(state, self.player))
 
-        if self.options.include_plurkwood:
+        # Note: While out of logic, the player could go to Plurkwood to recruit Keke Bunny
+        if self.options.include_plurkwood or ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
             self.add_event(ItemName.keke_bunny_recruit, LocationName.plurkwood_main,
                            lambda state: logic.can_recruit_keke_bunny(state, self.player))
 

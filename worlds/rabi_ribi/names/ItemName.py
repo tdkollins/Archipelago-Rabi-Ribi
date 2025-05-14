@@ -115,3 +115,6 @@ keke_bunny_recruit  = "Keke Bunny Recruit"
 miriam_recruit      = "Miriam Recruit"
 rumi_recruit        = "Rumi Recruit"
 irisu_recruit       = "Irisu Recruit"
+
+# Glitched Logic
+glitched_logic = "Glitched Logic"

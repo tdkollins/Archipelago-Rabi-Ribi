@@ -461,4 +461,7 @@ def setup_locations(options: RabiRibiOptions):
     if options.include_post_irisu:
         location_table.update(**rabi_rabi_town_post_irisu_locations)
 
+    if options.include_halloween:
+        location_table.update(**western_coast_halloween_locations)
+
     return location_table
