@@ -287,12 +287,13 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
     async def set_received_rabi_ribi_item_ids(self):
         async with self.critical_section_lock:
             self.items_received_rabi_ribi_ids = []
+            #  Subtract 30 since those are reserved for shop and super / hyper attack modes
             potion_ids = {
-                ItemName.attack_up: 193, # Subtract 30, as those IDs are reserved for super / hyper attack modes
-                ItemName.mp_up: 287,
-                ItemName.regen_up: 351,
-                ItemName.hp_up: 159,
-                ItemName.pack_up: 415
+                ItemName.attack_up: 223 - 30,
+                ItemName.mp_up: 287 - 30,
+                ItemName.regen_up: 351 - 30,
+                ItemName.hp_up: 159 - 30,
+                ItemName.pack_up: 415 - 30
             }
 
             for network_item in self.items_received:
