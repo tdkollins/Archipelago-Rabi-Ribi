@@ -13,8 +13,8 @@ would be expected to in the vanilla game.
 
 ## What is the goal of Rabi-Ribi in Archipelago
 
-The goal of Rabi-Ribi is to find 5 Easter Egg items shuffled throughout Rabi Rabi Island. Collecting the fifth Easter Egg
-will complete your seed.
+The goal of Rabi-Ribi is to find Easter Eggs  shuffled throughout Rabi Rabi Island. Collecting
+all of the Easter Eggs will complete your seed.
 
 Setting the goal to completing the main story is not currently implemented, as the game is beatable with no items.
 

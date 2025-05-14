@@ -171,7 +171,7 @@ shufflable_gift_items_plurkwood = {
     ItemName.p_hairpin
 }
 
-def get_base_item_list(data: RandomizerData) -> List[str]:
+def get_base_item_list(options: RabiRibiOptions, data: RandomizerData) -> List[str]:
     """
     Get the base list of items in the game.
     No options are configurable at the moment.
@@ -185,7 +185,7 @@ def get_base_item_list(data: RandomizerData) -> List[str]:
     item_names += data.included_additional_items
     item_names.sort()
     # Use a set amount of easter eggs
-    for _ in range(5):
+    for _ in range(options.number_of_easter_eggs.value):
         item_list.append("Easter Egg")
 
     for item in item_names:

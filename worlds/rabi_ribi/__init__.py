@@ -152,7 +152,7 @@ class RabiRibiWorld(World):
         region_helper.configure_region_spoiler_log_data()
 
     def create_items(self) -> None:
-        base_item_list = get_base_item_list(self.randomizer_data)
+        base_item_list = get_base_item_list(self.options, self.randomizer_data)
 
         for item in map(self.create_item, base_item_list):
             if (not self.options.randomize_hammer.value) and (item.name == ItemName.piko_hammer):
@@ -170,6 +170,7 @@ class RabiRibiWorld(World):
 
     def fill_slot_data(self) -> dict:
         return {
+            "number_of_easter_eggs": self.options.number_of_easter_eggs.value,
             "openMode": bool(self.options.open_mode.value),
             "attackMode": self.options.attack_mode.value,
             "randomize_gift_items": bool(self.options.randomize_gift_items.value),
@@ -213,7 +214,7 @@ class RabiRibiWorld(World):
         Set remaining rules (for now this is just the win condition).
         """
         self.multiworld.completion_condition[self.player] = \
-            lambda state: state.has(ItemName.easter_egg, self.player, 5)
+            lambda state: state.has(ItemName.easter_egg, self.player, self.options.number_of_easter_eggs.value)
 
     def pre_fill(self) -> None:
         if not self.options.randomize_hammer.value:

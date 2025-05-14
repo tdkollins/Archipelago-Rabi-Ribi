@@ -23,6 +23,16 @@ class CarrotShooterInLogic(Toggle):
     """
     display_name = "Carrot Shooter In Logic"
 
+class NumberOfEasterEggs(Range):
+    """
+    The number of easter eggs required to beat the game. Note that you will receive
+    the Rainbow Shot after 5 eggs no matter how many eggs are selected.
+    """
+    display_name = "Number of Easter Eggs"
+    default = 5
+    range_start = 1
+    range_end = 80
+
 class EncourageEggsInLateSpheres(Toggle):
     """
     If set to true, the randomizer logic will attempt to place eggs in later spheres
@@ -237,6 +247,7 @@ class RabiRibiOptions(PerGameCommonOptions):
     event_warps_in_logic: EventWarpsInLogic
 
     attack_mode: AttackMode
+    number_of_easter_eggs: NumberOfEasterEggs
     encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
 
     randomize_hammer: RandomizeHammer

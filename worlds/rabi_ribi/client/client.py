@@ -621,10 +621,11 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
             if cur_time - ctx.time_since_last_item_obtained > 7:
                 ctx.rr_interface.remove_exclamation_point_from_inventory()
 
-            if ctx.rr_interface.get_number_of_eggs_collected() >= 5:
-                ctx.finished_game = True
-                await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
-                
+            if ctx.slot_data:
+                number_of_easter_eggs = ctx.slot_data["number_of_easter_eggs"] if "number_of_easter_eggs" in ctx.slot_data else 5
+                if ctx.slot_data and ctx.rr_interface.get_number_of_eggs_collected() >= number_of_easter_eggs:
+                    ctx.finished_game = True
+                    await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
         except Exception as err:  # Rabi Ribi Process closed?
             logger.warning("*******************************")
