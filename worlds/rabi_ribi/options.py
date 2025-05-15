@@ -23,15 +23,26 @@ class CarrotShooterInLogic(Toggle):
     """
     display_name = "Carrot Shooter In Logic"
 
-class NumberOfEasterEggs(Range):
+class MaxNumberOfEasterEggs(Range):
     """
-    The number of easter eggs required to beat the game. Note that you will receive
-    the Rainbow Shot after 5 eggs no matter how many eggs are selected.
+    Maximum possible number of Easter Eggs that will be in the item pool.
+    If fewer available locations exist in the pool than this number, the number of available locations will be used instead.
+    Required Percentage of Easter Eggs will be calculated based off of that number.
     """
-    display_name = "Number of Easter Eggs"
-    default = 5
+    display_name = "Max Number of Easter Eggs"
     range_start = 1
     range_end = 80
+    default = 5
+
+class PercentageOfEasterEggs(Range):
+    """
+    What percentage of Easter Eggs are required to beat the game. Note that you will receive
+    the Rainbow Shot after 5 eggs no matter how many eggs are required.
+    """
+    display_name = "Required Percentage of Easter Eggs"
+    range_start = 1
+    range_end = 100
+    default = 100
 
 class EncourageEggsInLateSpheres(Toggle):
     """
@@ -233,7 +244,12 @@ class ShuffleStartLocation(Toggle):
 @dataclass
 class RabiRibiOptions(PerGameCommonOptions):
     """Rabi Ribi Options Definition"""
+    max_number_of_easter_eggs: MaxNumberOfEasterEggs
+    percentage_of_easter_eggs: PercentageOfEasterEggs
+    encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
+
     open_mode: OpenMode
+    attack_mode: AttackMode
     knowledge: Knowledge
     trick_difficulty: TrickDifficulty
     block_clips_required: BlockClipsRequired
@@ -245,10 +261,6 @@ class RabiRibiOptions(PerGameCommonOptions):
     underwater_without_water_orb: UnderwaterWithoutWaterOrb
     carrot_shooter_in_logic: CarrotShooterInLogic
     event_warps_in_logic: EventWarpsInLogic
-
-    attack_mode: AttackMode
-    number_of_easter_eggs: NumberOfEasterEggs
-    encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
 
     randomize_hammer: RandomizeHammer
     randomize_gift_items: RandomizeGiftItems

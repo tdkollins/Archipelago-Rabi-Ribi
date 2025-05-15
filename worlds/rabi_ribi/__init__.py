@@ -1,17 +1,18 @@
 """
 This module serves as an entrypoint into the Rabi-Ribi AP world.
 """
+import math
 import settings
 import logging
 from collections import defaultdict
-from typing import Any, ClassVar, Dict, List, Set, TextIO, Union
+from typing import Any, ClassVar, Dict, List, Optional, Set, TextIO, Union
 from BaseClasses import ItemClassification, Tutorial
 from Fill import swap_location_item
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, Type, components, launch_subprocess
 from .existing_randomizer.dataparser import RandomizerData
 from .existing_randomizer.randomizer import parse_args
-from .items import RabiRibiItem, RabiRibiItemData, item_data_table, item_groups, shufflable_gift_items, shufflable_gift_items_plurkwood, item_table, get_base_item_list
+from .items import RabiRibiItem, RabiRibiItemData, item_data_table, item_groups, shufflable_gift_items, shufflable_gift_items_plurkwood, item_table, filler_items, get_base_item_list
 from .locations import all_locations, location_groups
 from .names import ItemName, LocationName
 from .options import RabiRibiOptions
@@ -85,11 +86,13 @@ class RabiRibiWorld(World):
     item_name_to_id = item_table
     location_name_to_id: Dict[str, int] = all_locations
 
+    total_locations: int
+    required_egg_count: int
     start_location: str
     picked_templates: List[str]
-    total_locations: int
     map_transition_shuffle_order: List[int]
     map_transition_shuffle_spoiler: List[str]
+    filler_items: Optional[List[str]] = None
     existing_randomizer_args: Any
     randomizer_data: RandomizerData
 
@@ -151,8 +154,21 @@ class RabiRibiWorld(World):
         region_helper.configure_slot_data()
         region_helper.configure_region_spoiler_log_data()
 
+    def get_filler_item_name(self) -> str:
+        if self.filler_items is None:
+            self.filler_items = [item for sublist in [([key] * value) for key, value in filler_items.items()] for item in sublist]
+            self.random.shuffle(self.filler_items)
+        if len(self.filler_items) == 0:
+            return ItemName.nothing
+        return self.filler_items.pop(0)
+
     def create_items(self) -> None:
         base_item_list = get_base_item_list(self.options, self.randomizer_data)
+        max_egg_locations_in_pool = self.total_locations - len(base_item_list)
+        total_egg_count = min(max_egg_locations_in_pool, self.options.max_number_of_easter_eggs.value)
+        self.required_egg_count = max(math.floor(total_egg_count * (self.options.percentage_of_easter_eggs.value / 100.0)), 1)
+
+        base_item_list.extend([ItemName.easter_egg] * total_egg_count)
 
         for item in map(self.create_item, base_item_list):
             if (not self.options.randomize_hammer.value) and (item.name == ItemName.piko_hammer):
@@ -166,11 +182,11 @@ class RabiRibiWorld(World):
             self.multiworld.itempool.append(item)
 
         junk = self.total_locations - len(base_item_list)
-        self.multiworld.itempool += [self.create_item(ItemName.nothing) for _ in range(junk)]
+        self.multiworld.itempool += [self.create_item(self.get_filler_item_name()) for _ in range(junk)]
 
     def fill_slot_data(self) -> dict:
         return {
-            "number_of_easter_eggs": self.options.number_of_easter_eggs.value,
+            "required_egg_count": self.required_egg_count,
             "openMode": bool(self.options.open_mode.value),
             "attackMode": self.options.attack_mode.value,
             "randomize_gift_items": bool(self.options.randomize_gift_items.value),
@@ -214,7 +230,7 @@ class RabiRibiWorld(World):
         Set remaining rules (for now this is just the win condition).
         """
         self.multiworld.completion_condition[self.player] = \
-            lambda state: state.has(ItemName.easter_egg, self.player, self.options.number_of_easter_eggs.value)
+            lambda state: state.has(ItemName.easter_egg, self.player, self.required_egg_count)
 
     def pre_fill(self) -> None:
         if not self.options.randomize_hammer.value:
