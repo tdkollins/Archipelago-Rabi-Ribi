@@ -119,7 +119,7 @@ class MapAnalyzer(Analyzer):
 
     def verify_any_location_reachable(self, starting_variables, backward_exitable):
         """Verifies that at least one location is reachable without items."""
-        reachable, _, _, _ = super().verify_reachable_items(starting_variables, backward_exitable)
+        reachable, _, _, _ = self.verify_reachable_items(starting_variables, backward_exitable)
 
         # Convert item locations back to actual names
         item_location_reachable = {convert_existing_rando_name_to_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
@@ -132,7 +132,7 @@ class MapAnalyzer(Analyzer):
         for item in self.data.must_be_reachable:
             variables[item] = True
 
-        reachable, _, _, _ = super().verify_reachable_items(variables, backward_exitable)
+        reachable, _, _, _ = self.verify_reachable_items(variables, backward_exitable)
 
         # Convert item locations back to actual names
         item_location_reachable = {convert_existing_rando_name_to_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
