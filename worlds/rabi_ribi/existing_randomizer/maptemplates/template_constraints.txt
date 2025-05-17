@@ -671,6 +671,8 @@
             ))
         )
     ",
+    }
+    {
     "edge": "RIVERBANK_UNDERGROUND -> RIVERBANK_LOWER_LEFT",
     "prereq": "
         FIRE_ORB & (
