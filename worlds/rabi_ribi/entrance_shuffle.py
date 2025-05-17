@@ -101,24 +101,39 @@ class MapAnalyzer(Analyzer):
 
     def run_map_verifier(self):
         starting_variables = self.data.generate_variables()
+
         result, backward_exitable = self.verify_warps_reachable(starting_variables)
         if not result:
             self.error_message = 'Not all warps reachable.'
             return False
 
-        reachable, unreachable, levels, _ = self.verify_reachable_items(starting_variables, backward_exitable)
+        if not self.verify_any_location_reachable(starting_variables, backward_exitable):
+            self.error_message = 'No locations are reachable at the start.'
+            return False
 
-        # Convert item locations back to actual names
-        item_location_reachable = {convert_existing_rando_name_to_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
-
-        if not self.locations_to_reach.issubset(item_location_reachable):
+        if not self.verify_all_locations_reachable(starting_variables, backward_exitable):
             self.error_message = 'Not all locations are reachable.'
             return False
 
         return True
-    
-    def verify_reachable_items(self, starting_variables, backward_exitable):
+
+    def verify_any_location_reachable(self, starting_variables, backward_exitable):
+        """Verifies that at least one location is reachable without items."""
+        reachable, _, _, _ = super().verify_reachable_items(starting_variables, backward_exitable)
+
+        # Convert item locations back to actual names
+        item_location_reachable = {convert_existing_rando_name_to_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
+        return len(item_location_reachable) > 0
+
+    def verify_all_locations_reachable(self, starting_variables, backward_exitable):
+        """Verifies that all locations are reachable if player has all items."""
         # Mark all upgrades as obtained already
+        variables = dict(starting_variables)
         for item in self.data.must_be_reachable:
-            starting_variables[item] = True
-        return super().verify_reachable_items(starting_variables, backward_exitable)
+            variables[item] = True
+
+        reachable, _, _, _ = super().verify_reachable_items(variables, backward_exitable)
+
+        # Convert item locations back to actual names
+        item_location_reachable = {convert_existing_rando_name_to_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
+        return self.locations_to_reach.issubset(item_location_reachable)
