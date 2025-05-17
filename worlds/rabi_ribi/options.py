@@ -4,7 +4,10 @@ from dataclasses import dataclass
 from Options import PerGameCommonOptions, Choice, Range, Toggle, DeathLink
 
 class OpenMode(Toggle):
-    """Gain access to Chapter 1 areas without needing to complete the prologue"""
+    """
+    Gain access to Chapter 1 areas without needing to complete the prologue.
+    It is highly recommended to leave this enabled.
+    """
     display_name = "Open Mode"
     default = True
 
