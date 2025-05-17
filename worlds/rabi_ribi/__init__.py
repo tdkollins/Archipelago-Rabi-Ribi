@@ -2,12 +2,13 @@
 This module serves as an entrypoint into the Rabi-Ribi AP world.
 """
 import math
-import settings
 import logging
+import settings
 from collections import defaultdict
 from typing import Any, ClassVar, Dict, List, Optional, Set, TextIO, Union
 from BaseClasses import ItemClassification, Tutorial
 from Fill import swap_location_item
+from Options import Toggle
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, Type, components, launch_subprocess
 from .existing_randomizer.dataparser import RandomizerData
@@ -105,6 +106,10 @@ class RabiRibiWorld(World):
         """Set world specific generation properties"""
         # Universal Tracker: Load options from slot data instead of YAML
         ut_helpers.apply_options_from_slot_data_if_available(self)
+
+        if not self.options.open_mode.value and self.options.shuffle_start_location.value:
+            logging.warning(f"Rabi-Ribi: Enabling open mode for Player {self.player} ({self.player_name}) due to shuffled start location.")
+            self.options.open_mode.value = Toggle.option_true
 
         self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
         self.randomizer_data = RandomizerData(self.existing_randomizer_args)
