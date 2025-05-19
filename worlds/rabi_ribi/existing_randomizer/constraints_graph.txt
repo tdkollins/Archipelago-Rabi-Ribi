@@ -1521,7 +1521,7 @@ ADV_VHARD & (
 
 {
 "edge": "PARK_WARP -> UPRPRC_LOWER",
-"prereq": "NONE",
+"prereq": "RABI_SLIPPERS | AIR_JUMP | SLIDE_JUMP_BUNSTRIKE | SLIDE_ZIP | HARD",
 }
 
 {

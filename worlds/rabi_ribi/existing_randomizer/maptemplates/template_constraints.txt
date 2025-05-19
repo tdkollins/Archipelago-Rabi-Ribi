@@ -1024,7 +1024,7 @@
     {
     "edge": "PARK_WARP -> UPRPRC_LOWER",
     "prereq": "
-        RABI_SLIPPERS | AIR_JUMP | AIR_DASH
+        RABI_SLIPPERS | AIR_JUMP | (AIR_DASH & HARD)
         | SLIDE_JUMP_BUNSTRIKE | SLIDE_ZIP | (AMULET_FOOD & ADV_VHARD)
         | (OBS_STUPID & HAMMER_ROLL) // roll bonk off an enemy in the left room
     ",
