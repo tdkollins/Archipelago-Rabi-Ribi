@@ -28,9 +28,11 @@ class CarrotShooterInLogic(Toggle):
 
 class MaxNumberOfEasterEggs(Range):
     """
-    Maximum possible number of Easter Eggs that will be in the item pool.
-    If fewer available locations exist in the pool than this number, the number of available locations will be used instead.
-    Required Percentage of Easter Eggs will be calculated based off of that number.
+    The maximum number of Easter Eggs that will be in the item pool.
+    If fewer available locations exist in the pool than this number, random potions will be removed to make space.
+    By default, 26 eggs can be placed before potions are removed;
+    with all locations enabled, there is space for 57 eggs.
+    Required Percentage of Easter Eggs will be calculated based off of this number.
     """
     display_name = "Max Number of Easter Eggs"
     range_start = 1

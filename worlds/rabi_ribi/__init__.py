@@ -5,6 +5,7 @@ import math
 import logging
 import settings
 from collections import defaultdict
+from itertools import chain
 from typing import Any, ClassVar, Dict, List, Optional, Set, TextIO, Union
 from BaseClasses import ItemClassification, Tutorial
 from Fill import swap_location_item
@@ -160,10 +161,14 @@ class RabiRibiWorld(World):
         region_helper.configure_region_spoiler_log_data()
 
     def get_filler_item_name(self) -> str:
+        """Called when the item pool needs to be filled with additional items to match location count."""
         if self.filler_items is None:
-            self.filler_items = [item for sublist in [([key] * value) for key, value in filler_items.items()] for item in sublist]
+            # Create a list of lists for every potion, then flatten and shuffle
+            all_potions_grouped = [([key] * value) for key, value in filler_items.items()]
+            self.filler_items = list(chain(*all_potions_grouped))
             self.random.shuffle(self.filler_items)
         if len(self.filler_items) == 0:
+            # All potions placed
             return ItemName.nothing
         return self.filler_items.pop(0)
 
