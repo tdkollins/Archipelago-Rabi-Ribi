@@ -72,7 +72,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.current_room: Tuple[int, int] = (-1, 1)
         self.state_giving_item = False
         self.collected_eggs: Set[Tuple[int,int,int]] = set()
-        self.last_received_item_index = -1
         self.seed_name = None
         self.slot_data = None
 
@@ -274,27 +273,27 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
 
         :NetworkItem item: The item to give to the player
         """
-        self.last_received_item_index = self.rr_interface.get_last_received_item_index()
-
         # Find the first item ID that the player has not recieved yet
-        remaining_items = self.items_received_rabi_ribi_ids[self.last_received_item_index:]
+        last_received_item_index = self.rr_interface.get_last_received_item_index()
+        remaining_items = self.items_received_rabi_ribi_ids[last_received_item_index:]
         skipped_items, cur_item_id = next(((idx, item_id) for idx, item_id in enumerate(remaining_items) if item_id != -1), (-1, -1))
 
         if cur_item_id > 0:
             self.rr_interface.give_item(cur_item_id)
-            self.rr_interface.set_last_received_item_index(self.last_received_item_index + skipped_items + 1)
+            self.rr_interface.set_last_received_item_index(last_received_item_index + skipped_items + 1)
             await asyncio.sleep(1)
             await self.wait_until_out_of_item_receive_animation()
 
     async def set_received_rabi_ribi_item_ids(self):
         async with self.critical_section_lock:
             self.items_received_rabi_ribi_ids = []
+            #  Subtract 30 since those are reserved for shop and super / hyper attack modes
             potion_ids = {
-                ItemName.attack_up: 193, # Subtract 30, as those IDs are reserved for super / hyper attack modes
-                ItemName.mp_up: 287,
-                ItemName.regen_up: 351,
-                ItemName.hp_up: 159,
-                ItemName.pack_up: 415
+                ItemName.attack_up: 223 - 30,
+                ItemName.mp_up: 287 - 30,
+                ItemName.regen_up: 351 - 30,
+                ItemName.hp_up: 159 - 30,
+                ItemName.pack_up: 415 - 30
             }
 
             for network_item in self.items_received:
@@ -319,7 +318,9 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         currently has it in their inventory
         """
         if self.items_received:
-            for item_id in self.items_received_rabi_ribi_ids[::-1]:
+            last_received_item_index = self.rr_interface.get_last_received_item_index()
+            remaining_items = self.items_received_rabi_ribi_ids[last_received_item_index:]
+            for item_id in remaining_items:
                 if item_id != -1:
                     return not self.rr_interface.does_player_have_item_id(item_id)
         return False
@@ -537,7 +538,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.current_room = (-1, -1)
         self.state_giving_item = False
         self.collected_eggs = set()
-        self.last_received_item_index = -1
         self.seed_name = None
         self.slot_data = None
 
@@ -622,10 +622,11 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
             if cur_time - ctx.time_since_last_item_obtained > 7:
                 ctx.rr_interface.remove_exclamation_point_from_inventory()
 
-            if ctx.rr_interface.get_number_of_eggs_collected() >= 5:
-                ctx.finished_game = True
-                await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
-                
+            if ctx.slot_data:
+                required_egg_count = ctx.slot_data["required_egg_count"] if "required_egg_count" in ctx.slot_data else 5
+                if ctx.slot_data and ctx.rr_interface.get_number_of_eggs_collected() >= required_egg_count:
+                    ctx.finished_game = True
+                    await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
         except Exception as err:  # Rabi Ribi Process closed?
             logger.warning("*******************************")

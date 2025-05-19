@@ -4,7 +4,10 @@ from dataclasses import dataclass
 from Options import PerGameCommonOptions, Choice, Range, Toggle, DeathLink
 
 class OpenMode(Toggle):
-    """Gain access to Chapter 1 areas without needing to complete the prologue"""
+    """
+    Gain access to Chapter 1 areas without needing to complete the prologue.
+    It is highly recommended to leave this enabled.
+    """
     display_name = "Open Mode"
     default = True
 
@@ -22,6 +25,29 @@ class CarrotShooterInLogic(Toggle):
     These locations will be locked behind carrot bomb instead.
     """
     display_name = "Carrot Shooter In Logic"
+
+class MaxNumberOfEasterEggs(Range):
+    """
+    The maximum number of Easter Eggs that will be in the item pool.
+    If fewer available locations exist in the pool than this number, random potions will be removed to make space.
+    By default, 26 eggs can be placed before potions are removed;
+    with all locations enabled, there is space for 57 eggs.
+    Required Percentage of Easter Eggs will be calculated based off of this number.
+    """
+    display_name = "Max Number of Easter Eggs"
+    range_start = 1
+    range_end = 80
+    default = 5
+
+class PercentageOfEasterEggs(Range):
+    """
+    What percentage of Easter Eggs are required to beat the game. Note that you will receive
+    the Rainbow Shot after 5 eggs no matter how many eggs are required.
+    """
+    display_name = "Required Percentage of Easter Eggs"
+    range_start = 1
+    range_end = 100
+    default = 100
 
 class EncourageEggsInLateSpheres(Toggle):
     """
@@ -223,7 +249,12 @@ class ShuffleStartLocation(Toggle):
 @dataclass
 class RabiRibiOptions(PerGameCommonOptions):
     """Rabi Ribi Options Definition"""
+    max_number_of_easter_eggs: MaxNumberOfEasterEggs
+    percentage_of_easter_eggs: PercentageOfEasterEggs
+    encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
+
     open_mode: OpenMode
+    attack_mode: AttackMode
     knowledge: Knowledge
     trick_difficulty: TrickDifficulty
     block_clips_required: BlockClipsRequired
@@ -235,9 +266,6 @@ class RabiRibiOptions(PerGameCommonOptions):
     underwater_without_water_orb: UnderwaterWithoutWaterOrb
     carrot_shooter_in_logic: CarrotShooterInLogic
     event_warps_in_logic: EventWarpsInLogic
-
-    attack_mode: AttackMode
-    encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
 
     randomize_hammer: RandomizeHammer
     randomize_gift_items: RandomizeGiftItems

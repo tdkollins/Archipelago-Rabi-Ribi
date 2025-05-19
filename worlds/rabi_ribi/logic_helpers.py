@@ -14,9 +14,9 @@ from .utility import convert_existing_rando_name_to_ap_name
 
 def has_3_magic_types(state: CollectionState, player: int):
     """Player has at least 3 types of magic"""
-    # While the player can buy Healing Staff from the shop,
-    # that would imply they can access town and already access the item menu.
-    return state.count_group_unique("Magic", player) + 1 >= 3
+    # If playing with more than 5 Easter Eggs, Rainbow Shot could be used as a magic type
+    rainbow_shot = 1 if state.has(ItemName.easter_egg, player, count = 5) else 0
+    return state.count_group_unique("Magic", player) + rainbow_shot + 1 >= 3
 
 def has_item_menu(state: CollectionState, player: int, options):
     """Player has access to the item menu"""

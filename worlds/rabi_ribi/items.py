@@ -1,5 +1,5 @@
 """This module represents item definitions for Rabi-Ribi"""
-from typing import Dict, List, NamedTuple, Optional, Set
+from typing import Dict, List, NamedTuple, Optional, Set, Tuple
 
 from BaseClasses import Item, ItemClassification
 from .existing_randomizer.dataparser import RandomizerData
@@ -131,6 +131,14 @@ item_data_table : Dict[str, RabiRibiItemData] = {
     **trap_table
 }
 
+filler_items : Dict[str, int] = {
+    ItemName.hp_up: 25,
+    ItemName.mp_up: 25,
+    ItemName.attack_up: 20,
+    ItemName.pack_up: 15,
+    ItemName.regen_up: 15
+}
+
 item_table: Dict[str, int] = {name: data.code for name, data in item_data_table.items() if data.code is not None }
 
 lookup_item_id_to_name: Dict[int, str] = {data.code: item_name for item_name, data in item_data_table.items() if data.code}
@@ -171,7 +179,7 @@ shufflable_gift_items_plurkwood = {
     ItemName.p_hairpin
 }
 
-def get_base_item_list(data: RandomizerData) -> List[str]:
+def get_base_item_list(options: RabiRibiOptions, data: RandomizerData) -> List[str]:
     """
     Get the base list of items in the game.
     No options are configurable at the moment.
@@ -184,25 +192,21 @@ def get_base_item_list(data: RandomizerData) -> List[str]:
     item_names: List[str] = data.to_shuffle
     item_names += data.included_additional_items
     item_names.sort()
-    # Use a set amount of easter eggs
-    for _ in range(5):
-        item_list.append("Easter Egg")
 
     for item in item_names:
-        # If we want to include the item, convert to the AP item id.
-        # Otherwise, pass and dont include it.
+        # Remove Eggs and Potions, to be used as filler items
         if item.startswith("EGG"):
             pass
         elif item.startswith("ATK_UP"):
-            item_list.append("Attack Up")
+            pass
         elif item.startswith("HP_UP"):
-            item_list.append("HP Up")
+            pass
         elif item.startswith("MP_UP"):
-            item_list.append("MP Up")
+            pass
         elif item.startswith("PACK_UP"):
-            item_list.append("Pack Up")
+            pass
         elif item.startswith("REGEN_UP"):
-            item_list.append("Regen Up")
+            pass
         else:
             # Format the item string and then add to the item list
             item_list.append(convert_existing_rando_name_to_ap_name(item))

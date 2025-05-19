@@ -315,6 +315,11 @@ class RabiRibiMemoryIO():
         """
         data = self.rr_mem.read_bytes(self.rr_mem.base_address + OFFSET_EGG_START, EGG_ARRAY_LENGTH)
         eggs: List[Tuple[int, int, int]] = list(struct.iter_unpack('3h', data))
+
+        # Check if the player has 80 eggs
+        if (0,0,0) not in eggs:
+            return eggs
+
         egg_count = eggs.index((0,0,0))
 
         if egg_count >= 0:
