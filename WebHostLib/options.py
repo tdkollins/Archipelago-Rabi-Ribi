@@ -3,9 +3,10 @@ import json
 import os
 from textwrap import dedent
 from typing import Dict, Union
+from docutils.core import publish_parts
 
 import yaml
-from flask import redirect, render_template, request, Response
+from flask import redirect, render_template, request, Response, abort
 
 import Options
 from Utils import local_path
@@ -66,6 +67,22 @@ def filter_dedent(text: str) -> str:
     return dedent(text).strip("\n ")
 
 
+@app.template_filter("rst_to_html")
+def filter_rst_to_html(text: str) -> str:
+    """Converts reStructuredText (such as a Python docstring) to HTML."""
+    if text.startswith(" ") or text.startswith("\t"):
+        text = dedent(text)
+    elif "\n" in text:
+        lines = text.splitlines()
+        text = lines[0] + "\n" + dedent("\n".join(lines[1:]))
+
+    return publish_parts(text, writer_name='html', settings=None, settings_overrides={
+        'raw_enable': False,
+        'file_insertion_enabled': False,
+        'output_encoding': 'unicode'
+    })['body']
+
+
 @app.template_test("ordered")
 def test_ordered(obj):
     return isinstance(obj, collections.abc.Sequence)
@@ -91,7 +108,7 @@ def option_presets(game: str) -> Response:
                     f"Expected {option.special_range_names.keys()} or {option.range_start}-{option.range_end}."
 
                 presets[preset_name][preset_option_name] = option.value
-            elif isinstance(option, Options.Range):
+            elif isinstance(option, (Options.Range, Options.OptionSet, Options.OptionList, Options.OptionCounter)):
                 presets[preset_name][preset_option_name] = option.value
             elif isinstance(preset_option, str):
                 # Ensure the option value is valid for Choice and Toggle options
@@ -125,7 +142,10 @@ def weighted_options_old():
 @app.route("/games/<string:game>/weighted-options")
 @cache.cached()
 def weighted_options(game: str):
-    return render_options_page("weightedOptions/weightedOptions.html", game, is_complex=True)
+    try:
+        return render_options_page("weightedOptions/weightedOptions.html", game, is_complex=True)
+    except KeyError:
+        return abort(404)
 
 
 @app.route("/games/<string:game>/generate-weighted-yaml", methods=["POST"])
@@ -180,7 +200,10 @@ def generate_weighted_yaml(game: str):
 @app.route("/games/<string:game>/player-options")
 @cache.cached()
 def player_options(game: str):
-    return render_options_page("playerOptions/playerOptions.html", game, is_complex=False)
+    try:
+        return render_options_page("playerOptions/playerOptions.html", game, is_complex=False)
+    except KeyError:
+        return abort(404)
 
 
 # YAML generator for player-options
@@ -199,7 +222,7 @@ def generate_yaml(game: str):
 
         for key, val in options.copy().items():
             key_parts = key.rsplit("||", 2)
-            # Detect and build ItemDict options from their name pattern
+            # Detect and build OptionCounter options from their name pattern
             if key_parts[-1] == "qty":
                 if key_parts[0] not in options:
                     options[key_parts[0]] = {}
@@ -211,6 +234,13 @@ def generate_yaml(game: str):
             elif key_parts[-1].endswith("-custom"):
                 if val:
                     options[key_parts[-1][:-7]] = val
+
+                del options[key]
+
+            # Detect keys which end with -range, indicating a NamedRange with a possible custom value
+            elif key_parts[-1].endswith("-range"):
+                if options[key_parts[-1][:-6]] == "custom":
+                    options[key_parts[-1][:-6]] = val
 
                 del options[key]
 
