@@ -14,11 +14,13 @@ from CommonClient import (
     server_loop,
     gui_enabled,
 )
+from MultiServer import mark_raw
 from NetUtils import ClientStatus
 
+from Utils import get_intended_text
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
-from worlds.rabi_ribi.items import item_table
+from worlds.rabi_ribi.items import event_table
 from worlds.rabi_ribi.locations import all_locations
 from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.utility import (
@@ -27,13 +29,15 @@ from worlds.rabi_ribi.utility import (
 )
 
 if TYPE_CHECKING:
-    from BaseClasses import MultiWorld
+    from BaseClasses import CollectionState, Entrance, Location, MultiWorld, Region
 
 try:
-    from worlds.tracker.TrackerClient import TrackerGameContext # type: ignore
+    from worlds.tracker.TrackerClient import TrackerGameContext, updateTracker # type: ignore
+    from worlds.tracker.TrackerClient import TrackerCommandProcessor as ClientCommandProcessor # type: ignore
 
     tracker_loaded = True
 except ImportError:
+    from CommonClient import ClientCommandProcessor
     class TrackerGameContextMixin:
         """Expecting the TrackerGameContext to have these methods."""
         multiworld: "MultiWorld"
@@ -50,15 +54,89 @@ except ImportError:
 
 STRANGE_BOX_ITEM_ID = 30
 
+class RabiRibiCommandProcessor(ClientCommandProcessor): # type: ignore
+    ctx: "RabiRibiContext"
+
+    def _cmd_eggs(self) -> None:
+        """Tells you how many Easter Eggs you have, and how many you need to beat the game"""
+        self.ctx.print_egg_amounts()
+
+    if tracker_loaded:
+        @mark_raw
+        def _cmd_route(self, location_or_region: str = "") -> None:
+            """Explain the route to get to a location or region"""
+            # Taken from https://github.com/drtchops/Archipelago/blob/astalon/worlds/astalon/client.py
+            world = self.ctx.get_world()
+            if not world:
+                logger.info("Not yet loaded into a game")
+                return
+
+            if self.ctx.stored_data and self.ctx.stored_data.get("_read_race_mode"):
+                logger.info("Route is disabled during Race Mode")
+                return
+
+            if not location_or_region:
+                logger.info("Provide a location or region to route to using /route [name]")
+                return
+
+            goal_location: Location | None = None
+            goal_region: Region | None = None
+            region_name = ""
+            location_or_event: Set[str] = {
+                *world.location_names,
+                *event_table
+            }
+            location_name, usable, response = get_intended_text(location_or_region, location_or_event)
+            if usable:
+                goal_location = world.get_location(location_name)
+                assert goal_location
+                goal_region = goal_location.parent_region
+                if not goal_region:
+                    logger.warning(f"Location {location_name} has no parent region")
+                    return
+            else:
+                region_name, usable, _ = get_intended_text(
+                    location_or_region,
+                    [r.name for r in world.multiworld.get_regions(world.player)],
+                )
+                if usable:
+                    goal_region = world.get_region(region_name)
+                else:
+                    logger.warning(response)
+                    return
+
+            state = get_updated_state(self.ctx)
+            if goal_location and not goal_location.can_reach(state):
+                logger.warning(f"Location {goal_location.name} cannot be reached")
+                return
+            if goal_region and goal_region not in state.path:
+                logger.warning(f"Region {goal_region.name} cannot be reached")
+                return
+
+            path: list[Entrance] = []
+            assert goal_region
+            name, connection = state.path[goal_region]
+            while connection != ("Menu", None) and connection is not None:
+                name, connection = connection
+                if "->" in name:
+                    path.append(world.get_entrance(name))
+
+            path.reverse()
+            for p in path:
+                logger.info(p.name)
+
+            if goal_location:
+                logger.info(f"-> {goal_location.name}")
+
 class RabiRibiContext(TrackerGameContext): # type: ignore
     """Rabi Ribi Game Context"""
-
+    game = "Rabi-Ribi"
     tags = {"AP"}
 
     def __init__(self, server_address: Optional[str], password: Optional[str]) -> None:
         super().__init__(server_address, password)
-        self.game = "Rabi-Ribi"
         self.items_handling = 0b101  # local except starting items
+        self.command_processor = RabiRibiCommandProcessor
         self.rr_interface = RabiRibiMemoryIO()
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
@@ -521,6 +599,24 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         while self.rr_interface.is_in_item_receive_animation() and not self.exit_event.is_set():
             await asyncio.sleep(0.1)
 
+    def print_egg_amounts(self) -> None:
+        if self.client_recieved_initial_server_data():
+            assert self.slot_data
+            required_egg_count = self.slot_data["required_egg_count"] if "required_egg_count" in self.slot_data else 5
+            logger.info(f"You have {len(self.collected_eggs)} Easter Eggs")
+            logger.info(f"You need {required_egg_count} Easter Eggs total to beat the game")
+
+    def get_world(self) -> "RabiRibiWorld | None":
+        if self.player_id is None:
+            logger.warning("Internal logic was not able to load, check your yamls and relaunch.")
+            return
+
+        if self.game != "Rabi-Ribi":
+            logger.warning(f"Please connect to a slot with explainable logic (not {self.game}).")
+            return
+
+        return self.multiworld.worlds[self.player_id]  # type: ignore
+
     def reset_client_state(self):
         """
         Reset client back to default values
@@ -677,6 +773,8 @@ async def remove_exclamation_point(ctx: RabiRibiContext, coordinates):
         await asyncio.sleep(0.25)
     ctx.rr_interface.remove_exclamation_point_from_inventory()
 
+def get_updated_state(ctx: "TrackerGameContext") -> "CollectionState":
+    return updateTracker(ctx).state  # type: ignore
 
 async def main(args):
     """

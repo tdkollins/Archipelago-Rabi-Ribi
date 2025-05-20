@@ -17,7 +17,6 @@ class RabiRibiItem(Item):
     def __init__(self, name, classification: ItemClassification, code: Optional[int], player: int):
         super(RabiRibiItem, self).__init__(name, classification, code, player)
 
-
 class RabiRibiItemData(NamedTuple):
     code: Optional[int]
     classification: ItemClassification = ItemClassification.filler
@@ -168,6 +167,20 @@ recruit_table: Set[str] = {
     ItemName.chocolate_recruit,
     ItemName.kotri_recruit,
     ItemName.keke_bunny_recruit
+}
+
+event_table: Set[str] = {
+    *recruit_table,
+    ItemName.rumi_recruit,
+    ItemName.miriam_recruit,
+    ItemName.irisu_recruit,
+    "Chapter 1",
+    "Chapter 2",
+    "Chapter 3",
+    "Chapter 4",
+    "Chapter 5",
+    "Chapter 6",
+    "Chapter 7",
 }
 
 shufflable_gift_items = {
