@@ -182,6 +182,7 @@ class RabiRibiWorld(World):
 
         for item in map(self.create_item, base_item_list):
             if (not self.options.randomize_hammer.value) and (item.name == ItemName.piko_hammer):
+                self.multiworld.get_location(LocationName.piko_hammer, self.player).place_locked_item(self.create_item(ItemName.piko_hammer))
                 continue
             elif (not self.options.randomize_gift_items.value) and (item.name in shufflable_gift_items):
                 continue
@@ -241,10 +242,6 @@ class RabiRibiWorld(World):
         """
         self.multiworld.completion_condition[self.player] = \
             lambda state: state.has(ItemName.easter_egg, self.player, self.required_egg_count)
-
-    def pre_fill(self) -> None:
-        if not self.options.randomize_hammer.value:
-            self.multiworld.get_location(LocationName.piko_hammer, self.player).place_locked_item(self.create_item(ItemName.piko_hammer))
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:
         spoiler_handle.write(f'\nStart Location: {self.start_location}\n')
