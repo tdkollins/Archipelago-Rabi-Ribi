@@ -171,6 +171,9 @@ recruit_table: Set[str] = {
 
 event_table: Set[str] = {
     *recruit_table,
+    ItemName.cocoa_1,
+    ItemName.kotri_1,
+    ItemName.kotri_2,
     ItemName.rumi_recruit,
     ItemName.miriam_recruit,
     ItemName.irisu_recruit,
