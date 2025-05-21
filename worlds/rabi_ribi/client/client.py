@@ -410,8 +410,8 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         """
         area_id, x, y = self.rr_interface.read_player_tile_position()
         return area_id == 0 and \
-            110 <= x <= 112 and \
-            36 <= y <= 91
+            ((110 <= x <= 112 and 36 <= y <= 91) or \
+             (69 <= x <= 71 and 81 <= y <= 136))
 
     async def wait_until_out_of_shaft(self):
         """
