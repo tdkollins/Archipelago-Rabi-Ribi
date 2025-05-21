@@ -24,6 +24,7 @@ from worlds.rabi_ribi.items import event_table
 from worlds.rabi_ribi.locations import all_locations
 from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.utility import (
+    CLIENT_VERSION,
     load_text_file,
     convert_existing_rando_name_to_ap_name
 )
@@ -32,7 +33,7 @@ if TYPE_CHECKING:
     from BaseClasses import CollectionState, Entrance, Location, MultiWorld, Region
 
 try:
-    from worlds.tracker.TrackerClient import TrackerGameContext, updateTracker # type: ignore
+    from worlds.tracker.TrackerClient import UT_VERSION, TrackerGameContext, updateTracker # type: ignore
     from worlds.tracker.TrackerClient import TrackerCommandProcessor as ClientCommandProcessor # type: ignore
 
     tracker_loaded = True
@@ -174,7 +175,11 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
 
     def make_gui(self):
         ui = super().make_gui()
-        ui.base_title = f"Rabi-Ribi Client"
+        ui.base_title = f"Rabi-Ribi Client v{CLIENT_VERSION.as_simple_string()}"
+        if tracker_loaded:
+            ui.base_title += f" | UT {UT_VERSION}"
+
+        ui.base_title += " | AP"
         return ui
 
     def read_location_coordinates_and_rr_item_ids(self):
