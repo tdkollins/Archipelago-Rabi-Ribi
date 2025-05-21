@@ -9,7 +9,7 @@ from itertools import chain
 from typing import Any, ClassVar, Dict, List, Optional, Set, TextIO, Union
 from BaseClasses import ItemClassification, Tutorial
 from Fill import swap_location_item
-from Options import Toggle
+from Options import OptionError, Toggle
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, Type, components, launch_subprocess
 from .existing_randomizer.dataparser import RandomizerData
@@ -112,6 +112,14 @@ class RabiRibiWorld(World):
             logging.warning(f"Rabi-Ribi: Enabling open mode for Player {self.player} ({self.player_name}) due to shuffled start location.")
             self.options.open_mode.value = Toggle.option_true
 
+        if self.options.apply_beginner_mod.value and \
+            (self.options.include_warp_destination.value or
+            self.options.include_post_game.value or
+            self.options.include_post_irisu.value or
+            self.options.include_halloween.value):
+            raise OptionError(f"Rabi-Ribi: Beginner Mod is not compatable with post game and DLC. Player {self.player} ({self.player_name}) "
+                              "needs to disable post game and DLC locations.")
+
         self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
         self.randomizer_data = RandomizerData(self.existing_randomizer_args)
 
@@ -200,6 +208,7 @@ class RabiRibiWorld(World):
             "required_egg_count": self.required_egg_count,
             "openMode": bool(self.options.open_mode.value),
             "attackMode": self.options.attack_mode.value,
+            "apply_beginner_mod": bool(self.options.apply_beginner_mod.value),
             "randomize_gift_items": bool(self.options.randomize_gift_items.value),
             "include_plurkwood": bool(self.options.include_plurkwood.value),
             "include_warp_destination": bool(self.options.include_warp_destination.value),

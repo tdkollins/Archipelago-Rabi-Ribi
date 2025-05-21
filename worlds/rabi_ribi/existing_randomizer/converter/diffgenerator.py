@@ -3,6 +3,7 @@ import struct
 import json
 import os
 import sys
+from typing import Any
 from ..utility import print_ln
 from ...utility import load_text_file
 
@@ -129,7 +130,7 @@ class DiffData(object):
         return sorted(self.area_diffs.keys())
 
     def _parse_area_diff(self, lines):
-        diffs = {}
+        diffs: dict[str,list[Any]] = {}
 
         layer_name = None
         format_type = None
@@ -137,13 +138,17 @@ class DiffData(object):
         for line in lines:
             if line.startswith('@'):
                 if layer_name != None:
-                    diffs[layer_name] = self._parse_diff(layer_name, layer_lines, format_type)
+                    if layer_name not in diffs:
+                        diffs[layer_name] = []
+                    diffs[layer_name].append(self._parse_diff(layer_name, layer_lines, format_type))
                     layer_lines.clear()
                 layer_name, format_type = line.strip('@').split(':')
             else:
                 layer_lines.append(line)
         if layer_name != None:
-            diffs[layer_name] = self._parse_diff(layer_name, layer_lines, format_type)
+            if layer_name not in diffs:
+                diffs[layer_name] = []
+            diffs[layer_name].append(self._parse_diff(layer_name, layer_lines, format_type))
             layer_lines.clear()
 
         return diffs
@@ -184,8 +189,9 @@ def apply_diff_to_maps(maps_by_area, diff_data):
     new_maps = {}
     for areaid, map_data in maps_by_area.items():
         new_map = map_data.copy()
-        diffs = diff_data.area_diffs[areaid]
-        new_map.apply_diff(diffs)
+        diff_list = diff_data.area_diffs[areaid]
+        for diffs in diff_list:
+            new_map.apply_diff(diffs)
         new_maps[areaid] = new_map
     return new_maps
 

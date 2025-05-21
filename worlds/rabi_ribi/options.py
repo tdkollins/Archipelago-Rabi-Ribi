@@ -11,6 +11,14 @@ class OpenMode(Toggle):
     display_name = "Open Mode"
     default = True
 
+class ApplyBeginnerMod(Toggle):
+    """
+    If set to true, applies an accessibility mod for new players.
+    This mod shows hidden paths and reveals breakable blocks.
+    Additionally, the mod fixes a few areas to prevent softlocks.
+    """
+    display_name = "Apply Beginner Mod"
+
 class RandomizeHammer(Toggle):
     """If set to false, the hammer is at the default location"""
     display_name = "Randomize Hammer"
@@ -254,6 +262,7 @@ class RabiRibiOptions(PerGameCommonOptions):
     encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
 
     open_mode: OpenMode
+    apply_beginner_mod: ApplyBeginnerMod
     attack_mode: AttackMode
     knowledge: Knowledge
     trick_difficulty: TrickDifficulty

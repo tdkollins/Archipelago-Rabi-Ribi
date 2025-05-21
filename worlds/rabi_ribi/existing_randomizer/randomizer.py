@@ -29,6 +29,7 @@ def parse_args():
     args.add_argument('-constraint-changes', default=0, type=float, help='Average number of changed map constraints')
     args.add_argument('-min-constraint-changes', default=-1, type=float, help='Min number of changed map constraints')
     args.add_argument('-max-constraint-changes', default=-1, type=float, help='Max number of changed map constraints')
+    args.add_argument('-apply-beginner-mod', action='store_true', help='Apply beginner mod')
     args.add_argument('--no-laggy-backgrounds', action='store_true', help='Don\'t include laggy backgrounds in background shuffle.')
     args.add_argument('--no-difficult-backgrounds', action='store_true', help='Don\'t include backgrounds in background shuffle that interfere with visibility.')
     args.add_argument('--super-attack-mode', action='store_true', help='Start the game with a bunch of attack ups, so you do lots more damage.')
@@ -441,10 +442,11 @@ def build_start_game_shaft(areaid, data, events_list, settings):
 
 def apply_diff_patch_fixes(mod, diff_patch_files):
     def apply_diff(arrays, diffs):
-        for layer_name, diff in diffs.items():
+        for layer_name, diff_list in diffs.items():
             array = arrays[layer_name]
-            for index, coords, value in diff:
-                array[index] = value
+            for diff in diff_list:
+                for index, coords, value in diff:
+                    array[index] = value
 
     area_arrays = {}
     for areaid, stored_data in mod.stored_datas.items():
@@ -469,6 +471,13 @@ def apply_diff_patch_fixes(mod, diff_patch_files):
             apply_diff(area_arrays[areaid], diffs)
 
 def pre_modify_map_data(mod, settings, diff_patch_files, config):
+    # apply beginner mod
+    if settings.apply_beginner_mod:
+        diff_patch_files += [
+            os.path.join('existing_randomizer', 'maptemplates', 'beginner', 'mod_beginner.txt'),
+        ]
+        print_ln('Beginner mod applied')
+
     # apply rando fixes
     if settings.apply_fixes:
         for areaid, data in mod.stored_datas.items():
