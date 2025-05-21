@@ -200,6 +200,7 @@ class RabiRibiWorld(World):
             "required_egg_count": self.required_egg_count,
             "openMode": bool(self.options.open_mode.value),
             "attackMode": self.options.attack_mode.value,
+            "apply_beginner_mod": bool(self.options.apply_beginner_mod.value),
             "randomize_gift_items": bool(self.options.randomize_gift_items.value),
             "include_plurkwood": bool(self.options.include_plurkwood.value),
             "include_warp_destination": bool(self.options.include_warp_destination.value),

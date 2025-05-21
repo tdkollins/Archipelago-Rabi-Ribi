@@ -85,7 +85,7 @@ def patch_map_files(ctx: RabiRibiContext):
     settings.shuffle_music = ctx.slot_data["shuffle_music"]
     settings.shuffle_backgrounds = ctx.slot_data["shuffle_backgrounds"]
     settings.shuffle_start_location = ctx.slot_data["shuffle_start_location"]
-
+    settings.apply_beginner_mod = ctx.slot_data["apply_beginner_mod"]
     settings.no_laggy_backgrounds = True
     settings.no_difficult_backgrounds = True
     attack_mode = ctx.slot_data["attackMode"]
