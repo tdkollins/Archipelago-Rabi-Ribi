@@ -287,7 +287,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             self.seed_name = args['seed_name']
 
         elif cmd == "LocationInfo":
-            if len(args["locations"]) > 1:
+            if len(args["locations"]) == len(self.server_locations):
                 # initial request on first connect.
                 self.patch_if_recieved_all_data()
             else:
