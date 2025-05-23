@@ -473,9 +473,7 @@ def apply_diff_patch_fixes(mod, diff_patch_files):
 def pre_modify_map_data(mod, settings, diff_patch_files, config):
     # apply beginner mod
     if settings.apply_beginner_mod:
-        diff_patch_files += [
-            os.path.join('existing_randomizer', 'maptemplates', 'beginner', 'mod_beginner.txt'),
-        ]
+        diff_patch_files.insert(0, os.path.join('existing_randomizer', 'maptemplates', 'beginner', 'mod_beginner.txt'))
         print_ln('Beginner mod applied')
 
     # apply rando fixes
