@@ -176,7 +176,8 @@ class RegionHelper:
             not ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
             self.unreachable_regions.update(adv_vhard_post_game_regions)
 
-        if not self.options.include_plurkwood:
+        # Include Plurkwood with UT, as the player could recruit Keke Bunny out of logic
+        if not self.options.include_plurkwood and not ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
             self.unreachable_regions.update(plurkwood_regions)
 
         if not self.options.include_warp_destination:
