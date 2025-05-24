@@ -362,7 +362,9 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         skipped_items, cur_item_id = next(((idx, item_id) for idx, item_id in enumerate(remaining_items) if item_id != -1), (-1, -1))
 
         if cur_item_id > 0:
-            self.rr_interface.give_item(cur_item_id)
+            if not self.rr_interface.does_player_have_item_id(cur_item_id):
+                self.rr_interface.give_item(cur_item_id)
+            # Update index regardless to move to the next item in the queue
             self.rr_interface.set_last_received_item_index(last_received_item_index + skipped_items + 1)
             await asyncio.sleep(1)
             await self.wait_until_out_of_item_receive_animation()
@@ -397,15 +399,12 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
 
     def is_item_queued(self):
         """
-        To determine if we have any items to give, look at the last recieved item and check if the player
-        currently has it in their inventory
+        To determine if we have any items to give, look at the last recieved item index
+        and check if we have received more items.
         """
         if self.items_received:
             last_received_item_index = self.rr_interface.get_last_received_item_index()
-            remaining_items = self.items_received_rabi_ribi_ids[last_received_item_index:]
-            for item_id in remaining_items:
-                if item_id != -1:
-                    return not self.rr_interface.does_player_have_item_id(item_id)
+            return last_received_item_index < len(self.items_received_rabi_ribi_ids)
         return False
 
     def is_in_shaft(self):
