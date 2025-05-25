@@ -252,16 +252,19 @@ class RabiRibiWorld(World):
         self.multiworld.completion_condition[self.player] = \
             lambda state: state.has(ItemName.easter_egg, self.player, self.required_egg_count)
 
-    def write_spoiler(self, spoiler_handle: TextIO) -> None:
-        spoiler_handle.write(f'\nStart Location: {self.start_location}\n')
+    def write_spoiler_header(self, spoiler_handle: TextIO) -> None:
+        if self.options.shuffle_start_location.value:
+            spoiler_handle.write(f'\nStart Location ({self.player_name}): {self.start_location}')
 
-        spoiler_handle.write(f'\nApplied Map Constraints:\n')
-        for template in self.picked_templates:
-            spoiler_handle.write(f'\n{convert_existing_rando_name_to_ap_name(template)}')
+        if self.options.shuffle_map_transitions.value:
+            spoiler_handle.write(f'\n\nMap Transitions ({self.player_name}):\n')
+            for entrance in self.map_transition_shuffle_spoiler:
+                spoiler_handle.write(f'\n{entrance}')
 
-        spoiler_handle.write(f'\n\nMap Transitions:\n')
-        for entrance in self.map_transition_shuffle_spoiler:
-            spoiler_handle.write(f'\n{entrance}')
+        if self.options.number_of_constraint_changes.value > 0:
+            spoiler_handle.write(f'\n\nApplied Map Constraints ({self.player_name}):\n')
+            for template in self.picked_templates:
+                spoiler_handle.write(f'\n{convert_existing_rando_name_to_ap_name(template)}')
 
     def _convert_options_to_existing_randomizer_args(self):
         args = parse_args()
