@@ -368,7 +368,7 @@ class RegionHelper:
             right = self.randomizer_data.walking_right_transitions[idx]
             left_name = convert_existing_rando_name_to_ap_name(left.origin_location)
             right_name = convert_existing_rando_name_to_ap_name(right.origin_location)
-            self.world.map_transition_shuffle_spoiler.append(f'{left_name} -> {right_name}')
+            self.world.map_transition_shuffle_spoiler.append(f'{left_name} <=> {right_name}')
 
     def _get_region_name_list(self):
         return [
