@@ -142,6 +142,19 @@ class RabiRibiMemoryIO():
             return False
         return True
 
+    def _read_4_byte_bool_raw(self, address):
+        """
+        Read a word at the specified address, and interpret it as a bool
+
+        :int address: the address to read data from.
+        :returns: The data represented as a float.
+        """
+        data = self.rr_mem.read_bytes(address, 4)
+        if (struct.unpack("i", data)[0] == 0):
+            return False
+        return True
+        
+
     def read_player_tile_position(self):
         """
         Read the player (area_id,x,y) and convert it to tile (area_id,x,y).
@@ -361,7 +374,8 @@ class RabiRibiMemoryIO():
         """
         True if the player's health is at 0
         """
-        return not self._read_4_byte_bool(OFFSET_MAX_HEALTH)
+        player_state_health_address = self._read_int(OFFSET_PLAYER_STATE) + OFFSET_PLAYER_STATE_HEALTH 
+        return not self._read_4_byte_bool_raw(player_state_health_address)
 
     def set_player_health_to_zero(self):
         """
