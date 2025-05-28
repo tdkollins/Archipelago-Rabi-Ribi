@@ -164,6 +164,8 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.time_since_last_item_obtained = time.time()
         self.time_since_last_warp_menu = time.time()
         self.time_since_last_costume_menu = time.time()
+        self.time_since_last_save_menu = time.time()
+        self.time_since_last_death = time.time()
         
         self.items_received_rabi_ribi_ids = []
         self.obtained_items_queue = asyncio.Queue()
@@ -504,12 +506,19 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             self.time_since_last_costume_menu = time.time()
         return in_costume_menu
 
+    def is_plater_in_save_menu(self):
+        in_save_menu = self.rr_interface.is_in_save_menu()
+        if in_save_menu:
+            self.time_since_last_save_menu = time.time()
+        return in_save_menu
+
     def in_state_where_can_give_items(self):
         cur_time = time.time()
         return (
             (cur_time - self.time_since_last_paused >= 2) and
             (cur_time - self.time_since_last_warp_menu >= 5.5) and
             (cur_time - self.time_since_last_costume_menu >= 2) and
+            (cur_time - self.time_since_last_save_menu >= 2) and
             not self.rr_interface.is_player_frozen() and
             len(self.deathlink_buffer) == 0 and
             self.is_item_queued()
@@ -534,6 +543,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             self.is_player_paused()
             self.is_player_in_warp_menu()
             self.is_player_in_costume_menu()
+            self.is_player_in_save_menu()
             await asyncio.sleep(0.1)
 
     def is_on_main_menu(self):
@@ -553,6 +563,8 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             (cur_time - self.time_since_last_paused >= 2) and
             (cur_time - self.time_since_last_warp_menu >= 5.5) and
             (cur_time - self.time_since_last_costume_menu >= 2) and
+            (cur_time - self.time_since_last_save_menu >= 2) and
+            (cur_time - self.time_since_last_death >= 5.5) and
             not self.rr_interface.is_player_frozen() and
             not self.has_died and
             len(self.deathlink_buffer) > 0
@@ -560,6 +572,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
 
     def trigger_death(self):
         self.rr_interface.set_player_health_to_zero()
+        self.time_since_last_death = time.time()
         self.deathlink_buffer = []
         self.has_died = True
 
@@ -650,6 +663,8 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.time_since_last_item_obtained = time.time()
         self.time_since_last_warp_menu = time.time()
         self.time_since_last_costume_menu = time.time()
+        self.time_since_last_save_menu = time.time()
+        self.time_since_last_death = time.time()
 
         self.items_received_rabi_ribi_ids = []
         self.obtained_items_queue = asyncio.Queue()
@@ -695,7 +710,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
             cur_time = time.time()
 
-            if not ctx.has_zero_health():
+            if not ctx.has_zero_health() and (cur_time - ctx.time_since_last_death) >= 5.5:
                 ctx.has_died = False
 
             if ctx.in_deathlink_eligible_state():
@@ -703,6 +718,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
             if ctx.has_zero_health() and not ctx.has_died and 'DeathLink' in ctx.tags:
                 ctx.has_died = True
+                ctx.time_since_last_death = time.time()
                 await ctx.send_death("Rabi-Ribi deathlink sent")
 
             await ctx.handle_egg_changes()

@@ -31,6 +31,7 @@ OFFSET_SCENERIO_INDICATOR = int(0xE30880)
 OFFSET_IN_ITEM_GET_ANIMATION = int(0x1682ACA)
 OFFSET_IN_WARP_MENU = int(0x16E5BB8)
 OFFSET_IN_COSTUME_MENU = int(0x16E6B20)
+OFFSET_IN_SAVE_MENU = int(0x1729ED8)
 OFFSET_CURRENT_WARP_ID = int(0x016E6D08)
  # returns a memory address where various state is stored
 OFFSET_PLAYER_STATE = int(0x1682364)
@@ -357,6 +358,12 @@ class RabiRibiMemoryIO():
         True if the player isnt loaded into a game.
         """
         return not self._read_4_byte_bool(OFFSET_MAX_HEALTH) and not self.is_player_paused()
+
+    def is_in_save_menu(self) -> bool:
+        """
+        True if the player is in the save game menu.
+        """
+        return self._read_1_byte_bool(OFFSET_IN_SAVE_MENU)
 
     def is_in_warp_menu(self) -> bool:
         """
