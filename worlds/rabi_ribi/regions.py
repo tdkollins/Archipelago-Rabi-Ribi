@@ -180,11 +180,11 @@ class RegionHelper:
         if not self.options.include_plurkwood and not ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
             self.unreachable_regions.update(plurkwood_regions)
 
-        if not self.options.include_warp_destination and not self.options.include_post_game:
+        if not self.options.include_warp_destination and not self.options.include_post_game and not self.options.include_post_irisu:
             #TODO Warn users that warp destination is included, OR split the regions from the locations
             self.unreachable_regions.update(warp_destination_regions)
 
-        if not self.options.include_post_game:
+        if not self.options.include_post_game and not self.options.include_post_irisu:
             self.unreachable_regions.update(post_game_regions)
 
         if not self.options.include_halloween:
