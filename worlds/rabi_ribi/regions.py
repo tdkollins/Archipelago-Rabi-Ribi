@@ -181,7 +181,6 @@ class RegionHelper:
             self.unreachable_regions.update(plurkwood_regions)
 
         if not self.options.include_warp_destination and not self.options.include_post_game and not self.options.include_post_irisu:
-            #TODO Warn users that warp destination is included, OR split the regions from the locations
             self.unreachable_regions.update(warp_destination_regions)
 
         if not self.options.include_post_game and not self.options.include_post_irisu:
