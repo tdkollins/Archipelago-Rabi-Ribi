@@ -506,7 +506,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             self.time_since_last_costume_menu = time.time()
         return in_costume_menu
 
-    def is_plater_in_save_menu(self):
+    def is_player_in_save_menu(self):
         in_save_menu = self.rr_interface.is_in_save_menu()
         if in_save_menu:
             self.time_since_last_save_menu = time.time()
