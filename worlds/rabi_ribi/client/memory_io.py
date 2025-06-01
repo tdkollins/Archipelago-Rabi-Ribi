@@ -10,7 +10,7 @@ in realtime. This is used to:
 """
 import asyncio
 import struct
-from typing import List, Tuple
+from typing import List, Tuple, Set
 
 from pymem import pymem
 
@@ -369,3 +369,14 @@ class RabiRibiMemoryIO():
         """
         player_state_health_address = self._read_int(OFFSET_PLAYER_STATE) + OFFSET_PLAYER_STATE_HEALTH
         self.rr_mem.write_int(player_state_health_address, 0)
+
+    def add_missing_eggs(self, current_eggs: Set[Tuple[int, int, int]], eggs_to_add: Set[Tuple[int, int, int]]):
+        """
+        Adds Easter Eggs to a player's inventory, if they are not already added.
+        """
+        eggs_to_patch = eggs_to_add.difference(current_eggs)
+        if(not eggs_to_patch):
+            return
+        current_egg_offset = len(current_eggs) * 3 * 2
+        data = b''.join(struct.pack(f"<3h", *egg) for egg in eggs_to_patch)
+        self.rr_mem.write_bytes(self.rr_mem.base_address + OFFSET_EGG_START + current_egg_offset, data, len(data))
