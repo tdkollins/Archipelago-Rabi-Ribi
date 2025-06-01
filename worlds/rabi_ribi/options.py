@@ -47,6 +47,13 @@ class MaxNumberOfEasterEggs(Range):
     range_end = 80
     default = 5
 
+class AllowRemoteEasterEggs(Toggle):
+    """
+    Defines if Easter Eggs can be located in other player's worlds.
+    If false, all Easter Eggs will be local
+    """
+    display_name = "Allow Remote Easter Eggs"
+
 class PercentageOfEasterEggs(Range):
     """
     What percentage of Easter Eggs are required to beat the game. Note that you will receive
@@ -259,6 +266,7 @@ class RabiRibiOptions(PerGameCommonOptions):
     """Rabi Ribi Options Definition"""
     max_number_of_easter_eggs: MaxNumberOfEasterEggs
     percentage_of_easter_eggs: PercentageOfEasterEggs
+    allow_remote_easter_eggs: AllowRemoteEasterEggs
     encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
 
     open_mode: OpenMode
