@@ -366,7 +366,7 @@ ITM & DARKNESS & (
 
 {
 "edge": "CAVE_COCOA -> FORGOTTEN_CAVE_2",
-"prereq": "POST_GAME & ((CHAPTER_6 & TM_MIRIAM) | 4TILE_ZIP)",
+"prereq": "(POST_GAME | POST_IRISU) & ((CHAPTER_6 & TM_MIRIAM) | 4TILE_ZIP)",
 }
 
 // Spectral
@@ -913,7 +913,7 @@ PROLOGUE_TRIGGER & (
 {
 "edge": "LIBRARY_OUTSIDE -> LIBRARY_ENTRANCE",
 "prereq": "
-    POST_GAME
+    (POST_GAME | POST_IRISU)
     // library open flag
     & UPRPRC_LOWER & PARK_WARP & (4TILE_ZIP | SYSINT2_END)
     // entering library
@@ -1020,7 +1020,7 @@ PROLOGUE_TRIGGER & (
 {
 "edge": "GRAVEYARD_UPPER -> LIBRARY_ALCOVE_LEDGE",
 "prereq": "
-    POST_GAME & (
+    (POST_GAME | POST_IRISU) & (
         (OBS_STUPID & BUNSTRIKE_ZIP)
         // need turn-off hammer roll v1.08
         // slide jump from 2-tile height ledge, 3-tile zip, amulet
@@ -1031,7 +1031,7 @@ PROLOGUE_TRIGGER & (
 
 {
 "edge": "GRAVEYARD_UPPER -> LIBRARY_BOTTOM",
-"prereq": "POST_GAME & OBS_VHARD & BUNSTRIKE_ZIP",
+"prereq": "(POST_GAME | POST_IRISU) & OBS_VHARD & BUNSTRIKE_ZIP",
 }
 
 {
@@ -1090,12 +1090,12 @@ PROLOGUE_TRIGGER & (
 
 {
 "edge": "LIBRARY_OOB -> LIBRARY_IRISU",
-"prereq": "POST_GAME"
+"prereq": "(POST_GAME | POST_IRISU)"
 }
 
 //{
 //"edge": "LIBRARY_OOB -> LIBRARY_MID_LOWER",
-//"prereq": "POST_GAME & BUNNY_STRIKE & ADV_STUPID"
+//"prereq": "(POST_GAME | POST_IRISU) & BUNNY_STRIKE & ADV_STUPID"
 //}
 
 // Halloween
@@ -2751,7 +2751,7 @@ ITM & (
 
 {
 "edge": "VOLCANIC_MAIN -> HALL_OF_MEMORIES",
-"prereq": "POST_GAME & CHAPTER_6",
+"prereq": "(POST_GAME | POST_IRISU) & CHAPTER_6",
 }
 
 // .---------------------'
@@ -2766,7 +2766,7 @@ ITM & (
 {
 "edge": "SYSTEM_INTERIOR_MAIN -> SYSINT2_START",
 "prereq": "
-POST_GAME & (
+(POST_GAME | POST_IRISU) & (
     // climb left wall
     (ITM_HARD & WALL_JUMP & AIR_JUMP & AIR_DASH)
     | (ADV_VHARD & RABI_SLIPPERS & BUNNY_AMULET & (
@@ -2823,7 +2823,7 @@ EXPLOSIVES & (
 {
 "edge": "SYSTEM_INTERIOR_MAIN -> SYSINT2_END",
 "prereq": "
-    POST_GAME & ((ADV_STUPID & WHIRL_BONK) & (
+    (POST_GAME | POST_IRISU) & ((ADV_STUPID & WHIRL_BONK) & (
         (AIR_JUMP & (WALL_JUMP_LV2 | (WALL_JUMP & OBSCURE)))
         | (OBSCURE & RABI_SLIPPERS & WALL_JUMP_LV2)
     ))
@@ -2909,7 +2909,7 @@ EXPLOSIVES & (
 
 {
 "edge": "TOWN_MAIN -> WARP_DESTINATION_HOSPITAL",
-"prereq": "WARP_DESTINATION & CHAPTER_5 & POST_GAME",
+"prereq": "CHAPTER_5 & (WARP_DESTINATION | POST_GAME | POST_IRISU)",
 }
 
 {

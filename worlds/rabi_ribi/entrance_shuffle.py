@@ -76,6 +76,9 @@ class MapGenerator(object):
                 logger.debug(f'Generated a valid seed after {i} attempts.')
                 break
 
+            # Revert graph for next attempt
+            self.allocation.revert_graph(self.data)
+
         if not success:
             raise RuntimeError(f'Unable to generate a valid seed after {MAX_ATTEMPTS} attempts.')
 

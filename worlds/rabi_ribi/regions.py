@@ -43,6 +43,38 @@ warp_destination_regions: Set[str] = {
     "Item Egg Hospital Box"
 }
 
+post_game_regions: Set[str] = {
+    "Unreachable Location",
+    "Forgotten Cave 2",
+    "Hall Of Memories",
+    "Library Alcove Ledge",
+    "Library Bottom",
+    "Library Entrance",
+    "Library Irisu",
+    "Library Mid Lower",
+    "Library Mid Upper",
+    "Sysint2 Egg Room",
+    "Sysint2 End",
+    "Sysint2 Start",
+    "Item Blessed",
+    "Item Auto Trigger",
+    "Item Hitbox Down",
+    "Item Carrot Shooter",
+    "Item Cyber Flower",
+    "Item Egg Rumi",
+    "Item Egg Library",
+    "Item Egg Memories Sysint",
+    "Item Egg Memories Ravine",
+    "Item Egg Memories Cars Room",
+    "Item Egg Sysint2",
+    "Item Egg Sysint2 Long Jump"
+}
+
+post_irisu_regions: Set[str] = {
+    "Item Ribbon Badge",
+    "Item Erina Badge",
+}
+
 halloween_regions: Set[str] = {
     "Halloween Central",
     "Halloween Dark Shaft",
@@ -61,35 +93,6 @@ halloween_regions: Set[str] = {
     "Item Egg Halloween Sw Slide",
     "Item Egg Halloween Warp Zone",
     "Item Egg Halloween West"
-}
-
-post_game_regions: Set[str] = {
-    "Unreachable Location",
-    "Forgotten Cave 2",
-    "Hall Of Memories",
-    "Library Alcove Ledge",
-    "Library Bottom",
-    "Library Entrance",
-    "Library Irisu",
-    "Library Mid Lower",
-    "Library Mid Upper",
-    "Sysint2 Egg Room",
-    "Sysint2 End",
-    "Sysint2 Start",
-    "Item Blessed",
-    "Item Auto Trigger",
-    "Item Hitbox Down",
-    "Item Ribbon Badge",
-    "Item Erina Badge",
-    "Item Carrot Shooter",
-    "Item Cyber Flower",
-    "Item Egg Rumi",
-    "Item Egg Library",
-    "Item Egg Memories Sysint",
-    "Item Egg Memories Ravine",
-    "Item Egg Memories Cars Room",
-    "Item Egg Sysint2",
-    "Item Egg Sysint2 Long Jump"
 }
 
 # Impossible to reach without being on a high enough difficulty
@@ -177,14 +180,20 @@ class RegionHelper:
             self.unreachable_regions.update(adv_vhard_post_game_regions)
 
         # Include Plurkwood with UT, as the player could recruit Keke Bunny out of logic
-        if not self.options.include_plurkwood and not ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
+        if not self.options.include_plurkwood and \
+            not ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
             self.unreachable_regions.update(plurkwood_regions)
 
-        if not self.options.include_warp_destination:
+        if not self.options.include_warp_destination and \
+            not self.options.include_post_game and \
+            not self.options.include_post_irisu:
             self.unreachable_regions.update(warp_destination_regions)
 
-        if not self.options.include_post_game:
+        if not self.options.include_post_game and not self.options.include_post_irisu:
             self.unreachable_regions.update(post_game_regions)
+
+        if not self.options.include_post_irisu:
+            self.unreachable_regions.update(post_irisu_regions)
 
         if not self.options.include_halloween:
             self.unreachable_regions.update(halloween_regions)
@@ -211,7 +220,7 @@ class RegionHelper:
         added_exits: Set[str] = set()
 
         for edge in edge_constraints:
-            rule = convert_existing_rando_rule_to_ap_rule(edge.satisfied_expr, self.player, self.regions, self.options)
+            rule, region_references = convert_existing_rando_rule_to_ap_rule(edge.satisfied_expr, self.player, self.regions, self.options)
             from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
             to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
 
@@ -230,6 +239,10 @@ class RegionHelper:
                     to_location: rule
                 })
                 added_exits.add(entrance_name)
+
+            for region_name in region_references:
+                region = self._get_region(region_name)
+                self.multiworld.register_indirect_condition(region, self.multiworld.get_entrance(entrance_name, self.player))
 
     def set_locations(self):
         """
@@ -266,6 +279,7 @@ class RegionHelper:
                 self.location_table[location_name],
                 region
             )
+
             region.locations.append(ap_location)
             total_locations += 1
 
@@ -284,6 +298,9 @@ class RegionHelper:
         return total_locations
 
     def set_events(self):
+        self.add_event("Boost Unlock", LocationName.beach_main)
+        self.add_event("Shop Access", LocationName.town_shop)
+
         self.add_event(ItemName.cocoa_1, LocationName.forest_cocoa_room)
         self.add_event(ItemName.kotri_1, LocationName.park_kotri)
         self.add_event(ItemName.kotri_2, LocationName.graveyard_kotri,
@@ -324,8 +341,7 @@ class RegionHelper:
             self.add_event(ItemName.keke_bunny_recruit, LocationName.plurkwood_main,
                            lambda state: logic.can_recruit_keke_bunny(state, self.player))
 
-        self.add_event("Chapter 1", LocationName.town_main,
-                       lambda state: logic.can_reach_chapter_1(state, self.player))
+        self.add_event("Chapter 1", LocationName.town_main)
         self.add_event("Chapter 2", LocationName.town_main,
                        lambda state: logic.can_reach_chapter_2(state, self.player))
         self.add_event("Chapter 3", LocationName.town_main,
@@ -335,7 +351,7 @@ class RegionHelper:
         self.add_event("Chapter 5", LocationName.town_main,
                        lambda state: logic.can_reach_chapter_5(state, self.player))
 
-        if (self.options.include_post_game):
+        if self.options.include_post_game.value or self.options.include_post_irisu.value:
             self.add_event(ItemName.miriam_recruit, LocationName.hall_of_memories,
                            lambda state: logic.can_recruit_miriam(state, self.player))
             self.add_event(ItemName.rumi_recruit, LocationName.forgotten_cave_2,
