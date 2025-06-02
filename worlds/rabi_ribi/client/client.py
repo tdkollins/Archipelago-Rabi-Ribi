@@ -724,7 +724,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
             if ctx.slot_data:
                 required_egg_count = ctx.slot_data["required_egg_count"] if "required_egg_count" in ctx.slot_data else 5
-                if ctx.slot_data and ctx.rr_interface.get_number_of_eggs_collected() >= required_egg_count:
+                if ctx.slot_data and ctx.rr_interface.get_number_of_eggs_collected() >= required_egg_count and not ctx.rr_interface.is_on_main_menu():
                     ctx.finished_game = True
                     await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
