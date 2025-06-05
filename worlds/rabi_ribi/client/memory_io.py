@@ -31,6 +31,7 @@ OFFSET_SCENERIO_INDICATOR = int(0xE30880)
 OFFSET_IN_ITEM_GET_ANIMATION = int(0x1682ACA)
 OFFSET_IN_WARP_MENU = int(0x16E5BB8)
 OFFSET_IN_COSTUME_MENU = int(0x16E6B20)
+OFFSET_IN_SAVE_MENU = int(0xD2DA50)
 OFFSET_CURRENT_WARP_ID = int(0x016E6D08)
  # returns a memory address where various state is stored
 OFFSET_PLAYER_STATE = int(0x1682364)
@@ -141,6 +142,19 @@ class RabiRibiMemoryIO():
         if (struct.unpack("?", data)[0] == 0):
             return False
         return True
+
+    def _read_4_byte_bool_raw(self, address):
+        """
+        Read a word at the specified address, and interpret it as a bool
+
+        :int address: the address to read data from.
+        :returns: The data represented as a float.
+        """
+        data = self.rr_mem.read_bytes(address, 4)
+        if (struct.unpack("i", data)[0] == 0):
+            return False
+        return True
+        
 
     def read_player_tile_position(self):
         """
@@ -345,6 +359,12 @@ class RabiRibiMemoryIO():
         """
         return not self._read_4_byte_bool(OFFSET_MAX_HEALTH) and not self.is_player_paused()
 
+    def is_in_save_menu(self) -> bool:
+        """
+        True if the player is in the save game menu.
+        """
+        return self._read_1_byte_bool(OFFSET_IN_SAVE_MENU)
+
     def is_in_warp_menu(self) -> bool:
         """
         True if the player is currently selecting a warp
@@ -361,7 +381,8 @@ class RabiRibiMemoryIO():
         """
         True if the player's health is at 0
         """
-        return not self._read_4_byte_bool(OFFSET_MAX_HEALTH)
+        player_state_health_address = self._read_int(OFFSET_PLAYER_STATE) + OFFSET_PLAYER_STATE_HEALTH 
+        return not self._read_4_byte_bool_raw(player_state_health_address)
 
     def set_player_health_to_zero(self):
         """
