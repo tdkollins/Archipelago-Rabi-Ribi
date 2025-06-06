@@ -12,10 +12,10 @@ from .names import ItemName, LocationName
 from .options import RabiRibiOptions, TrickDifficulty, Knowledge
 from .utility import convert_existing_rando_name_to_ap_name
 
-def has_3_magic_types(state: CollectionState, player: int):
+def has_3_magic_types(state: CollectionState, player: int, options):
     """Player has at least 3 types of magic"""
     # If playing with more than 5 Easter Eggs, Rainbow Shot could be used as a magic type
-    rainbow_shot = 1 if state.has(ItemName.easter_egg, player, count = 5) else 0
+    rainbow_shot = 1 if rainbow_shot_in_logic(state, player, options) else 0
     return state.count_group_unique("Magic", player) + rainbow_shot + 1 >= 3
 
 def has_item_menu(state: CollectionState, player: int, options):
@@ -23,7 +23,7 @@ def has_item_menu(state: CollectionState, player: int, options):
     return state.has("Chapter 1", player) or \
         (
             is_at_least_advanced_knowledge(state, player, options) and
-            has_3_magic_types(state, player)
+            has_3_magic_types(state, player, options)
         )
 
 def can_use_boost(state: CollectionState, player: int, options):
@@ -39,9 +39,14 @@ def can_use_boost_many(state: CollectionState, player: int, options):
     return state.has("Shop Access", player) and has_item_menu(state, player, options)
 
 def carrot_shooter_in_logic(state: CollectionState, player: int, options):
-    """Player has carrot shooter and its not out of logic by options"""
+    """Player has Carrot Shooter and it's not out of logic by options"""
     return (options.carrot_shooter_in_logic.value or state.has(ItemName.glitched_logic, player)) and \
         state.has(ItemName.carrot_shooter, player)
+
+def rainbow_shot_in_logic(state: CollectionState, player: int, options):
+    """Player has Rainbow Shot and it's not out of logic by options"""
+    return (options.rainbow_shot_in_logic.value or state.has(ItemName.glitched_logic, player)) and \
+        state.has(ItemName.easter_egg, player, count = 5)
 
 def can_navigate_darkness_without_light_orb(state: CollectionState, player: int, options):
     """
@@ -534,7 +539,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Speed2": lambda state: can_use_speed_2(state, player, options),
             "Speed3": lambda state: can_use_speed_3(state, player, options),
             "Speed5": lambda state: can_use_speed_5(state, player, options),
-            "3 Magic Types": lambda state: has_3_magic_types(state, player),
+            "3 Magic Types": lambda state: has_3_magic_types(state, player, options),
             "Item Menu": lambda state: has_item_menu(state, player, options),
             "Chapter 1": lambda state: state.has("Chapter 1", player),
             "Chapter 2": lambda state: state.has("Chapter 2", player),

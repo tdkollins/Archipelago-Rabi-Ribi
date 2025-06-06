@@ -117,17 +117,16 @@ class RabiRibiWorld(World):
             self.options.include_post_game.value or
             self.options.include_post_irisu.value or
             self.options.include_halloween.value):
-            raise OptionError(f"Rabi-Ribi: Beginner Mod is not compatable with post game and DLC. Player {self.player} ({self.player_name}) "
-                              "needs to disable post game and DLC locations.")
+            raise OptionError(f"Rabi-Ribi: Beginner Mod is not compatible with post game and DLC. Player {self.player} ({self.player_name}) "
+                              "needs to disable post game and/or DLC locations.")
 
         if not self.options.randomize_hammer.value and self.options.shuffle_start_location.value:
             raise OptionError(f"Rabi-Ribi: Piko Hammer must be shuffled to shuffle start location. Player {self.player} ({self.player_name}) "
                               "needs to enable Randomize Hammer.")
         
-        if self.options.encourage_eggs_in_late_spheres.value and self.options.accessibility.value is Accessibility.option_minimal:
-            logging.warning(f"Rabi-Ribi: Disabling option Encourage Eggs In Late Spheres for Player {self.player} ({self.player_name}) "
-                            "due to Accessibility being set to minimal.")
-            self.options.encourage_eggs_in_late_spheres.value = Toggle.option_false
+        if self.options.encourage_eggs_in_late_spheres.value and self.options.rainbow_shot_in_logic.value:
+            raise OptionError(f"Rabi-Ribi: Rainbow Shot In Logic is not compatible with Encourage Eggs in Late Spheres. "
+                              f"Player {self.player} ({self.player_name}) needs to disable one of these options.")
 
         self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
         self.randomizer_data = RandomizerData(self.existing_randomizer_args)
@@ -294,10 +293,14 @@ class RabiRibiWorld(World):
     def _handle_encourage_eggs_in_late_spheres(multiworld: MultiWorld):
         worlds_with_option_enabled = set([
             world.player for world in multiworld.get_game_worlds("Rabi-Ribi")
-            if world is RabiRibiWorld and world.options.encourage_eggs_in_late_spheres.value
+            if isinstance(world, RabiRibiWorld) and world.options.encourage_eggs_in_late_spheres.value
         ])
         rr_player_spheres = defaultdict(list)
         for sphere in multiworld.get_spheres():
+            # For minimal accessibility, get_spheres() returns an empty sphere
+            # before returning a sphere containing unreachable locations
+            if len(sphere) == 0:
+                break
             new_player_spheres = defaultdict(list)
             for location in sphere:
                 if location.game == "Rabi-Ribi" and location.player in worlds_with_option_enabled:
