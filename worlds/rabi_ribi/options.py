@@ -50,7 +50,7 @@ class MaxNumberOfEasterEggs(Range):
 class AllowRemoteEasterEggs(Toggle):
     """
     Defines if Easter Eggs can be located in other player's worlds.
-    If false, all Easter Eggs will be local
+    If false, all Easter Eggs will be local.
     """
     display_name = "Allow Remote Easter Eggs"
 
