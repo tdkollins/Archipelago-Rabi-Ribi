@@ -406,6 +406,12 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             last_received_item_index = self.rr_interface.get_last_received_item_index()
             return last_received_item_index < len(self.items_received_rabi_ribi_ids)
         return False
+    
+    def is_egg_queued(self):
+        """
+        Returns True if there is an egg to be added to the player's inventory
+        """
+        return not self.received_eggs.issubset(self.collected_eggs)
 
     def is_in_shaft(self):
         """
@@ -435,6 +441,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             if (area, x, y) not in self.collected_eggs:
                 self.collected_eggs.add((area, x, y))
                 if area in self.location_coordinates_to_ap_location_name and (x, y) in self.location_coordinates_to_ap_location_name[area]:
+                    #Note: Remote eggs fail the above test, as their area_id is outside of the game locations
                     location_name = self.location_coordinates_to_ap_location_name[area][(x, y)]
                     location_id = all_locations[location_name]
                     if location_id not in self.locations_checked:
@@ -517,10 +524,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             (cur_time - self.time_since_last_warp_menu >= 5.5) and
             (cur_time - self.time_since_last_costume_menu >= 2) and
             not self.rr_interface.is_player_frozen() and
-            len(self.deathlink_buffer) == 0 and
-            (self.is_item_queued() or
-             self.received_eggs.difference(self.collected_eggs)
-            )
+            len(self.deathlink_buffer) == 0
         )
 
     def in_state_where_should_open_warp_menu(self):
@@ -723,8 +727,10 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 ctx.open_warp_menu()
 
             if ctx.in_state_where_can_give_items():
-                await ctx.give_item()
-                await ctx.add_remote_eggs()
+                if(ctx.is_item_queued()):
+                    await ctx.give_item()
+                if(ctx.is_egg_queued()):
+                    await ctx.add_remote_eggs()
 
             # Fallback if player collected items while the client was disconnected.
             #   Make sure the player never has an exclamation point in their inventory.
