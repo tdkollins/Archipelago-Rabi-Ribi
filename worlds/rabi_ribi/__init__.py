@@ -120,6 +120,11 @@ class RabiRibiWorld(World):
             raise OptionError(f"Rabi-Ribi: Beginner Mod is not compatable with post game and DLC. Player {self.player} ({self.player_name}) "
                               "needs to disable post game and DLC locations.")
 
+        if self.options.allow_remote_easter_eggs and \
+            self.options.encourage_eggs_in_late_spheres:
+            raise OptionError(f"Rabi-Ribi: Allow Remote Easter Eggs and Encourage Eggs in Late Spheres are not comptable. Player {self.player} ({self.player_name}) "
+                              "needs to set either option to false.")
+
         self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
         self.randomizer_data = RandomizerData(self.existing_randomizer_args)
 
