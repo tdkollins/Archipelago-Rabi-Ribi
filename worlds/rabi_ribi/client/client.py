@@ -685,7 +685,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
         if not ctx.rr_interface.is_connected():
             logger.info("Waiting for connection to Rabi Ribi")
             await ctx.rr_interface.connect(ctx.exit_event)
-            asyncio.create_task(ctx.watch_for_menus())
+            watch_menu_task = asyncio.create_task(ctx.watch_for_menus())
         try:
             while True:
                 if not ctx.server:
@@ -740,11 +740,24 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
             if ctx.slot_data:
                 required_egg_count = ctx.slot_data["required_egg_count"] if "required_egg_count" in ctx.slot_data else 5
-                if ctx.slot_data and ctx.rr_interface.get_number_of_eggs_collected() >= required_egg_count:
+                if ctx.slot_data and ctx.rr_interface.get_number_of_eggs_collected() >= required_egg_count and not ctx.rr_interface.is_on_main_menu():
                     ctx.finished_game = True
                     await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
-        except Exception as err:  # Rabi Ribi Process closed?
+        except Exception as err:
+
+            #Process closed trap
+            if(type(err) is AttributeError and not ctx.rr_interface.is_connected()):
+                #Stop the ayncio task. No cleanup is necessary
+                if(watch_menu_task != None):
+                    try:
+                        watch_menu_task.cancel()
+                    except:
+                        pass
+                # attempt to reconnect at the top of the loop
+                continue
+
+            #Other Errors
             logger.warning("*******************************")
             logger.warning("Encountered error. Please post a message to the Rabi-Ribi thread on the AP discord")
             logger.warning("*******************************")
