@@ -381,7 +381,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
                 ItemName.hp_up: 159 - 30,
                 ItemName.pack_up: 415 - 30
             }
-            egg_count = 0
+            remote_egg_count = 0
             for network_item in self.items_received:
                 item_name = self.item_names.lookup_in_game(network_item.item)
                 if item_name == ItemName.nothing:
@@ -390,8 +390,13 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
                     self.items_received_rabi_ribi_ids.append(potion_ids[item_name])
                     potion_ids[item_name] -= 1
                 elif item_name == ItemName.easter_egg:
-                    self.received_eggs.add((10, 1, egg_count))
-                    egg_count += 1
+                    if network_item.player == self.slot:
+                        location_name = self.location_names.lookup_in_game(network_item.location)
+                        egg_coordinates = self.ap_location_name_to_location_coordinates[location_name]
+                        self.received_eggs.add(egg_coordinates)
+                    else:
+                        self.received_eggs.add((10, 1, remote_egg_count))
+                        remote_egg_count += 1
                 else:
                     self.items_received_rabi_ribi_ids.append(
                         int(self.item_name_to_rabi_ribi_item_id[item_name]))
