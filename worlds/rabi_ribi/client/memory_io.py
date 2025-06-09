@@ -10,7 +10,7 @@ in realtime. This is used to:
 """
 import asyncio
 import struct
-from typing import List, Tuple
+from typing import List, Tuple, Set
 
 from pymem import pymem
 
@@ -346,6 +346,17 @@ class RabiRibiMemoryIO():
         Returns the number of eggs the player currently has
         """
         return self._read_int(OFFSET_EGG_COUNT)
+    
+    def add_missing_eggs(self, current_eggs: Set[Tuple[int, int, int]], eggs_to_add: Set[Tuple[int, int, int]]):
+        """
+        Adds Easter Eggs to a player's inventory, if they are not already added.
+        """
+        eggs_to_patch = eggs_to_add.difference(current_eggs)
+        if(not eggs_to_patch):
+            return
+        current_egg_offset = len(current_eggs) * 3 * 2
+        data = b''.join(struct.pack(f"<3h", *egg) for egg in eggs_to_patch)
+        self.rr_mem.write_bytes(self.rr_mem.base_address + OFFSET_EGG_START + current_egg_offset, data, len(data))
 
     def is_on_correct_scenerio(self, scenerio_id: str) -> bool:
         """

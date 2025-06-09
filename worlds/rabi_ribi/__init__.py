@@ -128,11 +128,17 @@ class RabiRibiWorld(World):
             raise OptionError(f"Rabi-Ribi: Rainbow Shot In Logic is not compatible with Encourage Eggs in Late Spheres. "
                               f"Player {self.player} ({self.player_name}) needs to disable one of these options.")
 
+        if self.options.allow_remote_easter_eggs and \
+            self.options.encourage_eggs_in_late_spheres:
+            raise OptionError(f"Rabi-Ribi: Allow Remote Easter Eggs and Encourage Eggs in Late Spheres are not comptable. Player {self.player} ({self.player_name}) "
+                              "needs to set either option to false.")
+
         self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
         self.randomizer_data = RandomizerData(self.existing_randomizer_args)
 
         # Will be configurable later, but for now always force eggs to be local
-        self.options.local_items.value.add(ItemName.easter_egg)
+        if not self.options.allow_remote_easter_eggs:
+            self.options.local_items.value.add(ItemName.easter_egg)
 
         # Force consumable items to be local, as the player may need to pick them up multiple times
         self.options.local_items.value.update(item_groups["Consumables"])

@@ -151,6 +151,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.current_room: Tuple[int, int] = (-1, 1)
         self.state_giving_item = False
         self.collected_eggs: Set[Tuple[int,int,int]] = set()
+        self.received_eggs: Set[Tuple[int, int, int]] = set()
         self.seed_name = None
         self.slot_data = None
 
@@ -382,7 +383,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
                 ItemName.hp_up: 159 - 30,
                 ItemName.pack_up: 415 - 30
             }
-
+            remote_egg_count = 0
             for network_item in self.items_received:
                 item_name = self.item_names.lookup_in_game(network_item.item)
                 if item_name == ItemName.nothing:
@@ -394,10 +395,14 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
                     if network_item.player == self.slot:
                         location_name = self.location_names.lookup_in_game(network_item.location)
                         egg_coordinates = self.ap_location_name_to_location_coordinates[location_name]
-                        self.collected_eggs.add(egg_coordinates)
+                        self.received_eggs.add(egg_coordinates)
+                    else:
+                        self.received_eggs.add((10, 1, remote_egg_count))
+                        remote_egg_count += 1
                 else:
                     self.items_received_rabi_ribi_ids.append(
                         int(self.item_name_to_rabi_ribi_item_id[item_name]))
+                
 
     def is_item_queued(self):
         """
@@ -408,6 +413,12 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             last_received_item_index = self.rr_interface.get_last_received_item_index()
             return last_received_item_index < len(self.items_received_rabi_ribi_ids)
         return False
+    
+    def is_egg_queued(self):
+        """
+        Returns True if there is an egg to be added to the player's inventory
+        """
+        return not self.received_eggs.issubset(self.collected_eggs)
 
     def is_in_shaft(self):
         """
@@ -437,11 +448,18 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             if (area, x, y) not in self.collected_eggs:
                 self.collected_eggs.add((area, x, y))
                 if area in self.location_coordinates_to_ap_location_name and (x, y) in self.location_coordinates_to_ap_location_name[area]:
+                    #Note: Remote eggs fail the above test, as their area_id is outside of the game locations
                     location_name = self.location_coordinates_to_ap_location_name[area][(x, y)]
                     location_id = all_locations[location_name]
                     if location_id not in self.locations_checked:
                         self.locations_checked.add(location_id)
                         await self.send_msgs([{"cmd": 'LocationChecks', "locations": self.locations_checked}])
+
+    async def add_remote_eggs(self):
+        """
+        Adds eggs recieved from other worlds
+        """
+        self.rr_interface.add_missing_eggs(self.collected_eggs, self.received_eggs)
 
     async def update_player_location(self):
         area_id, x, y = self.rr_interface.read_player_tile_position()
@@ -520,8 +538,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             (cur_time - self.time_since_last_costume_menu >= 2) and
             (cur_time - self.time_since_last_save_menu >= 2) and
             not self.rr_interface.is_player_frozen() and
-            len(self.deathlink_buffer) == 0 and
-            self.is_item_queued()
+            len(self.deathlink_buffer) == 0
         )
 
     def in_state_where_should_open_warp_menu(self):
@@ -651,6 +668,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.current_room = (-1, -1)
         self.state_giving_item = False
         self.collected_eggs = set()
+        self.received_eggs = set()
         self.seed_name = None
         self.slot_data = None
 
@@ -730,7 +748,10 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 ctx.open_warp_menu()
 
             if ctx.in_state_where_can_give_items():
-                await ctx.give_item()
+                if(ctx.is_item_queued()):
+                    await ctx.give_item()
+                if(ctx.is_egg_queued()):
+                    await ctx.add_remote_eggs()
 
             # Fallback if player collected items while the client was disconnected.
             #   Make sure the player never has an exclamation point in their inventory.
