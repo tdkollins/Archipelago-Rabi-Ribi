@@ -20,7 +20,7 @@ class ApplyBeginnerMod(Toggle):
     display_name = "Apply Beginner Mod"
 
 class RandomizeHammer(Toggle):
-    """If set to false, the hammer is at the default location"""
+    """If set to false, Piko Hammer is at the default location"""
     display_name = "Randomize Hammer"
 
 class RandomizeGiftItems(Toggle):
@@ -29,10 +29,17 @@ class RandomizeGiftItems(Toggle):
 
 class CarrotShooterInLogic(Toggle):
     """
-    If set to false, carrot shooter will not be required to bomb locations.
-    These locations will be locked behind carrot bomb instead.
+    If set to false, Carrot Shooter will not be required to bomb locations.
+    These locations will be locked behind Carrot Bomb instead.
     """
     display_name = "Carrot Shooter In Logic"
+
+class RainbowShotInLogic(Toggle):
+    """
+    If set to false, Rainbow Shot will not be considered as a collectable magic type
+    to enable the item menu.
+    """
+    display_name = "Rainbow Shot In Logic"
 
 class MaxNumberOfEasterEggs(Range):
     """
@@ -274,6 +281,7 @@ class RabiRibiOptions(PerGameCommonOptions):
     darkness_without_light_orb: DarknessWithoutLightOrb
     underwater_without_water_orb: UnderwaterWithoutWaterOrb
     carrot_shooter_in_logic: CarrotShooterInLogic
+    rainbow_shot_in_logic: RainbowShotInLogic
     event_warps_in_logic: EventWarpsInLogic
 
     randomize_hammer: RandomizeHammer

@@ -4,7 +4,7 @@ Its probably a little haphazardly sorted.. but the method names are descriptive
 enough for it not to be confusing.
 """
 from BaseClasses import CollectionState
-from typing import Callable, Set
+from typing import Callable, List, Set, Tuple
 
 from .existing_randomizer.utility import OpBacktrack, OpLit, OpNot, OpOr, OpAnd
 from .items import recruit_table
@@ -12,32 +12,41 @@ from .names import ItemName, LocationName
 from .options import RabiRibiOptions, TrickDifficulty, Knowledge
 from .utility import convert_existing_rando_name_to_ap_name
 
-def has_3_magic_types(state: CollectionState, player: int):
+def has_3_magic_types(state: CollectionState, player: int, options):
     """Player has at least 3 types of magic"""
     # If playing with more than 5 Easter Eggs, Rainbow Shot could be used as a magic type
-    rainbow_shot = 1 if state.has(ItemName.easter_egg, player, count = 5) else 0
+    rainbow_shot = 1 if rainbow_shot_in_logic(state, player, options) else 0
     return state.count_group_unique("Magic", player) + rainbow_shot + 1 >= 3
 
 def has_item_menu(state: CollectionState, player: int, options):
     """Player has access to the item menu"""
-    return state.can_reach(LocationName.town_main, "Region", player) or \
+    return state.has("Chapter 1", player) or \
         (
             is_at_least_advanced_knowledge(state, player, options) and
-            has_3_magic_types(state, player)
+            has_3_magic_types(state, player, options)
         )
 
 def can_use_boost(state: CollectionState, player: int, options):
-    """Player can use the boost skill"""
-    return state.can_reach(LocationName.beach_main, "Region", player) or \
+    """Player can use the boost skill at least once"""
+    return state.has("Boost Unlock", player) or \
         (
-            state.can_reach(LocationName.town_shop, "Region", player) and
+            (state.has("Shop Access", player) or state.has(ItemName.rumi_donut, player)) and \
             has_item_menu(state, player, options)
         )
 
+def can_use_boost_many(state: CollectionState, player: int, options):
+    """Player can use the boost skill multiple times"""
+    return state.has("Shop Access", player) and has_item_menu(state, player, options)
+
 def carrot_shooter_in_logic(state: CollectionState, player: int, options):
-    """Player has carrot shooter and its not out of logic by options"""
+    """Player has Carrot Shooter and it's not out of logic by options"""
     return (options.carrot_shooter_in_logic.value or state.has(ItemName.glitched_logic, player)) and \
         state.has(ItemName.carrot_shooter, player)
+
+def rainbow_shot_in_logic(state: CollectionState, player: int, options):
+    """Player has Rainbow Shot and it's not out of logic by options"""
+    return (options.rainbow_shot_in_logic.value or state.has(ItemName.glitched_logic, player)) and \
+        state.has(ItemName.easter_egg, player, count = 5)
 
 def can_navigate_darkness_without_light_orb(state: CollectionState, player: int, options):
     """
@@ -83,12 +92,12 @@ def can_air_dash(state: CollectionState, player: int):
 def can_air_dash_3(state: CollectionState, player: int):
     """Player can use the upgraded air dash skill"""
     return can_air_dash(state, player) and \
-        state.can_reach(LocationName.town_shop, "Region", player)
+        state.has("Shop Access", player)
 
 def wall_jump_2(state: CollectionState, player: int):
     """Player can use the upgraded wall jump skill"""
     return state.has(ItemName.wall_jump, player) and \
-        state.can_reach(LocationName.town_shop, "Region", player)
+        state.has("Shop Access", player)
 
 def can_hammer_roll(state: CollectionState, player: int):
     """Player can use the hammer roll skill"""
@@ -99,13 +108,13 @@ def can_hammer_roll(state: CollectionState, player: int):
 def can_hammer_roll_3(state: CollectionState, player: int):
     """Player can use the upgraded hammer roll skill"""
     return can_hammer_roll(state, player) and \
-        state.can_reach(LocationName.town_shop, "Region", player) and \
+        state.has("Shop Access", player) and \
         state.has("Chapter 3", player)
 
 def can_get_speed_boost_3(state: CollectionState, player: int):
     """Player can use the upgraded speed boost skill"""
     return state.has(ItemName.speed_boost, player) and \
-        state.can_reach(LocationName.town_shop, "Region", player)
+        state.has("Shop Access", player)
 
 def can_charge_carrot_shooter_entry(state: CollectionState, player: int, options):
     """Player can open entrances with a fully charged carrot shooter shot"""
@@ -121,7 +130,7 @@ def can_bunny_amulet_2(state: CollectionState, player: int):
     return state.has("Chapter 3", player) or \
         (
             can_bunny_amulet(state, player) and \
-            state.can_reach(LocationName.town_shop, "Region", player)
+            state.has("Shop Access", player)
         )
 
 def can_bunny_amulet_3(state: CollectionState, player: int):
@@ -129,7 +138,7 @@ def can_bunny_amulet_3(state: CollectionState, player: int):
     return state.has("Chapter 4", player) or \
         (
             can_bunny_amulet(state, player) and \
-            state.can_reach(LocationName.town_shop, "Region", player)
+            state.has("Shop Access", player)
         )
 
 def can_bunny_amulet_4(state: CollectionState, player: int, options):
@@ -147,7 +156,7 @@ def can_recruit_cocoa(state: CollectionState, player: int):
 def can_recruit_ashuri(state: CollectionState, player: int):
     """Player can recruit Ashuri"""
     return state.can_reach(LocationName.riverbank_level3, "Region", player) and \
-        state.can_reach(LocationName.town_main, "Region", player) and \
+        state.has("Chapter 1", player) and \
         state.can_reach(LocationName.spectral_west, "Region", player)
 
 def can_recruit_rita(state: CollectionState, player: int):
@@ -218,7 +227,7 @@ def can_recruit_kotri(state: CollectionState, player: int):
 def can_recruit_keke_bunny(state: CollectionState, player: int):
     """Player can recruit Keke Bunny"""
     return state.can_reach(LocationName.plurkwood_main, "Region", player) and \
-        state.can_reach(LocationName.town_main, "Region", player)
+        state.has("Chapter 1", player)
 
 def can_recruit_miriam(state: CollectionState, player: int):
     """Player can recruit Miriam"""
@@ -249,7 +258,7 @@ def can_be_speedy(state: CollectionState, player: int, options):
     """Player can buy the speedy buff"""
     return is_at_least_intermediate_knowledge(state, player, options) and \
         can_recruit_cicini(state, player) and \
-        state.can_reach(LocationName.town_main, "Region", player) and \
+        state.has("Chapter 1", player) and \
         can_recruit_n_town_members(state, 3, player)
 
 def can_use_speed_1(state: CollectionState, player: int, options):
@@ -279,32 +288,24 @@ def can_use_speed_5(state: CollectionState, player: int, options):
     return can_be_speedy(state, player, options) and \
         can_get_speed_boost_3(state, player)
 
-def can_reach_chapter_1(state: CollectionState, player: int):
-    """Player can reach chapter 1"""
-    return state.can_reach(LocationName.town_main, "Region", player)
-
 def can_reach_chapter_2(state: CollectionState, player: int):
     """Player can reach chapter 2"""
     return state.has("Chapter 1", player) and \
-        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 2, player)
 
 def can_reach_chapter_3(state: CollectionState, player: int):
     """Player can reach chapter 3"""
     return state.has("Chapter 2", player) and \
-        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 4, player)
 
 def can_reach_chapter_4(state: CollectionState, player: int):
     """Player can reach chapter 4"""
     return state.has("Chapter 3", player) and \
-        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 7, player)
 
 def can_reach_chapter_5(state: CollectionState, player: int):
     """Player can reach chapter 5"""
     return state.has("Chapter 4", player) and \
-        state.can_reach(LocationName.town_main, "Region", player) and \
         can_recruit_n_town_members(state, 10, player)
 
 def can_reach_chapter_6(state: CollectionState, player: int):
@@ -351,11 +352,11 @@ def can_use_consumables(state: CollectionState, player: int, options):
 
 def can_purchase_food(state: CollectionState, player: int):
     """Player can purchase food"""
-    return state.can_reach(LocationName.town_shop, "Region", player)
+    return state.has("Shop Access", player)
 
 def can_purchase_cocoa_bomb(state: CollectionState, player: int):
     """Player can purchase food"""
-    return state.can_reach(LocationName.town_main, "Region", player) and \
+    return state.has("Chapter 1", player) and \
         state.has(ItemName.cocoa_recruit, player) and \
         can_recruit_n_town_members(state, 3, player)
 
@@ -455,14 +456,14 @@ def has_enough_amulet_food(state: CollectionState, player: int, options, num_amu
 def has_many_amulet_food(state: CollectionState, player: int, options):
     """Player has access to many consumables due to being able to reach the town shop"""
     return has_item_menu(state, player, options) and \
-        state.can_reach(LocationName.town_shop, "Region", player) and \
+        state.has("Shop Access", player) and \
         can_bunny_amulet(state, player)
 
 ####################################################
 #           Utility used by other modules
 ####################################################
 
-def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, regions: Set[str], options: RabiRibiOptions) -> Callable[[CollectionState], bool]:
+def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, regions: Set[str], options: RabiRibiOptions) -> Tuple[Callable[[CollectionState], bool], List[str]]:
     """
     This method converts a rule from the existing randomizer to a lambda which can be passed to AP.
     The existing randomizer evaluates a defined logic expression, which it seperates into 5 classes:
@@ -538,7 +539,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Speed2": lambda state: can_use_speed_2(state, player, options),
             "Speed3": lambda state: can_use_speed_3(state, player, options),
             "Speed5": lambda state: can_use_speed_5(state, player, options),
-            "3 Magic Types": lambda state: has_3_magic_types(state, player),
+            "3 Magic Types": lambda state: has_3_magic_types(state, player, options),
             "Item Menu": lambda state: has_item_menu(state, player, options),
             "Chapter 1": lambda state: state.has("Chapter 1", player),
             "Chapter 2": lambda state: state.has("Chapter 2", player),
@@ -548,7 +549,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Chapter 6": lambda state: state.has("Chapter 6", player),
             "Chapter 7": lambda state: state.has("Chapter 7", player),
             "Boost": lambda state: can_use_boost(state, player, options),
-            "Boost Many": lambda state: can_use_boost(state, player, options),
+            "Boost Many": lambda state: can_use_boost_many(state, player, options),
             "Darkness": lambda state: can_navigate_darkness(state, player, options),
             "Darkness Without Light Orb": lambda state: can_navigate_darkness_without_light_orb(state, player, options),
             "Underwater": lambda state: can_navigate_underwater(state, player, options),
@@ -587,24 +588,26 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Event Warps Required" : lambda state: can_use_event_warps(state, player, options),
         }
         if literal in literal_eval_map:
-            return literal_eval_map[literal]
+            return literal_eval_map[literal], []
         elif literal.endswith("tm"):
             num_town_members = int(literal[:-2:])
-            return lambda state: can_recruit_n_town_members(state, num_town_members, player)
+            return lambda state: can_recruit_n_town_members(state, num_town_members, player), []
         elif literal in regions:
-            return lambda state: state.can_reach(literal, "Region", player)
-        return lambda state: state.has(literal, player)
+            return lambda state: state.can_reach(literal, "Region", player), [literal]
+        return lambda state: state.has(literal, player), []
     elif isinstance(existing_rule, OpNot):
-        expr = convert_existing_rando_rule_to_ap_rule(existing_rule.expr, player, regions, options)
-        return lambda state: not expr(state)
+        expr, added_regions = convert_existing_rando_rule_to_ap_rule(existing_rule.expr, player, regions, options)
+        return lambda state: not expr(state), added_regions
     elif isinstance(existing_rule, OpOr):
-        expr_l = convert_existing_rando_rule_to_ap_rule(existing_rule.exprL, player, regions, options)
-        expr_r = convert_existing_rando_rule_to_ap_rule(existing_rule.exprR, player, regions, options)
-        return lambda state: expr_l(state) or expr_r(state)
+        expr_l, added_regions_l = convert_existing_rando_rule_to_ap_rule(existing_rule.exprL, player, regions, options)
+        expr_r, added_regions_r = convert_existing_rando_rule_to_ap_rule(existing_rule.exprR, player, regions, options)
+        added_regions = added_regions_l + added_regions_r
+        return lambda state: expr_l(state) or expr_r(state), added_regions
     elif isinstance(existing_rule, OpAnd):
-        expr_l = convert_existing_rando_rule_to_ap_rule(existing_rule.exprL, player, regions, options)
-        expr_r = convert_existing_rando_rule_to_ap_rule(existing_rule.exprR, player, regions, options)
-        return lambda state: expr_l(state) and expr_r(state)
+        expr_l, added_regions_l = convert_existing_rando_rule_to_ap_rule(existing_rule.exprL, player, regions, options)
+        expr_r, added_regions_r = convert_existing_rando_rule_to_ap_rule(existing_rule.exprR, player, regions, options)
+        added_regions = added_regions_l + added_regions_r
+        return lambda state: expr_l(state) and expr_r(state), added_regions
     elif isinstance(existing_rule, OpBacktrack):
-        return lambda _: False
+        return lambda _: False, []
     raise ValueError("Invalid Expression recieved.")

@@ -7,9 +7,9 @@ import settings
 from collections import defaultdict
 from itertools import chain
 from typing import Any, ClassVar, Dict, List, Optional, Set, TextIO, Union
-from BaseClasses import ItemClassification, Tutorial
+from BaseClasses import ItemClassification, MultiWorld, Tutorial
 from Fill import swap_location_item
-from Options import OptionError, Toggle
+from Options import Accessibility, OptionError, Toggle
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import Component, Type, components, launch_subprocess
 from .existing_randomizer.dataparser import RandomizerData
@@ -76,11 +76,11 @@ class RabiRibiWorld(World):
     game: str = "Rabi-Ribi"
     options_dataclass = RabiRibiOptions
     options: RabiRibiOptions
-    topology_present: bool = False
     settings: ClassVar[RabiRibiSettings]
     web: WebWorld = RabiRibiWeb()
 
     base_id: int = get_rabi_ribi_base_id()
+    topology_present: bool = False
 
     item_name_groups: Dict[str, Set[str]] = item_groups
     location_name_groups: Dict[str, Set[str]] = location_groups
@@ -117,8 +117,16 @@ class RabiRibiWorld(World):
             self.options.include_post_game.value or
             self.options.include_post_irisu.value or
             self.options.include_halloween.value):
-            raise OptionError(f"Rabi-Ribi: Beginner Mod is not compatable with post game and DLC. Player {self.player} ({self.player_name}) "
-                              "needs to disable post game and DLC locations.")
+            raise OptionError(f"Rabi-Ribi: Beginner Mod is not compatible with post game and DLC. Player {self.player} ({self.player_name}) "
+                              "needs to disable post game and/or DLC locations.")
+
+        if not self.options.randomize_hammer.value and self.options.shuffle_start_location.value:
+            raise OptionError(f"Rabi-Ribi: Piko Hammer must be shuffled to shuffle start location. Player {self.player} ({self.player_name}) "
+                              "needs to enable Randomize Hammer.")
+        
+        if self.options.encourage_eggs_in_late_spheres.value and self.options.rainbow_shot_in_logic.value:
+            raise OptionError(f"Rabi-Ribi: Rainbow Shot In Logic is not compatible with Encourage Eggs in Late Spheres. "
+                              f"Player {self.player} ({self.player_name}) needs to disable one of these options.")
 
         self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
         self.randomizer_data = RandomizerData(self.existing_randomizer_args)
@@ -129,14 +137,15 @@ class RabiRibiWorld(World):
         # Force consumable items to be local, as the player may need to pick them up multiple times
         self.options.local_items.value.update(item_groups["Consumables"])
 
-    def create_item(self, name: str) -> RabiRibiItem:
+    def create_item(self, name: str, force_classification: Optional[ItemClassification] = None) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
         # Universal Tracker: Allow creation of a fake event to represent out of logic checks
         if name == ItemName.glitched_logic:
             return RabiRibiItem(name, ItemClassification.progression, None, self.player)
 
         data: RabiRibiItemData = item_data_table[name]
-        return RabiRibiItem(name, data.classification, data.code, self.player)
+        classification = force_classification if force_classification is not None else data.classification
+        return RabiRibiItem(name, classification, data.code, self.player)
 
     def create_event(self, name: str) -> RabiRibiItem:
         """Create a Rabi-Ribi event to help logic"""
@@ -182,11 +191,6 @@ class RabiRibiWorld(World):
 
     def create_items(self) -> None:
         base_item_list = get_base_item_list(self.options, self.randomizer_data)
-        max_egg_locations_in_pool = self.total_locations - len(base_item_list)
-        total_egg_count = min(max_egg_locations_in_pool, self.options.max_number_of_easter_eggs.value)
-        self.required_egg_count = max(math.floor(total_egg_count * (self.options.percentage_of_easter_eggs.value / 100.0)), 1)
-
-        base_item_list.extend([ItemName.easter_egg] * total_egg_count)
 
         for item in map(self.create_item, base_item_list):
             if (not self.options.randomize_hammer.value) and (item.name == ItemName.piko_hammer):
@@ -200,7 +204,15 @@ class RabiRibiWorld(World):
                 continue
             self.multiworld.itempool.append(item)
 
-        junk = self.total_locations - len(base_item_list)
+        max_egg_locations_in_pool = self.total_locations - len(base_item_list)
+        total_egg_count = min(max_egg_locations_in_pool, self.options.max_number_of_easter_eggs.value)
+        self.required_egg_count = max(math.floor(total_egg_count * (self.options.percentage_of_easter_eggs.value / 100.0)), 1)
+        filler_egg_count = total_egg_count - self.required_egg_count
+
+        self.multiworld.itempool.extend([self.create_item(ItemName.easter_egg) for _ in range(self.required_egg_count)])
+        self.multiworld.itempool.extend([self.create_item(ItemName.easter_egg, ItemClassification.useful) for _ in range(filler_egg_count)])
+
+        junk = self.total_locations - len(base_item_list) - total_egg_count
         self.multiworld.itempool += [self.create_item(self.get_filler_item_name()) for _ in range(junk)]
 
     def fill_slot_data(self) -> dict:
@@ -252,16 +264,19 @@ class RabiRibiWorld(World):
         self.multiworld.completion_condition[self.player] = \
             lambda state: state.has(ItemName.easter_egg, self.player, self.required_egg_count)
 
-    def write_spoiler(self, spoiler_handle: TextIO) -> None:
-        spoiler_handle.write(f'\nStart Location: {self.start_location}\n')
+    def write_spoiler_header(self, spoiler_handle: TextIO) -> None:
+        if self.options.shuffle_start_location.value:
+            spoiler_handle.write(f'\nStart Location ({self.player_name}): {self.start_location}')
 
-        spoiler_handle.write(f'\nApplied Map Constraints:\n')
-        for template in self.picked_templates:
-            spoiler_handle.write(f'\n{convert_existing_rando_name_to_ap_name(template)}')
+        if self.options.shuffle_map_transitions.value:
+            spoiler_handle.write(f'\n\nMap Transitions ({self.player_name}):\n')
+            for entrance in self.map_transition_shuffle_spoiler:
+                spoiler_handle.write(f'\n{entrance}')
 
-        spoiler_handle.write(f'\n\nMap Transitions:\n')
-        for entrance in self.map_transition_shuffle_spoiler:
-            spoiler_handle.write(f'\n{entrance}')
+        if self.options.number_of_constraint_changes.value > 0:
+            spoiler_handle.write(f'\n\nApplied Map Constraints ({self.player_name}):\n')
+            for template in self.picked_templates:
+                spoiler_handle.write(f'\n{convert_existing_rando_name_to_ap_name(template)}')
 
     def _convert_options_to_existing_randomizer_args(self):
         args = parse_args()
@@ -275,14 +290,18 @@ class RabiRibiWorld(World):
         return args
 
     @staticmethod
-    def _handle_encourage_eggs_in_late_spheres(multiworld):
+    def _handle_encourage_eggs_in_late_spheres(multiworld: MultiWorld):
         worlds_with_option_enabled = set([
             world.player for world in multiworld.get_game_worlds("Rabi-Ribi")
-            if world.options.encourage_eggs_in_late_spheres.value
+            if isinstance(world, RabiRibiWorld) and world.options.encourage_eggs_in_late_spheres.value
         ])
-        rr_player_spheres = defaultdict(lambda: [])
+        rr_player_spheres = defaultdict(list)
         for sphere in multiworld.get_spheres():
-            new_player_spheres = defaultdict(lambda: [])
+            # For minimal accessibility, get_spheres() returns an empty sphere
+            # before returning a sphere containing unreachable locations
+            if len(sphere) == 0:
+                break
+            new_player_spheres = defaultdict(list)
             for location in sphere:
                 if location.game == "Rabi-Ribi" and location.player in worlds_with_option_enabled:
                     new_player_spheres[location.player].append(location)
@@ -301,10 +320,9 @@ class RabiRibiWorld(World):
                 for location in sphere:
                     if location.item.classification == ItemClassification.filler:
                         swappable_pool.append(location)
-            idx = 0
-            for new_egg_location in multiworld.random.sample(swappable_pool, min(len(egg_locations_to_swap), len(swappable_pool))):
-                swap_location_item(egg_locations_to_swap[idx], new_egg_location, check_locked=False)
-                idx += 1
+            multiworld.random.shuffle(swappable_pool)
+            for old_position, new_position in zip(egg_locations_to_swap, swappable_pool):
+                swap_location_item(old_position, new_position, check_locked=False)
 
     @classmethod
     def stage_post_fill(cls, multiworld) -> None:
