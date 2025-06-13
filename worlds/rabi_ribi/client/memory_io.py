@@ -19,6 +19,7 @@ from CommonClient import logger
 OFFSET_AREA_ID = int(0xD9CF88)
 OFFSET_PLAYER_X = int(0x0103469C)
 OFFSET_PLAYER_Y = int(0x013AFDB4)
+OFFSET_IS_DARK = int(0x16E684C)
 OFFSET_GIVE_ITEM_FUNC = int(0x15A90)
 OFFSET_PLAYER_FROZEN = int(0x1031DDC)
 OFFSET_ITEM_MAP = int(0xDFFB3C)
@@ -33,7 +34,8 @@ OFFSET_IN_WARP_MENU = int(0x16E5BB8)
 OFFSET_IN_COSTUME_MENU = int(0x16E6B20)
 OFFSET_IN_SAVE_MENU = int(0xD2DA50)
 OFFSET_CURRENT_WARP_ID = int(0x016E6D08)
- # returns a memory address where various state is stored
+OFFSET_EVENT_ACTIVE = int(0x16E4F30)
+# returns a memory address where various state is stored
 OFFSET_PLAYER_STATE = int(0x1682364)
 # offset from the address from OFFSET_PLAYER_STATE
 OFFSET_PLAYER_STATE_HEALTH = int(0x4E0)
@@ -376,6 +378,12 @@ class RabiRibiMemoryIO():
         True if the player is currently selecting a costume
         """
         return self._read_4_byte_bool(OFFSET_IN_COSTUME_MENU)
+    
+    def is_in_event(self) -> bool:
+        """
+        True if the player is currently in an event (ex. bossfight, dialogue)
+        """
+        return self._read_4_byte_bool(OFFSET_EVENT_ACTIVE)
 
     def has_zero_health(self) -> bool:
         """
@@ -390,3 +398,9 @@ class RabiRibiMemoryIO():
         """
         player_state_health_address = self._read_int(OFFSET_PLAYER_STATE) + OFFSET_PLAYER_STATE_HEALTH
         self.rr_mem.write_int(player_state_health_address, 0)
+
+    def set_darkness_off(self):
+        """
+        Sets the darkness flag to 0, thereby disabling it if enabled
+        """
+        self.rr_mem.write_int(self.rr_mem.base_address + OFFSET_IS_DARK, 0)

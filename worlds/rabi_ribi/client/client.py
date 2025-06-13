@@ -521,7 +521,8 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             (cur_time - self.time_since_last_save_menu >= 2) and
             not self.rr_interface.is_player_frozen() and
             len(self.deathlink_buffer) == 0 and
-            self.is_item_queued()
+            self.is_item_queued() and
+            not self.rr_interface.is_in_event()
         )
 
     def in_state_where_should_open_warp_menu(self):
@@ -530,7 +531,9 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             (cur_time - self.time_since_last_paused >= .5) and
             not self.rr_interface.is_player_frozen() and
             not self.is_item_queued() and
-            self.rr_interface.get_item_state(STRANGE_BOX_ITEM_ID) == -1
+            self.rr_interface.get_item_state(STRANGE_BOX_ITEM_ID) == -1 and
+            not self.rr_interface.is_in_event() and 
+            self.rr_interface.read_player_tile_position()[0] != 8 #Warp Destination
         )
 
     async def watch_for_menus(self):
@@ -556,6 +559,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         # Reenable the Strange Box first.
         self.rr_interface.set_item_state(STRANGE_BOX_ITEM_ID, 1)
         self.rr_interface.open_warp_menu()
+        self.rr_interface.set_darkness_off()
 
     def in_deathlink_eligible_state(self):
         cur_time = time.time()
