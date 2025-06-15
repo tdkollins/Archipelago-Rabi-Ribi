@@ -25,7 +25,6 @@ OFFSET_ITEM_MAP = int(0xDFFB3C)
 OFFSET_INVENTORY_START = int(0x1672FA4)
 OFFSET_EGG_START = int(0x167CD58)
 OFFSET_MAX_HEALTH = int(0x16E6D24)
-OFFSET_EGG_COUNT = int(0x1675CCC)
 OFFSET_PLAYER_PAUSED = int(0x16E5C40)
 OFFSET_SCENERIO_INDICATOR = int(0xE30880)
 OFFSET_IN_ITEM_GET_ANIMATION = int(0x1682ACA)
@@ -343,9 +342,9 @@ class RabiRibiMemoryIO():
 
     def get_number_of_eggs_collected(self) -> int:
         """
-        Returns the number of eggs the player currently has
+        Returns the number of eggs the player currently has.
         """
-        return self._read_int(OFFSET_EGG_COUNT)
+        return len(self.get_collected_eggs())
 
     def is_on_correct_scenerio(self, scenerio_id: str) -> bool:
         """
