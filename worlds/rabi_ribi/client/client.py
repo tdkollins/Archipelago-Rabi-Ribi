@@ -555,6 +555,11 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
     def open_warp_menu(self):
         # Reenable the Strange Box first.
         self.rr_interface.set_item_state(STRANGE_BOX_ITEM_ID, 1)
+        player_tile = self.rr_interface.read_player_tile_position()
+        event_tile_id = self.rr_interface.read_tile_event_id(player_tile[1], player_tile[2])
+        if(event_tile_id >= 241 and event_tile_id <= 251): #Cross map Ids
+            logger.info("Cannot open the warp menu on a cross-map event, please move Erina somewhere else and try again!")
+            return
         self.rr_interface.open_warp_menu()
 
     def in_deathlink_eligible_state(self):

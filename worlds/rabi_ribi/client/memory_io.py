@@ -21,6 +21,7 @@ OFFSET_PLAYER_X = int(0x0103469C)
 OFFSET_PLAYER_Y = int(0x013AFDB4)
 OFFSET_GIVE_ITEM_FUNC = int(0x15A90)
 OFFSET_PLAYER_FROZEN = int(0x1031DDC)
+OFFSET_EVENT_MAP = int(0xDCE1E0)
 OFFSET_ITEM_MAP = int(0xDFFB3C)
 OFFSET_INVENTORY_START = int(0x1672FA4)
 OFFSET_EGG_START = int(0x167CD58)
@@ -172,6 +173,24 @@ class RabiRibiMemoryIO():
             player_y += (TILE_LENGTH / 2)
 
         return (int(area_id), int(player_x // TILE_LENGTH), int(player_y // TILE_LENGTH))
+    
+    def read_tile_event_id(self, x:int, y:int):
+        """
+        Read the event ID associated with a specific tile
+
+        :x: x position of the tile
+        :y: y position of the tile
+        :returns: event id of the tile
+        """
+
+        event_tile_offset = (
+            self.rr_mem.base_address +
+            OFFSET_EVENT_MAP +
+            (((x * 200) + y) * 2)
+        )
+
+        data = self.rr_mem.read_bytes(event_tile_offset, 2)
+        return struct.unpack("h", data)[0]
 
     def is_player_frozen(self):
         """
