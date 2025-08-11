@@ -210,6 +210,19 @@ class RabiRibiMemoryIO():
 
     def is_in_item_receive_animation(self):
         return self._read_1_byte_bool(OFFSET_IN_ITEM_GET_ANIMATION)
+    
+    def is_near_crosswarp(self):
+        """
+        Returns true if the player is currently within 1 tile of a crosswarp tile
+        """
+        player_pos = self.read_player_tile_position()
+        for x in range(-1,2):
+            for y in range(-1, 2):
+                event_id = self.read_tile_event_id(player_pos[1] + x, player_pos[2] + y)
+                if(event_id in range(241, 252)):
+                    return True
+                
+        return False
 
     def give_item(self, item_id):
         """

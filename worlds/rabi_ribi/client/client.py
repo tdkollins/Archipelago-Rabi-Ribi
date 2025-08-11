@@ -62,6 +62,10 @@ class RabiRibiCommandProcessor(ClientCommandProcessor): # type: ignore
         """Tells you how many Easter Eggs you have, and how many you need to beat the game"""
         self.ctx.print_egg_amounts()
 
+    def _cmd_disable_crosswarp_check(self) -> None:
+        """Disables crosswarp check for warpbox"""
+        self.ctx.disable_crosswarp()
+
     if tracker_loaded:
         @mark_raw
         def _cmd_route(self, location_or_region: str = "") -> None:
@@ -174,6 +178,8 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
 
         self.deathlink_buffer = []
         self.has_died = False
+
+        self.is_crosswarp_disabled = True
 
     def make_gui(self):
         ui = super().make_gui()
@@ -555,10 +561,9 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
     def open_warp_menu(self):
         # Reenable the Strange Box first.
         self.rr_interface.set_item_state(STRANGE_BOX_ITEM_ID, 1)
-        player_tile = self.rr_interface.read_player_tile_position()
-        event_tile_id = self.rr_interface.read_tile_event_id(player_tile[1], player_tile[2])
-        if(event_tile_id >= 241 and event_tile_id <= 251): #Cross map Ids
+        if(self.rr_interface.is_near_crosswarp() and self.is_crosswarp_disabled):
             logger.info("Cannot open the warp menu on a cross-map event, please move Erina somewhere else and try again!")
+            logger.info("If this issue persists, you may use /disable_cross_check to disable this check.")
             return
         self.rr_interface.open_warp_menu()
 
@@ -673,6 +678,11 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
 
         self.items_received_rabi_ribi_ids = []
         self.obtained_items_queue = asyncio.Queue()
+
+        self.is_crosswarp_disabled = True
+    
+    def disable_crosswarp(self):
+        self.is_crosswarp_disabled = False
 
 async def rabi_ribi_watcher(ctx: RabiRibiContext):
     """
