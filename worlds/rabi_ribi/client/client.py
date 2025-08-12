@@ -563,7 +563,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.rr_interface.set_item_state(STRANGE_BOX_ITEM_ID, 1)
         if(self.rr_interface.is_near_crosswarp() and self.is_crosswarp_disabled):
             logger.info("Cannot open the warp menu on a cross-map event, please move Erina somewhere else and try again!")
-            logger.info("If this issue persists, you may use /disable_cross_check to disable this check.")
+            logger.info("If this issue persists, you may use /disable_crosswarp_check to disable this check.")
             return
         self.rr_interface.open_warp_menu()
 
@@ -683,6 +683,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
     
     def disable_crosswarp(self):
         self.is_crosswarp_disabled = False
+        logger.warning("Crosswarp check disabled.")
 
 async def rabi_ribi_watcher(ctx: RabiRibiContext):
     """
