@@ -92,6 +92,17 @@ class RabiRibiMemoryIO():
         data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, 4)
         return data
     
+    def _read_short(self, offset):
+        """
+        Read 2 bytes of data at <base_process_address> + offset and return it.
+
+        :int offset: the offset to read data from.
+        :returns: The data represented as a byte string
+        """
+
+        data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, 2)
+        return data
+    
     def _read_byte(self, offset):
         """
         Read 1 byte of data at <base_process_address> + offset and return it.
@@ -184,12 +195,11 @@ class RabiRibiMemoryIO():
         """
 
         event_tile_offset = (
-            self.rr_mem.base_address +
             OFFSET_EVENT_MAP +
             (((x * 200) + y) * 2)
         )
 
-        data = self.rr_mem.read_bytes(event_tile_offset, 2)
+        data = self._read_short(event_tile_offset)
         return struct.unpack("h", data)[0]
 
     def is_player_frozen(self):
@@ -216,10 +226,11 @@ class RabiRibiMemoryIO():
         Returns true if the player is currently within 1 tile of a crosswarp tile
         """
         player_pos = self.read_player_tile_position()
+        
         for x in range(-1,2):
             for y in range(-1, 2):
                 event_id = self.read_tile_event_id(player_pos[1] + x, player_pos[2] + y)
-                if(event_id in range(241, 252)):
+                if 241 <= event_id <= 251:
                     return True
                 
         return False

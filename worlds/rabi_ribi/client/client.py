@@ -63,7 +63,7 @@ class RabiRibiCommandProcessor(ClientCommandProcessor): # type: ignore
         self.ctx.print_egg_amounts()
 
     def _cmd_disable_crosswarp_check(self) -> None:
-        """Disables crosswarp check for warpbox"""
+        """Disables crosswarp check for Stange Box warping"""
         self.ctx.disable_crosswarp()
 
     if tracker_loaded:
@@ -561,8 +561,8 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
     def open_warp_menu(self):
         # Reenable the Strange Box first.
         self.rr_interface.set_item_state(STRANGE_BOX_ITEM_ID, 1)
-        if(self.rr_interface.is_near_crosswarp() and self.is_crosswarp_disabled):
-            logger.info("Cannot open the warp menu on a cross-map event, please move Erina somewhere else and try again!")
+        if self.is_crosswarp_disabled and self.rr_interface.is_near_crosswarp():
+            logger.info("Cannot open the warp menu on a cross-map event tile, please move Erina somewhere else and try again!")
             logger.info("If this issue persists, you may use /disable_crosswarp_check to disable this check.")
             return
         self.rr_interface.open_warp_menu()
@@ -683,7 +683,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
     
     def disable_crosswarp(self):
         self.is_crosswarp_disabled = False
-        logger.warning("Crosswarp check disabled.")
+        logger.info("Crosswarp check disabled.")
 
 async def rabi_ribi_watcher(ctx: RabiRibiContext):
     """
