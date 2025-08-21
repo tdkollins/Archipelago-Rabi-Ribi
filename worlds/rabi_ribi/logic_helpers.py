@@ -183,12 +183,12 @@ def can_recruit_pandora(state: CollectionState, player: int):
 def can_recruit_nieve(state: CollectionState, player: int):
     """Player can recruit Nieve"""
     return state.can_reach(LocationName.palace_level_5, "Region", player) and \
-        state.can_reach(LocationName.icy_summit_main, "Region", player)
+        state.can_reach(LocationName.icy_summit_nixie, "Region", player)
 
 def can_recruit_nixie(state: CollectionState, player: int):
     """Player can recruit Nixie"""
     return state.can_reach(LocationName.palace_level_5, "Region", player) and \
-        state.can_reach(LocationName.icy_summit_main, "Region", player)
+        state.can_reach(LocationName.icy_summit_nixie, "Region", player)
 
 def can_recruit_aruraune(state: CollectionState, player: int):
     """Player can recruit Aruraune"""
