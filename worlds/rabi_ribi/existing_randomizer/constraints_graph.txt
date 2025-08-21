@@ -1711,11 +1711,6 @@ DARKNESS & (
 }
 
 {
-"edge": "SNOWLAND_LAKE -> SNOWLAND_MID",
-"prereq": "NONE",
-}
-
-{
 "edge": "SNOWLAND_MID -> SNOWLAND_QUICK_BARRETTE_ROOM",
 "prereq": "NONE",
 }
