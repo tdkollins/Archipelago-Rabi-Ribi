@@ -63,7 +63,7 @@ class RabiRibiCommandProcessor(ClientCommandProcessor): # type: ignore
         self.ctx.print_egg_amounts()
 
     def _cmd_disable_crosswarp_check(self) -> None:
-        """Disables crosswarp check for Stange Box warping"""
+        """Disables crosswarp check for Strange Box warping"""
         self.ctx.disable_crosswarp()
 
     if tracker_loaded:
