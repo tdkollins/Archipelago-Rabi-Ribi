@@ -21,6 +21,7 @@ OFFSET_PLAYER_X = int(0x0103469C)
 OFFSET_PLAYER_Y = int(0x013AFDB4)
 OFFSET_GIVE_ITEM_FUNC = int(0x15A90)
 OFFSET_PLAYER_FROZEN = int(0x1031DDC)
+OFFSET_EVENT_MAP = int(0xDCE1E0)
 OFFSET_ITEM_MAP = int(0xDFFB3C)
 OFFSET_INVENTORY_START = int(0x1672FA4)
 OFFSET_EGG_START = int(0x167CD58)
@@ -89,6 +90,17 @@ class RabiRibiMemoryIO():
         """
         
         data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, 4)
+        return data
+    
+    def _read_short(self, offset):
+        """
+        Read 2 bytes of data at <base_process_address> + offset and return it.
+
+        :int offset: the offset to read data from.
+        :returns: The data represented as a byte string
+        """
+
+        data = self.rr_mem.read_bytes(self.rr_mem.base_address + offset, 2)
         return data
     
     def _read_byte(self, offset):
@@ -172,6 +184,23 @@ class RabiRibiMemoryIO():
             player_y += (TILE_LENGTH / 2)
 
         return (int(area_id), int(player_x // TILE_LENGTH), int(player_y // TILE_LENGTH))
+    
+    def read_tile_event_id(self, x:int, y:int):
+        """
+        Read the event ID associated with a specific tile
+
+        :x: x position of the tile
+        :y: y position of the tile
+        :returns: event id of the tile
+        """
+
+        event_tile_offset = (
+            OFFSET_EVENT_MAP +
+            (((x * 200) + y) * 2)
+        )
+
+        data = self._read_short(event_tile_offset)
+        return struct.unpack("h", data)[0]
 
     def is_player_frozen(self):
         """
@@ -191,6 +220,20 @@ class RabiRibiMemoryIO():
 
     def is_in_item_receive_animation(self):
         return self._read_1_byte_bool(OFFSET_IN_ITEM_GET_ANIMATION)
+    
+    def is_near_crosswarp(self):
+        """
+        Returns true if the player is currently within 1 tile of a crosswarp tile
+        """
+        player_pos = self.read_player_tile_position()
+        
+        for x in range(-1,2):
+            for y in range(-1, 2):
+                event_id = self.read_tile_event_id(player_pos[1] + x, player_pos[2] + y)
+                if 241 <= event_id <= 251:
+                    return True
+                
+        return False
 
     def give_item(self, item_id):
         """
