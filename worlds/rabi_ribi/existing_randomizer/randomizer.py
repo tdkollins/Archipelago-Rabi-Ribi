@@ -84,6 +84,10 @@ def apply_item_specific_fixes(mod, allocation):
 
 
 def apply_fixes_for_randomizer(areaid, data):
+    """
+    AP Changes:
+        Remove Forest Night UPRPRC Fight
+    """
     if areaid == 0:
         # Remove save point and autosave point before Cocoa1
         for y in range(84,88):
@@ -106,6 +110,10 @@ def apply_fixes_for_randomizer(areaid, data):
         # Remove east starting forest lock
         for y in range(102,108):
             data.tiledata_event[xy_to_index(358,y)] = 0
+
+        # Remove Forest Night UPRPRC Fight
+        for y in range(70,75):
+            data.tiledata_event[xy_to_index(173,y)] = 0
 
     if areaid == 1:
         # Remove trampoline at crisis boost location
