@@ -565,6 +565,7 @@ def apply_start_location_shuffle(mod, settings, allocation):
     AP Changes:
         Removed unnecessary for loop over area list.
         Changed location of start location teleporter.
+        Added event update for number of eggs to reach trophy.
     """
     if not settings.shuffle_start_location: return
     # Add start warp room and remove FC2 warp stone
@@ -587,6 +588,12 @@ def apply_start_location_shuffle(mod, settings, allocation):
         for x in range(82, 88):
             if area0_data.tiledata_event[xy_to_index(x, y)] == 243:
                 area0_data.tiledata_event[xy_to_index(x, y)] = cross_map_event_id
+
+    # Update required egg count for trophy
+    for y in range(129, 132):
+        for x in range(54, 58):
+            if area0_data.tiledata_event[xy_to_index(x, y)] == 5005:
+                area0_data.tiledata_event[xy_to_index(x, y)] = 5000 + settings.num_hard_to_reach
 
     # Add warp exit point to the random start location
     start_area_data = mod.stored_datas[start_area]

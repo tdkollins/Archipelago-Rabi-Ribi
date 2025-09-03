@@ -54,6 +54,7 @@ except ImportError:
     tracker_loaded = False
 
 STRANGE_BOX_ITEM_ID = 30
+TROPHY_ITEM_ID = 42
 TRIGGER_BLOCK_EVENT_ID1 = 576
 
 class RabiRibiCommandProcessor(ClientCommandProcessor): # type: ignore
@@ -770,11 +771,9 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 ctx.rr_interface.remove_exclamation_point_from_inventory()
 
             if ctx.slot_data:
-                required_egg_count = ctx.slot_data["required_egg_count"] if "required_egg_count" in ctx.slot_data else 5
-                current_egg_count = ctx.rr_interface.get_number_of_eggs_collected()
                 if (not ctx.finished_game and
                     not ctx.rr_interface.is_on_main_menu() and
-                    current_egg_count >= required_egg_count):
+                    ctx.rr_interface.does_player_have_item_id(TROPHY_ITEM_ID)):
                     ctx.finished_game = True
                     await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
