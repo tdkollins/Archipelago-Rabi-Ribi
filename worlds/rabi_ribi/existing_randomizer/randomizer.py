@@ -489,6 +489,7 @@ def pre_modify_map_data(mod, settings, diff_patch_files, config):
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_rumi_no_give_items.txt'),
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_sandbag_no_boost.txt'),
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_volcanic_bomb_bunny_open.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_fc2_no_void.txt'),
         ]
         print_ln('Map fixes applied')
 
