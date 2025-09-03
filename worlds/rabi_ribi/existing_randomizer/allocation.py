@@ -189,7 +189,6 @@ class Allocation(object):
             self.start_location = current_location
         else:
             self.start_location = data.start_locations[0]
-            self.start_location.location = "FOREST_START"
 
     def revert_graph(self, data):
         def revert_edges(changes: dict, loc_edges: dict):

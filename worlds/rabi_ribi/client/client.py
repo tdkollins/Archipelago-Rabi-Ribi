@@ -20,7 +20,7 @@ from NetUtils import ClientStatus
 from Utils import get_intended_text
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
-from worlds.rabi_ribi.items import event_table
+from worlds.rabi_ribi.items import event_table, consumable_table
 from worlds.rabi_ribi.locations import all_locations
 from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.utility import (
@@ -54,6 +54,7 @@ except ImportError:
     tracker_loaded = False
 
 STRANGE_BOX_ITEM_ID = 30
+TRIGGER_BLOCK_EVENT_ID1 = 576
 
 class RabiRibiCommandProcessor(ClientCommandProcessor): # type: ignore
     ctx: "RabiRibiContext"
@@ -361,8 +362,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         """
         Give an item to the player. This method will always give the oldest
         item that the player has recieved from AP, but not in game yet.
-
-        :NetworkItem item: The item to give to the player
         """
         # Find the first item ID that the player has not recieved yet
         last_received_item_index = self.rr_interface.get_last_received_item_index()
@@ -370,11 +369,13 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         skipped_items, cur_item_id = next(((idx, item_id) for idx, item_id in enumerate(remaining_items) if item_id != -1), (-1, -1))
 
         if cur_item_id > 0:
-            if not self.rr_interface.does_player_have_item_id(cur_item_id):
+            already_has_item = self.rr_interface.does_player_have_item_id(cur_item_id)
+            if not already_has_item:
                 self.rr_interface.give_item(cur_item_id)
             # Update index regardless to move to the next item in the queue
             self.rr_interface.set_last_received_item_index(last_received_item_index + skipped_items + 1)
-            await asyncio.sleep(1)
+            if not already_has_item:
+                await asyncio.sleep(1)
             await self.wait_until_out_of_item_receive_animation()
 
     async def set_received_rabi_ribi_item_ids(self):
@@ -448,6 +449,18 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
                     if location_id not in self.locations_checked:
                         self.locations_checked.add(location_id)
                         await self.send_msgs([{"cmd": 'LocationChecks', "locations": self.locations_checked}])
+
+    def handle_consumable_changes(self):
+        """
+        Checks if the player has any consumable items,
+        and sets the events to open them at the start warp point.
+        """
+        rumi_donut_id = self.item_name_to_rabi_ribi_item_id[ItemName.rumi_donut]
+        for item_name in consumable_table.keys():
+            item_id = self.item_name_to_rabi_ribi_item_id[item_name]
+            if self.rr_interface.does_player_have_item_id(self.item_name_to_rabi_ribi_item_id[item_name]):
+                event_id = TRIGGER_BLOCK_EVENT_ID1 + (item_id - rumi_donut_id)
+                self.rr_interface.set_event_state(event_id, True)
 
     async def update_player_location(self):
         area_id, x, y = self.rr_interface.read_player_tile_position()
@@ -748,6 +761,8 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
             if ctx.in_state_where_can_give_items():
                 await ctx.give_item()
 
+            ctx.handle_consumable_changes()
+
             # Fallback if player collected items while the client was disconnected.
             #   Make sure the player never has an exclamation point in their inventory.
             #   (or else they wont be able to see/collect any other exclamation point)
@@ -764,11 +779,10 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                     await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
         except Exception as err:
-
             #Process closed trap
-            if(type(err) is AttributeError and not ctx.rr_interface.is_connected()):
+            if type(err) is AttributeError and not ctx.rr_interface.is_connected():
                 #Stop the ayncio task. No cleanup is necessary
-                if(watch_menu_task != None):
+                if watch_menu_task is not None:
                     try:
                         watch_menu_task.cancel()
                     except:
@@ -789,7 +803,7 @@ async def check_for_locations(ctx: RabiRibiContext):
     """
     This method checks if the player coordinates overlaps with any location checks.
     If it is, it will update the locations_checked set to include the location
-    (if its not already included).
+    (if it's not already included).
 
     :RabiRibiContext ctx: The Rabi Ribi Client context instance.
     """
@@ -812,15 +826,15 @@ async def check_for_locations(ctx: RabiRibiContext):
 
         try:
             network_item = await asyncio.wait_for(ctx.obtained_items_queue.get(), timeout=15)
-            if network_item.player != ctx.slot or (network_item.player == ctx.slot and ctx.item_names.lookup_in_game(network_item.item) == "Nothing"):
+            if (network_item.player != ctx.slot) or (network_item.player == ctx.slot and ctx.item_names.lookup_in_game(network_item.item) == ItemName.nothing):
                 await remove_exclamation_point(ctx, coordinates)
         except TimeoutError:
             logger.warning("Never received response to scout request for ap_location_id %d", ap_location_id)
 
 async def remove_exclamation_point(ctx: RabiRibiContext, coordinates):
-    ctx.rr_interface.remove_item_from_in_memory_map(coordinates[0], coordinates[1], coordinates[2])
-    from worlds.rabi_ribi.client.patch import remove_item_from_map
-    remove_item_from_map(ctx, coordinates[0], coordinates[1], coordinates[2])
+    ctx.rr_interface.remove_exclamation_point_from_in_memory_map(coordinates[0], coordinates[1], coordinates[2])
+    from worlds.rabi_ribi.client.patch import remove_exclamation_point_from_map
+    remove_exclamation_point_from_map(ctx, coordinates[0], coordinates[1], coordinates[2])
     while ctx.rr_interface.is_player_frozen():
         await asyncio.sleep(0.25)
     ctx.rr_interface.remove_exclamation_point_from_inventory()

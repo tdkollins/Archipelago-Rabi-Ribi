@@ -134,9 +134,6 @@ class RabiRibiWorld(World):
         # Will be configurable later, but for now always force eggs to be local
         self.options.local_items.value.add(ItemName.easter_egg)
 
-        # Force consumable items to be local, as the player may need to pick them up multiple times
-        self.options.local_items.value.update(item_groups["Consumables"])
-
     def create_item(self, name: str, force_classification: Optional[ItemClassification] = None) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
         # Universal Tracker: Allow creation of a fake event to represent out of logic checks
@@ -229,7 +226,6 @@ class RabiRibiWorld(World):
             "include_halloween": bool(self.options.include_halloween.value),
             "picked_templates": self.picked_templates,
             "map_transition_shuffle_order": self.map_transition_shuffle_order,
-            "shuffle_start_location": bool(self.options.shuffle_start_location.value),
             "start_location": self.start_location,
             "shuffle_music": bool(self.options.shuffle_music.value),
             "shuffle_backgrounds": bool(self.options.shuffle_backgrounds.value),

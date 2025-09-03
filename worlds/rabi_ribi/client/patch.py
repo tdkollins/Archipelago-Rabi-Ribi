@@ -84,7 +84,7 @@ def patch_map_files(ctx: RabiRibiContext):
     settings.random_seed = ctx.seed_player
     settings.shuffle_music = ctx.slot_data["shuffle_music"]
     settings.shuffle_backgrounds = ctx.slot_data["shuffle_backgrounds"]
-    settings.shuffle_start_location = ctx.slot_data["shuffle_start_location"]
+    settings.shuffle_start_location = True # Always apply start location shuffle to enable start room.
     settings.apply_beginner_mod = ctx.slot_data["apply_beginner_mod"]
     settings.no_laggy_backgrounds = True
     settings.no_difficult_backgrounds = True
@@ -116,7 +116,7 @@ def patch_map_files(ctx: RabiRibiContext):
 
     embed_seed_player_into_mapdata(ctx, item_modifier)
 
-def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
+def remove_exclamation_point_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
     """
     This method removes a specified item from the map. This is used to delete
     items from other worlds (represented by exclamation point items) on the map
@@ -126,14 +126,17 @@ def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
     of the exclamation points, but we want to delete the ones the player has already
     obtained.
     """
+    EXCLAMATION_POINT_ITEM_ID = 43
     f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
     f.seek(MAP_ITEMS_OFFSET)
     tiledata_items = list(struct.unpack('%dh' % MAP_SIZE, f.read(MAP_SIZE*2)))
     index = to_index((x, y))
-    tiledata_items[index] = 0
-    f.seek(MAP_ITEMS_OFFSET)
-    f.write(struct.pack('%dh' % MAP_SIZE, *tiledata_items))
-    f.close()
+
+    if tiledata_items[index] == EXCLAMATION_POINT_ITEM_ID:
+        tiledata_items[index] = 0
+        f.seek(MAP_ITEMS_OFFSET)
+        f.write(struct.pack('%dh' % MAP_SIZE, *tiledata_items))
+        f.close()
 
 def embed_seed_player_into_mapdata(ctx: RabiRibiContext, item_modifier):
     if not ctx.seed_player_id:

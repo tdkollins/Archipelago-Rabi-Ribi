@@ -463,6 +463,7 @@ def apply_diff_patch_fixes(mod, diff_patch_files):
             'tiles4': stored_data.tiledata_tiles4,
             'tiles5': stored_data.tiledata_tiles5,
             'tiles6': stored_data.tiledata_tiles6,
+            'items': stored_data.tiledata_items
         }
 
     for diff_path_file in diff_patch_files:
@@ -551,6 +552,11 @@ def apply_map_transition_shuffle(mod, data, settings, allocation):
 
 
 def apply_start_location_shuffle(mod, settings, allocation):
+    """
+    AP Changes:
+        Removed unnecessary for loop over area list.
+        Changed location of start location teleporter.
+    """
     if not settings.shuffle_start_location: return
     # Add start warp room and remove FC2 warp stone
     # AP Change: Use os.path.join
@@ -560,22 +566,24 @@ def apply_start_location_shuffle(mod, settings, allocation):
     ])
 
     start_area = allocation.start_location.area
-    for areaid, data in mod.stored_datas.items():
-        if areaid == 0:
-            # Add warp exit point to original start position
-            data.tiledata_event[xy_to_index(112, 91)] = 218
-            data.tiledata_event[xy_to_index(112, 92)] = 240
 
-            cross_map_event_id = 242 + start_area
-            for y in range(130, 133):
-                for x in range(73, 78):
-                    if data.tiledata_event[xy_to_index(x, y)] == 243:
-                        data.tiledata_event[xy_to_index(x, y)] = cross_map_event_id
-        if areaid == start_area:
-            # Add warp exit point to the random start location
-            x, y = allocation.start_location.position
-            data.tiledata_event[xy_to_index(x, y)] = 220
-            data.tiledata_event[xy_to_index(x, y + 1)] = 240
+    # Add warp exit point to original start position
+    area0_data = mod.stored_datas[0]
+    area0_data.tiledata_event[xy_to_index(112, 91)] = 218
+    area0_data.tiledata_event[xy_to_index(112, 92)] = 240
+
+    # Update teleporter in start warp room to point to area of start position
+    cross_map_event_id = 242 + start_area
+    for y in range(130, 133):
+        for x in range(82, 88):
+            if area0_data.tiledata_event[xy_to_index(x, y)] == 243:
+                area0_data.tiledata_event[xy_to_index(x, y)] = cross_map_event_id
+
+    # Add warp exit point to the random start location
+    start_area_data = mod.stored_datas[start_area]
+    x, y = allocation.start_location.position
+    start_area_data.tiledata_event[xy_to_index(x, y)] = 220
+    start_area_data.tiledata_event[xy_to_index(x, y + 1)] = 240
 
 def insert_items_into_map(mod, data, settings, allocation):
     """
