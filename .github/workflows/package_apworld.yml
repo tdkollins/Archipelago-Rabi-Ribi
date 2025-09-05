@@ -16,13 +16,12 @@ jobs:
       run: mkdir artifacts
       
     - name: Compress APWorld Folder
-      run: zip -r ./artifacts/raib_ribi.zip ./worlds/rabi_ribi
-      
-    - name: Change File Extension
-      run: mv ./artifacts/raib_ribi.zip ./artifacts/raib_ribi.apworld
+      run: |
+        zip -r ./artifacts/raib_ribi.zip ./worlds/rabi_ribi
+        mv ./artifacts/raib_ribi.zip ./artifacts/raib_ribi.apworld
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4.6.2
       with:
         name: compressed-data
-        path: ./artifacts/rabi-ribi.apworld
+        path: ./artifacts/rabi_ribi.apworld
