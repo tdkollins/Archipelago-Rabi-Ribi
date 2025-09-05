@@ -15,10 +15,12 @@ jobs:
     - name: Create Artifacts Folder
       run: mkdir artifacts
       
+      
     - name: Compress APWorld Folder
       run: |
-        zip -r ./artifacts/raib_ribi.zip ./worlds/rabi_ribi
-        mv ./artifacts/raib_ribi.zip ./artifacts/rabi_ribi.apworld
+        cd ./worlds
+        zip -r ../artifacts/rabi_ribi.zip ./rabi_ribi
+        mv ../artifacts/rabi_ribi.zip ../artifacts/rabi_ribi.apworld
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4.6.2
