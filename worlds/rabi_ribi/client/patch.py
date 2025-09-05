@@ -157,6 +157,6 @@ def create_custom_text_file(ctx: RabiRibiContext):
     with open(f"{ctx.custom_seed_subdir}/story_text.rbrb", "w") as f:
         f.write("\r\n")
         f.write("Starting Forest\r\n")
-        f.write("Forgotten Cave 2\r\n")
+        f.write("Forgotten Cave II\r\n")
         f.write(f"{LocationName.start_location_to_area_name[start_location]}\r\n")
         f.write(f"Required Eggs: {required_egg_count}\r\n")
