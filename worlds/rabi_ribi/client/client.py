@@ -1,12 +1,12 @@
-from typing import Dict, Optional, Set, Tuple, TYPE_CHECKING
+from typing import Dict, NamedTuple, Optional, Set, Tuple, TYPE_CHECKING
 import ast
 import asyncio
 import os
-from pathlib import Path
 import time
 import hashlib
 import urllib.parse
 
+from BaseClasses import CollectionState, Entrance, Location, Region
 from CommonClient import (
     CommonContext,
     get_base_parser,
@@ -18,6 +18,7 @@ from MultiServer import mark_raw
 from NetUtils import ClientStatus
 
 from Utils import get_intended_text
+from worlds.AutoWorld import World
 from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
 from worlds.rabi_ribi.items import event_table, consumable_table
@@ -29,35 +30,38 @@ from worlds.rabi_ribi.utility import (
     convert_existing_rando_name_to_ap_name
 )
 
-if TYPE_CHECKING:
-    from BaseClasses import CollectionState, Entrance, Location, MultiWorld, Region
-
 try:
-    from worlds.tracker.TrackerClient import UT_VERSION, TrackerGameContext, updateTracker # type: ignore
-    from worlds.tracker.TrackerClient import TrackerCommandProcessor as ClientCommandProcessor # type: ignore
+    from worlds.tracker.TrackerClient import UT_VERSION, TrackerCommandProcessor, TrackerGameContext # type: ignore
 
     tracker_loaded = True
 except ImportError:
     from CommonClient import ClientCommandProcessor
-    class TrackerGameContextMixin:
-        """Expecting the TrackerGameContext to have these methods."""
-        multiworld: "MultiWorld"
+
+    class TrackerCore:
         player_id: int
 
-        def build_gui(self, manager): ...
-        def run_generator(self): ...
-        def load_kv(self): ...
+        def get_current_world(self) -> World | None: ...
 
-    class TrackerGameContext(CommonContext, TrackerGameContextMixin):
-        pass
+    class CurrentTrackerState(NamedTuple):
+        state: CollectionState
+
+    class TrackerGameContext(CommonContext):
+        tracker_core: TrackerCore
+
+        def run_generator(self) -> None: ...
+        def updateTracker(self) -> CurrentTrackerState: ...
+
+    class TrackerCommandProcessor(ClientCommandProcessor):
+        ctx: TrackerGameContext
 
     tracker_loaded = False
+    UT_VERSION = "Not found"
 
 STRANGE_BOX_ITEM_ID = 30
 TROPHY_ITEM_ID = 42
 TRIGGER_BLOCK_EVENT_ID1 = 576
 
-class RabiRibiCommandProcessor(ClientCommandProcessor): # type: ignore
+class RabiRibiCommandProcessor(TrackerCommandProcessor): # type: ignore
     ctx: "RabiRibiContext"
 
     def _cmd_eggs(self) -> None:
@@ -112,7 +116,7 @@ class RabiRibiCommandProcessor(ClientCommandProcessor): # type: ignore
                     logger.warning(response)
                     return
 
-            state = get_updated_state(self.ctx)
+            state = self.ctx.get_updated_state()
             if goal_location and not goal_location.can_reach(state):
                 logger.warning(f"Location {goal_location.name} cannot be reached")
                 return
@@ -139,6 +143,27 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
     """Rabi Ribi Game Context"""
     game = "Rabi-Ribi"
     tags = {"AP"}
+
+    @property
+    def player(self) -> int:
+        try:
+            return self.player_id
+        except AttributeError:
+            return self.tracker_core.player_id
+
+    def get_world(self) -> World | None:
+        try:
+            return self.tracker_core.get_current_world()
+        except AttributeError:
+            return self.multiworld.worlds[self.player]
+
+    def get_updated_state(self) -> CollectionState:
+        try:
+            from worlds.tracker.TrackerClient import updateTracker # type: ignore
+
+            return updateTracker(self).state
+        except:
+            return self.updateTracker().state
 
     def __init__(self, server_address: Optional[str], password: Optional[str]) -> None:
         super().__init__(server_address, password)
@@ -647,17 +672,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             logger.info(f"You have {len(self.collected_eggs)} Easter Eggs")
             logger.info(f"You need {required_egg_count} Easter Eggs total to beat the game")
 
-    def get_world(self) -> "RabiRibiWorld | None":
-        if self.player_id is None:
-            logger.warning("Internal logic was not able to load, check your yamls and relaunch.")
-            return
-
-        if self.game != "Rabi-Ribi":
-            logger.warning(f"Please connect to a slot with explainable logic (not {self.game}).")
-            return
-
-        return self.multiworld.worlds[self.player_id]  # type: ignore
-
     def reset_client_state(self):
         """
         Reset client back to default values
@@ -837,9 +851,6 @@ async def remove_exclamation_point(ctx: RabiRibiContext, coordinates):
     while ctx.rr_interface.is_player_frozen():
         await asyncio.sleep(0.25)
     ctx.rr_interface.remove_exclamation_point_from_inventory()
-
-def get_updated_state(ctx: "TrackerGameContext") -> "CollectionState":
-    return updateTracker(ctx).state  # type: ignore
 
 async def main(args):
     """
