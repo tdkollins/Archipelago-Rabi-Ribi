@@ -479,6 +479,7 @@ FAIRIES_FLUTE : 62
 
 ===StartLocations===
 //area : (x, y) : weight : node
+0 : (112, 94) : 0 : FOREST_START // Default for disabling Start Location Shuffle
 0 : (350,103) : 20 : FOREST_WARP
 1 : (373,159) : 15 : PYRAMID_WARP_ROOM
 0 : (325,159) : 15 : SPECTRAL_WARP

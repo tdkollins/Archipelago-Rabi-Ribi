@@ -28,6 +28,7 @@ from worlds.rabi_ribi.existing_randomizer.randomizer import (
 from worlds.rabi_ribi.existing_randomizer.utility import to_index
 from worlds.rabi_ribi.items import lookup_item_id_to_name
 from worlds.rabi_ribi.locations import lookup_location_id_to_name
+from worlds.rabi_ribi.names import LocationName
 from worlds.rabi_ribi.options import AttackMode
 from worlds.rabi_ribi.utility import convert_ap_name_to_existing_rando_name
 
@@ -78,13 +79,14 @@ def patch_map_files(ctx: RabiRibiContext):
     grab_original_maps(map_source_dir, ctx.custom_seed_subdir)
     settings = parse_args()
     settings.open_mode = ctx.slot_data["openMode"]
+    settings.num_hard_to_reach = ctx.slot_data["required_egg_count"]
     settings.shuffle_gift_items = ctx.slot_data["randomize_gift_items"]
 
     # Need a unique seed to ensure that the background and music shuffles can be regenerated if needed.
     settings.random_seed = ctx.seed_player
     settings.shuffle_music = ctx.slot_data["shuffle_music"]
     settings.shuffle_backgrounds = ctx.slot_data["shuffle_backgrounds"]
-    settings.shuffle_start_location = ctx.slot_data["shuffle_start_location"]
+    settings.shuffle_start_location = True # Always apply start location shuffle to enable start room.
     settings.apply_beginner_mod = ctx.slot_data["apply_beginner_mod"]
     settings.no_laggy_backgrounds = True
     settings.no_difficult_backgrounds = True
@@ -115,8 +117,9 @@ def patch_map_files(ctx: RabiRibiContext):
         item_modifier.save(ctx.custom_seed_subdir)
 
     embed_seed_player_into_mapdata(ctx, item_modifier)
+    create_custom_text_file(ctx)
 
-def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
+def remove_exclamation_point_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
     """
     This method removes a specified item from the map. This is used to delete
     items from other worlds (represented by exclamation point items) on the map
@@ -126,21 +129,34 @@ def remove_item_from_map(ctx: RabiRibiContext, area_id: int, x: int, y: int):
     of the exclamation points, but we want to delete the ones the player has already
     obtained.
     """
+    EXCLAMATION_POINT_ITEM_ID = 43
     f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
     f.seek(MAP_ITEMS_OFFSET)
     tiledata_items = list(struct.unpack('%dh' % MAP_SIZE, f.read(MAP_SIZE*2)))
     index = to_index((x, y))
-    tiledata_items[index] = 0
-    f.seek(MAP_ITEMS_OFFSET)
-    f.write(struct.pack('%dh' % MAP_SIZE, *tiledata_items))
-    f.close()
+
+    if tiledata_items[index] == EXCLAMATION_POINT_ITEM_ID:
+        tiledata_items[index] = 0
+        f.seek(MAP_ITEMS_OFFSET)
+        f.write(struct.pack('%dh' % MAP_SIZE, *tiledata_items))
+        f.close()
 
 def embed_seed_player_into_mapdata(ctx: RabiRibiContext, item_modifier):
     if not ctx.seed_player_id:
         raise RuntimeError("Missing seed player ID while embedding seed in map")
 
     for area_id, _ in item_modifier.stored_datas.items():
-        f = open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b")
-        f.seek(MAP_TILES0_OFFSET)
-        f.write(ctx.seed_player_id.encode())
-        f.close()
+        with open(f"{ctx.custom_seed_subdir}/area{area_id}.map", "r+b") as f:
+            f.seek(MAP_TILES0_OFFSET)
+            f.write(ctx.seed_player_id.encode())
+            f.close()
+
+def create_custom_text_file(ctx: RabiRibiContext):
+    start_location = ctx.slot_data["start_location"]
+    required_egg_count = ctx.slot_data["required_egg_count"] if "required_egg_count" in ctx.slot_data else 5
+    with open(f"{ctx.custom_seed_subdir}/story_text.rbrb", "w") as f:
+        f.write("\r\n")
+        f.write("Starting Forest\r\n")
+        f.write("Forgotten Cave II\r\n")
+        f.write(f"{LocationName.start_location_to_area_name[start_location]}\r\n")
+        f.write(f"Required Eggs: {required_egg_count}\r\n")

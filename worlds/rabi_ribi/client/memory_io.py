@@ -24,6 +24,7 @@ OFFSET_PLAYER_FROZEN = int(0x1031DDC)
 OFFSET_EVENT_MAP = int(0xDCE1E0)
 OFFSET_ITEM_MAP = int(0xDFFB3C)
 OFFSET_INVENTORY_START = int(0x1672FA4)
+OFFSET_EVENT_START = int(0x16737B4)
 OFFSET_EGG_START = int(0x167CD58)
 OFFSET_MAX_HEALTH = int(0x16E6D24)
 OFFSET_PLAYER_PAUSED = int(0x16E5C40)
@@ -39,6 +40,7 @@ OFFSET_PLAYER_STATE = int(0x1682364)
 OFFSET_PLAYER_STATE_HEALTH = int(0x4E0)
 EXCLAMATION_POINT_ITEM_ID = 43
 UNUSED_ITEM_ID_48 = 48
+EVENT_FLAG_ID_START = 255
 TILE_LENGTH = 64
 EGG_ARRAY_LENGTH = 80 * 3 * 2 # 80 eggs stored as 3 shorts
 
@@ -286,7 +288,7 @@ class RabiRibiMemoryIO():
         # start a thread at the entrypoint of our injected code
         self.rr_mem.start_thread(self.addr_injected_give_item_entrypoint)
 
-    def remove_item_from_in_memory_map(self, area_id: int, x: int, y: int):
+    def remove_exclamation_point_from_in_memory_map(self, area_id: int, x: int, y: int):
         """
         This method sets a specific tile on the map loaded into memory to having no item
         on it. This is used to delete items from the map when the player collects an item
@@ -301,11 +303,9 @@ class RabiRibiMemoryIO():
             OFFSET_ITEM_MAP +
             (((x * 200) + y) * 2)
         )
-        self.rr_mem.write_bytes(
-            map_tile_item_info_offset,
-            b'\x00\x00',
-            2
-        )
+        current_item = self.rr_mem.read_short(map_tile_item_info_offset)
+        if current_item == EXCLAMATION_POINT_ITEM_ID:
+            self.rr_mem.write_short(map_tile_item_info_offset, 0)
 
     def remove_exclamation_point_from_inventory(self):
         """
@@ -353,6 +353,14 @@ class RabiRibiMemoryIO():
         Sets the index of the last item received from the recieved items list.
         """
         self.set_item_state(UNUSED_ITEM_ID_48, index)
+
+    def set_event_state(self, event_id: int, state: bool):
+        """
+        Sets the state of the given event flag ID.
+        """
+        address = self.rr_mem.base_address + OFFSET_EVENT_START + (4 * (event_id - EVENT_FLAG_ID_START))
+        value = 1 if state else 0
+        self.rr_mem.write_int(address, value)
 
     def open_warp_menu(self):
         """

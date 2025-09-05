@@ -455,3 +455,27 @@ egg_hospital_box             = "Egg Hospital Box"
 egg_sysint2                  = "Egg Sysint2"
 egg_sysint2_long_jump        = "Egg Sysint2 Long Jump"
 egg_sysint1                  = "Egg Sysint1"
+
+start_location_to_area_name = {
+    forest_start: "Starting Forest",
+    forest_warp: "Starting Forest",
+    pyramid_warp_room: "Golden Pyramid",
+    spectral_warp: "Spectral Cave",
+    lab_mid: "Exotic Laboratory",
+    volcanic_main: "Volcanic Caverns",
+    town_main: "Rabi Rabi Town",
+    aquarium_top_entrance: "Natural Aquarium",
+    sky_bridge_main: "Sky-High Bridge",
+    snowland_rita: "Aurora Snow Land",
+    evernight_warp: "Evernight Peak",
+    riverbank_main_level1: "Golden Riverbank",
+    graveyard_main: "Floating Graveyard",
+    hall_of_memories: "Hall of Memories",
+    forgotten_cave_2: "Forgotten Cave 2",
+    beach_main: "Rabi Rabi Beach",
+    park_warp: "Rabi Rabi Park",
+    palace_warp_level_1_2: "Aurora Palace",
+    ravine_upper_east: "Rabi Rabi Ravine",
+    icy_summit_main: "Icy Summit",
+    sky_island_upper: "Sky Island Town"
+}

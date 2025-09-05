@@ -84,6 +84,10 @@ def apply_item_specific_fixes(mod, allocation):
 
 
 def apply_fixes_for_randomizer(areaid, data):
+    """
+    AP Changes:
+        Remove Forest Night UPRPRC Fight
+    """
     if areaid == 0:
         # Remove save point and autosave point before Cocoa1
         for y in range(84,88):
@@ -106,6 +110,10 @@ def apply_fixes_for_randomizer(areaid, data):
         # Remove east starting forest lock
         for y in range(102,108):
             data.tiledata_event[xy_to_index(358,y)] = 0
+
+        # Remove Forest Night UPRPRC Fight
+        for y in range(70,75):
+            data.tiledata_event[xy_to_index(173,y)] = 0
 
     if areaid == 1:
         # Remove trampoline at crisis boost location
@@ -463,6 +471,7 @@ def apply_diff_patch_fixes(mod, diff_patch_files):
             'tiles4': stored_data.tiledata_tiles4,
             'tiles5': stored_data.tiledata_tiles5,
             'tiles6': stored_data.tiledata_tiles6,
+            'items': stored_data.tiledata_items
         }
 
     for diff_path_file in diff_patch_files:
@@ -487,6 +496,8 @@ def pre_modify_map_data(mod, settings, diff_patch_files, config):
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_town_to_riverbank.txt'),
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_rumi_no_give_items.txt'),
             os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_sandbag_no_boost.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_volcanic_bomb_bunny_open.txt'),
+            os.path.join('existing_randomizer', 'maptemplates', 'event_warps', 'ew_fc2_no_void.txt'),
         ]
         print_ln('Map fixes applied')
 
@@ -550,6 +561,12 @@ def apply_map_transition_shuffle(mod, data, settings, allocation):
 
 
 def apply_start_location_shuffle(mod, settings, allocation):
+    """
+    AP Changes:
+        Removed unnecessary for loop over area list.
+        Changed location of start location teleporter.
+        Added event update for number of eggs to reach trophy.
+    """
     if not settings.shuffle_start_location: return
     # Add start warp room and remove FC2 warp stone
     # AP Change: Use os.path.join
@@ -559,22 +576,30 @@ def apply_start_location_shuffle(mod, settings, allocation):
     ])
 
     start_area = allocation.start_location.area
-    for areaid, data in mod.stored_datas.items():
-        if areaid == 0:
-            # Add warp exit point to original start position
-            data.tiledata_event[xy_to_index(112, 91)] = 218
-            data.tiledata_event[xy_to_index(112, 92)] = 240
 
-            cross_map_event_id = 242 + start_area
-            for y in range(130, 133):
-                for x in range(73, 78):
-                    if data.tiledata_event[xy_to_index(x, y)] == 243:
-                        data.tiledata_event[xy_to_index(x, y)] = cross_map_event_id
-        if areaid == start_area:
-            # Add warp exit point to the random start location
-            x, y = allocation.start_location.position
-            data.tiledata_event[xy_to_index(x, y)] = 220
-            data.tiledata_event[xy_to_index(x, y + 1)] = 240
+    # Add warp exit point to original start position
+    area0_data = mod.stored_datas[0]
+    area0_data.tiledata_event[xy_to_index(112, 91)] = 218
+    area0_data.tiledata_event[xy_to_index(112, 92)] = 240
+
+    # Update teleporter in start warp room to point to area of start position
+    cross_map_event_id = 242 + start_area
+    for y in range(130, 133):
+        for x in range(82, 88):
+            if area0_data.tiledata_event[xy_to_index(x, y)] == 243:
+                area0_data.tiledata_event[xy_to_index(x, y)] = cross_map_event_id
+
+    # Update required egg count for trophy
+    for y in range(129, 132):
+        for x in range(54, 58):
+            if area0_data.tiledata_event[xy_to_index(x, y)] == 5005:
+                area0_data.tiledata_event[xy_to_index(x, y)] = 5000 + settings.num_hard_to_reach
+
+    # Add warp exit point to the random start location
+    start_area_data = mod.stored_datas[start_area]
+    x, y = allocation.start_location.position
+    start_area_data.tiledata_event[xy_to_index(x, y)] = 220
+    start_area_data.tiledata_event[xy_to_index(x, y + 1)] = 240
 
 def insert_items_into_map(mod, data, settings, allocation):
     """
