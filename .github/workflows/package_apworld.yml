@@ -1,0 +1,36 @@
+name: Package APWorld
+
+on:
+  push:
+    tags:
+      - 'beta-*.*.*'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set env
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+    - name: Checkout
+      uses: actions/checkout@v5.0.0
+
+    - name: Create Artifacts Folder
+      run: mkdir artifacts
+
+    - name: Compress APWorld Folder
+      run: |
+        cd ./worlds
+        zip -r ../artifacts/rabi_ribi.zip ./rabi_ribi
+        mv ../artifacts/rabi_ribi.zip ../artifacts/rabi_ribi.apworld
+
+    - name: Add to Release
+      uses: softprops/action-gh-release@975c1b265e11dd76618af1c374e7981f9a6ff44a
+      with:
+        draft: true
+        prerelease: false
+        name: ${{ env.RELEASE_VERSION }}
+        files: |
+          artifacts/rabi_ribi.apworld
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
