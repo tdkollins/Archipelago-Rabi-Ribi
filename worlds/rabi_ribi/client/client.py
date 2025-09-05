@@ -6,6 +6,7 @@ import time
 import hashlib
 import urllib.parse
 
+from BaseClasses import CollectionState, Entrance, Location, Region
 from CommonClient import (
     CommonContext,
     get_base_parser,
@@ -28,9 +29,6 @@ from worlds.rabi_ribi.utility import (
     load_text_file,
     convert_existing_rando_name_to_ap_name
 )
-
-if TYPE_CHECKING:
-    from BaseClasses import CollectionState, Entrance, Location, MultiWorld, Region
 
 try:
     from worlds.tracker.TrackerClient import UT_VERSION, TrackerCommandProcessor, TrackerGameContext # type: ignore
