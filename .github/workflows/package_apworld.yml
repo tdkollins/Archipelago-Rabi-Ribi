@@ -1,0 +1,27 @@
+name: Package APWorld
+
+on:
+  push:
+    tags:
+      - 'beta-*.*.*'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5.0.0
+
+    - name: Create Artifacts Folder
+      run: mkdir artifacts
+      
+    - name: Compress APWorld Folder
+      run: |
+        zip -r ./artifacts/raib_ribi.zip ./worlds/rabi_ribi
+        mv ./artifacts/raib_ribi.zip ./artifacts/raib_ribi.apworld
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        name: compressed-data
+        path: ./artifacts/rabi-ribi.apworld
