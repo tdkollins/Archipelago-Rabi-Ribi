@@ -15,7 +15,6 @@ jobs:
     - name: Create Artifacts Folder
       run: mkdir artifacts
       
-      
     - name: Compress APWorld Folder
       run: |
         cd ./worlds
