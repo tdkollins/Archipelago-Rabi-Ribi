@@ -155,8 +155,8 @@ def can_recruit_cocoa(state: CollectionState, player: int):
 
 def can_recruit_ashuri(state: CollectionState, player: int):
     """Player can recruit Ashuri"""
-    return state.can_reach(LocationName.riverbank_level3, "Region", player) and \
-        state.has("Chapter 1", player) and \
+    return state.has("Chapter 1", player) and \
+        state.has(ItemName.ashuri_2, player) and \
         state.can_reach(LocationName.spectral_west, "Region", player)
 
 def can_recruit_rita(state: CollectionState, player: int):
@@ -555,9 +555,9 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Underwater": lambda state: can_navigate_underwater(state, player, options),
             "Underwater Without Water Orb": lambda state: can_navigate_underwater_without_water_orb(state, player, options),
             "Prologue Trigger": lambda state: can_move_out_of_prologue_areas(state, player, options),
-            "Cocoa 1": lambda state: can_reach_cocoa_1(state, player),
-            "Kotri 1": lambda state: can_reach_kotri_1(state, player),
-            "Ashuri 2": lambda state: can_reach_ashuri_2(state, player),
+            "Cocoa 1": lambda state: state.has(ItemName.cocoa_1, player),
+            "Kotri 1": lambda state: state.has(ItemName.kotri_1, player),
+            "Ashuri 2": lambda state: state.has(ItemName.ashuri_2, player),
             "Boss Ribbon": lambda state: can_reach_ribbon(state, player),
             "Difficulty Hard": lambda state: is_at_least_hard_difficulty(state, player, options),
             "Difficulty V Hard": lambda state: is_at_least_v_hard_difficulty(state, player, options),

@@ -93,6 +93,7 @@ wind_blessing = "Wind Blessing"
 fairies_flute = "Fairies Flute"
 
 # Recruit Definitions
+ashuri_2            = "Ashuri 2"
 cocoa_1             = "Cocoa 1"
 kotri_1             = "Kotri 1"
 kotri_2             = "Kotri 2"
