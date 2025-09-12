@@ -58,6 +58,10 @@ class BackgroundShuffler(object):
         ]
 
     def shuffle(self):
+        """
+        AP Change:
+            Fixed water in Hall of Memory.
+        """
         backgrounds = list(set(val for areaid, posindex, val in self.original_locations))
         new_backgrounds = list(backgrounds)
         if self.no_laggy_backgrounds:
@@ -95,6 +99,14 @@ class BackgroundShuffler(object):
             if areaid == 4 and posindex == to_tile_index(7,9): continue
             if areaid == 4 and posindex == to_tile_index(8,9): continue
             if areaid == 4 and posindex == to_tile_index(9,9): continue
+
+            # Fix for missing water in HoM
+            if areaid == 7 and posindex == to_tile_index(8,7): continue
+            if areaid == 7 and posindex == to_tile_index(9,7): continue
+            if areaid == 7 and posindex == to_tile_index(9,8): continue
+            if areaid == 7 and posindex == to_tile_index(10,7): continue
+            if areaid == 7 and posindex == to_tile_index(10,8): continue
+            if areaid == 7 and posindex == to_tile_index(10,9): continue
 
             # Fix for bug where you can't enter warps if it has computer room background.
             if allocation[val] == 64:
@@ -149,7 +161,6 @@ class BackgroundShuffler(object):
 
                 # Carrot boost doesn't work correctly for aurora palace whirl blocks template
                 if areaid == 3 and posindex == to_tile_index(1,9): continue
-                
 
             # Fix for Sysint1 background floating effect affecting constraints
             if allocation[val] == 65:

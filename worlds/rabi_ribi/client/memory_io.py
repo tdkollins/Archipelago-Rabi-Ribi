@@ -32,7 +32,7 @@ OFFSET_SCENERIO_INDICATOR = int(0xE30880)
 OFFSET_IN_ITEM_GET_ANIMATION = int(0x1682ACA)
 OFFSET_IN_WARP_MENU = int(0x16E5BB8)
 OFFSET_IN_COSTUME_MENU = int(0x16E6B20)
-OFFSET_IN_SAVE_MENU = int(0xD2DA50)
+OFFSET_IN_SAVE_MENU = int(0x1664E04)
 OFFSET_CURRENT_WARP_ID = int(0x016E6D08)
  # returns a memory address where various state is stored
 OFFSET_PLAYER_STATE = int(0x1682364)
@@ -370,8 +370,8 @@ class RabiRibiMemoryIO():
 
         # When using the warp menu, the player cannot select to warp to their current location.
         # Since we're opening the menu in a random location, we need to set the current location to not be 0
-        # to allow warping to Starting Forest. We use Forgotten Cave 2, as it's an unnecessary warp.
-        self.rr_mem.write_int(self.rr_mem.base_address + OFFSET_CURRENT_WARP_ID, 13)
+        # to allow warping to Starting Forest. Using -1 allows all warps to be selected.
+        self.rr_mem.write_int(self.rr_mem.base_address + OFFSET_CURRENT_WARP_ID, -1)
 
     def get_collected_eggs(self) -> List[Tuple[int, int, int]]:
         """
