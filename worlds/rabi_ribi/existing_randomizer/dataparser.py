@@ -138,6 +138,7 @@ def define_pseudo_items():
 
         "BOOST": "BEACH_MAIN | (RUMI_DONUT & ITEM_MENU)",
         "BOOST_MANY": "ITEM_MENU & TOWN_SHOP",
+        "BOOST_BORING": "(BEACH_MAIN & BORING) | (RUMI_DONUT & ITEM_MENU)",
     }
 
 
