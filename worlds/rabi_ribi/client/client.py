@@ -412,6 +412,9 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             if not already_has_item:
                 await asyncio.sleep(1)
             await self.wait_until_out_of_item_receive_animation()
+        elif len(remaining_items) > 0:
+            # Update index to mark the player as not waiting for Nothing items
+            self.rr_interface.set_last_received_item_index(last_received_item_index + len(remaining_items))
 
     async def set_received_rabi_ribi_item_ids(self):
         async with self.critical_section_lock:
