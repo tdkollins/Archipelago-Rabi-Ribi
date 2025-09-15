@@ -24,6 +24,7 @@ from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
 from worlds.rabi_ribi.items import event_table, consumable_table
 from worlds.rabi_ribi.locations import all_locations
 from worlds.rabi_ribi.names import ItemName
+from worlds.rabi_ribi.options import AttackMode
 from worlds.rabi_ribi.utility import (
     CLIENT_VERSION,
     load_text_file,
@@ -71,6 +72,13 @@ class RabiRibiCommandProcessor(TrackerCommandProcessor): # type: ignore
     def _cmd_disable_crosswarp_check(self) -> None:
         """Disables crosswarp check for Strange Box warping"""
         self.ctx.disable_crosswarp()
+
+    def _cmd_attack_mode(self, mode: str = "") -> None:
+        """Updates the player's attack mode. Options are normal, super, or hyper"""
+        if mode is None or mode not in AttackMode.options:
+            logger.info("Provide an attack mode using /attack_mode [mode]. Available options for mode are normal, super, or hyper")
+            return
+        self.ctx.set_attack_mode_flag(mode)
 
     if tracker_loaded:
         @mark_raw
@@ -207,6 +215,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.has_died = False
 
         self.is_crosswarp_disabled = True
+        self.updated_attack_mode = None
 
     def make_gui(self):
         ui = super().make_gui()
@@ -403,6 +412,9 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             if not already_has_item:
                 await asyncio.sleep(1)
             await self.wait_until_out_of_item_receive_animation()
+        elif len(remaining_items) > 0:
+            # Update index to mark the player as not waiting for Nothing items
+            self.rr_interface.set_last_received_item_index(last_received_item_index + len(remaining_items))
 
     async def set_received_rabi_ribi_item_ids(self):
         async with self.critical_section_lock:
@@ -672,6 +684,21 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             logger.info(f"You have {len(self.collected_eggs)} Easter Eggs")
             logger.info(f"You need {required_egg_count} Easter Eggs total to beat the game")
 
+    def set_attack_mode_flag(self, mode) -> None:
+        """Flags the attack mode for update to a new setting."""
+        self.updated_attack_mode = AttackMode.from_any(mode)
+
+    def update_attack_mode(self) -> None:
+        """Updates the player's attack mode"""
+        MAX_ATTACK_UP_ID = 223
+        attack_mode = self.updated_attack_mode
+        self.updated_attack_mode = None
+        for i in range(0, 30):
+            if attack_mode == AttackMode.option_hyper or (i < 20 and attack_mode == AttackMode.option_super):
+                self.rr_interface.set_item_state(MAX_ATTACK_UP_ID - i, 1)
+            else:
+                self.rr_interface.set_item_state(MAX_ATTACK_UP_ID - i, 0)
+
     def reset_client_state(self):
         """
         Reset client back to default values
@@ -708,6 +735,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.obtained_items_queue = asyncio.Queue()
 
         self.is_crosswarp_disabled = True
+        self.updated_attack_mode = None
     
     def disable_crosswarp(self):
         self.is_crosswarp_disabled = False
@@ -777,6 +805,9 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
                 await ctx.give_item()
 
             ctx.handle_consumable_changes()
+
+            if ctx.updated_attack_mode is not None:
+                ctx.update_attack_mode()
 
             # Fallback if player collected items while the client was disconnected.
             #   Make sure the player never has an exclamation point in their inventory.

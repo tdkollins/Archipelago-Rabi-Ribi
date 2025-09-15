@@ -1064,7 +1064,7 @@
 {
 "item": "REGEN_UP_SOUTH_RIVERBANK",
 "from_location": "RIVERBANK_UNDERGROUND",
-"entry_prereq": "DARKNESS & UNDERWATER & EXPLOSIVES",
+"entry_prereq": "DARKNESS & UNDERWATER & (CARROT_BOMB | (CARROT_SHOOTER & BOOST_BORING))",
 "exit_prereq": "NONE",
 }
 

@@ -301,6 +301,7 @@ class RegionHelper:
         self.add_event("Boost Unlock", LocationName.beach_main)
         self.add_event("Shop Access", LocationName.town_shop)
 
+        self.add_event(ItemName.ashuri_2, LocationName.riverbank_level3)
         self.add_event(ItemName.cocoa_1, LocationName.forest_cocoa_room)
         self.add_event(ItemName.kotri_1, LocationName.park_kotri)
         self.add_event(ItemName.kotri_2, LocationName.graveyard_kotri,

@@ -200,10 +200,16 @@ def mean(values):
 
 _potion_re = re.compile('^[A-Z]*_UP_')
 def is_potion(item_name):
-    return bool(_potion_re.match(item_name))
+    """
+    AP Change: Include items ending in UP as potions.
+    """
+    return bool(_potion_re.match(item_name)) or item_name.endswith('_UP')
 
 def is_egg(item_name):
-    return item_name!=None and item_name.startswith('EGG_')
+    """
+    AP Change: Include items named EASTER_EGG as eggs.
+    """
+    return item_name is not None and (item_name.startswith('EGG_') or item_name == 'EASTER_EGG')
 
 
 # Index Conversions

@@ -38,6 +38,14 @@ def can_use_boost_many(state: CollectionState, player: int, options):
     """Player can use the boost skill multiple times"""
     return state.has("Shop Access", player) and has_item_menu(state, player, options)
 
+def can_use_boost_boring(state: CollectionState, player: int, options):
+    """Player can use the boost skill or farm boost meter"""
+    return (state.has("Boost Unlock", player) and options.boring_tricks_required.value) or \
+        (
+            (state.has("Shop Access", player) or state.has(ItemName.rumi_donut, player)) and \
+            has_item_menu(state, player, options)
+        )
+
 def carrot_shooter_in_logic(state: CollectionState, player: int, options):
     """Player has Carrot Shooter and it's not out of logic by options"""
     return (options.carrot_shooter_in_logic.value or state.has(ItemName.glitched_logic, player)) and \
@@ -155,8 +163,8 @@ def can_recruit_cocoa(state: CollectionState, player: int):
 
 def can_recruit_ashuri(state: CollectionState, player: int):
     """Player can recruit Ashuri"""
-    return state.can_reach(LocationName.riverbank_level3, "Region", player) and \
-        state.has("Chapter 1", player) and \
+    return state.has("Chapter 1", player) and \
+        state.has(ItemName.ashuri_2, player) and \
         state.can_reach(LocationName.spectral_west, "Region", player)
 
 def can_recruit_rita(state: CollectionState, player: int):
@@ -550,14 +558,15 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "Chapter 7": lambda state: state.has("Chapter 7", player),
             "Boost": lambda state: can_use_boost(state, player, options),
             "Boost Many": lambda state: can_use_boost_many(state, player, options),
+            "Boost Boring": lambda state: can_use_boost_boring(state, player, options),
             "Darkness": lambda state: can_navigate_darkness(state, player, options),
             "Darkness Without Light Orb": lambda state: can_navigate_darkness_without_light_orb(state, player, options),
             "Underwater": lambda state: can_navigate_underwater(state, player, options),
             "Underwater Without Water Orb": lambda state: can_navigate_underwater_without_water_orb(state, player, options),
             "Prologue Trigger": lambda state: can_move_out_of_prologue_areas(state, player, options),
-            "Cocoa 1": lambda state: can_reach_cocoa_1(state, player),
-            "Kotri 1": lambda state: can_reach_kotri_1(state, player),
-            "Ashuri 2": lambda state: can_reach_ashuri_2(state, player),
+            "Cocoa 1": lambda state: state.has(ItemName.cocoa_1, player),
+            "Kotri 1": lambda state: state.has(ItemName.kotri_1, player),
+            "Ashuri 2": lambda state: state.has(ItemName.ashuri_2, player),
             "Boss Ribbon": lambda state: can_reach_ribbon(state, player),
             "Difficulty Hard": lambda state: is_at_least_hard_difficulty(state, player, options),
             "Difficulty V Hard": lambda state: is_at_least_v_hard_difficulty(state, player, options),
