@@ -329,18 +329,6 @@ def can_move_out_of_prologue_areas(state: CollectionState, player: int, options)
     """Player can reach areas not locked to prologue"""
     return state.has("Chapter 1", player) or (options.open_mode.value)
 
-def can_reach_ashuri_2(state: CollectionState, player: int):
-    """Player can reach Ashuri 2"""
-    return state.can_reach(LocationName.riverbank_level3, "Region", player)
-
-def can_reach_cocoa_1(state: CollectionState, player: int):
-    """Player can reach Cocoa 1"""
-    return state.can_reach(LocationName.forest_cocoa_room, "Region", player)
-
-def can_reach_kotri_1(state: CollectionState, player: int):
-    """Player can reach Kotri 1"""
-    return state.can_reach(LocationName.park_kotri, "Region", player)
-
 def can_reach_ribbon(state: CollectionState, player: int):
     """Player can reach Ribbon"""
     return state.can_reach(LocationName.spectral_warp, "Region", player)
