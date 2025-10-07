@@ -159,7 +159,7 @@ def can_recruit_cocoa(state: CollectionState, player: int):
     """Player can recruit Cocoa"""
     return state.has(ItemName.cocoa_1, player) and \
         state.has(ItemName.kotri_1, player) and \
-        state.can_reach(LocationName.cave_cocoa, "Region", player)
+        state.can_reach_region(LocationName.cave_cocoa, player)
 
 def can_recruit_ashuri(state: CollectionState, player: int):
     """Player can recruit Ashuri"""
@@ -168,12 +168,12 @@ def can_recruit_ashuri(state: CollectionState, player: int):
 
 def can_recruit_saya(state: CollectionState, player: int):
     """Player can recruit Saya"""
-    return state.can_reach(LocationName.evernight_saya, "Region", player)
+    return state.can_reach_region(LocationName.evernight_saya, player)
 
 def can_recruit_nieve_and_nixie(state: CollectionState, player: int):
     """Player can recruit Nieve and Nixie"""
-    return state.can_reach(LocationName.palace_level_5, "Region", player) and \
-        state.can_reach(LocationName.icy_summit_nixie, "Region", player)
+    return state.can_reach_region(LocationName.palace_level_5, player) and \
+        state.can_reach_region(LocationName.icy_summit_nixie, player)
 
 def can_recruit_seana(state: CollectionState, player: int):
     """Player can recruit Seana"""
@@ -199,11 +199,11 @@ def can_recruit_kotri(state: CollectionState, player: int):
 
 def can_recruit_keke_bunny(state: CollectionState, player: int):
     """Player can recruit Keke Bunny"""
-    return state.can_reach(LocationName.town_main)
+    return state.can_reach_region(LocationName.town_main, player)
 
 def can_recruit_irisu(state: CollectionState, player: int):
     """Player can recruit Irisu"""
-    return state.can_reach(LocationName.warp_destination_hospital, "Region", player) and \
+    return state.can_reach_region(LocationName.warp_destination_hospital, player) and \
         state.has("Chapter 5", player) and \
         state.has_from_list_unique(recruit_table_irisu, player, 15) and \
         state.has(ItemName.miriam_recruit, player) and \
@@ -286,11 +286,11 @@ def can_move_out_of_prologue_areas(state: CollectionState, player: int, options)
 
 def can_reach_ribbon(state: CollectionState, player: int):
     """Player can reach Ribbon"""
-    return state.can_reach(LocationName.spectral_warp, "Region", player)
+    return state.can_reach_region(LocationName.spectral_warp, player)
 
 def can_reach_keke_bunny(state: CollectionState, player: int):
     """Player can reach Keke Bunny"""
-    return state.can_reach(LocationName.plurkwood_main, "Region", player)
+    return state.can_reach_region(LocationName.plurkwood_main, player)
 
 def can_use_consumables(state: CollectionState, player: int, options):
     """Player can use consumable items"""
@@ -545,7 +545,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             num_town_members = int(literal[:-2:])
             return lambda state: can_recruit_n_town_members(state, num_town_members, player), []
         elif literal in regions:
-            return lambda state: state.can_reach(literal, "Region", player), [literal]
+            return lambda state: state.can_reach_region(literal, player), [literal]
         return lambda state: state.has(literal, player), []
     elif isinstance(existing_rule, OpNot):
         expr, added_regions = convert_existing_rando_rule_to_ap_rule(existing_rule.expr, player, regions, options)
