@@ -205,7 +205,7 @@ def can_recruit_irisu(state: CollectionState, player: int):
     """Player can recruit Irisu"""
     return state.can_reach(LocationName.warp_destination_hospital, "Region", player) and \
         state.has("Chapter 5", player) and \
-        state.count_from_list_unique(recruit_table_irisu, player) >= 15 and \
+        state.has_from_list_unique(recruit_table_irisu, player, 15) and \
         state.has(ItemName.miriam_recruit, player) and \
         state.has(ItemName.rumi_recruit, player)
 
@@ -215,7 +215,7 @@ def can_recruit_n_town_members(state: CollectionState, num_town_members: int, pl
     
     :int num_town_members: the number of town members to satisfy the condition
     """
-    return state.count_from_list_unique(recruit_table, player) >= num_town_members
+    return state.has_from_list_unique(recruit_table, player, num_town_members)
 
 def can_be_speedy(state: CollectionState, player: int, options):
     """Player can buy the speedy buff"""
