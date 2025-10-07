@@ -221,6 +221,7 @@ def define_default_expressions(variable_names_set):
         "ADV_EXT": "ADVANCED & EXTREME",
         "ADV_STUPID": "ADVANCED & STUPID",
         "OBS": "OBSCURE",
+        "OBS_HARD": "OBSCURE & V_HARD",
         "OBS_VHARD": "OBSCURE & V_HARD",
         "OBS_EXT": "OBSCURE & EXTREME",
         "OBS_STUPID": "OBSCURE & STUPID",
