@@ -169,6 +169,25 @@ recruit_table: Set[str] = {
     ItemName.keke_bunny_recruit
 }
 
+# Keke Bunny does not count for Irisu fight.
+recruit_table_irisu: Set[str] = {
+    ItemName.cocoa_recruit,
+    ItemName.ashuri_recruit,
+    ItemName.rita_recruit,
+    ItemName.cicini_recruit,
+    ItemName.saya_recruit,
+    ItemName.syaro_recruit,
+    ItemName.pandora_recruit,
+    ItemName.nieve_recruit,
+    ItemName.nixie_recruit,
+    ItemName.aruraune_recruit,
+    ItemName.seana_recruit,
+    ItemName.lilith_recruit,
+    ItemName.vanilla_recruit,
+    ItemName.chocolate_recruit,
+    ItemName.kotri_recruit
+}
+
 event_table: Set[str] = {
     *recruit_table,
     ItemName.ashuri_2,

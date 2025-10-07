@@ -7,7 +7,7 @@ from BaseClasses import CollectionState
 from typing import Callable, List, Set, Tuple
 
 from .existing_randomizer.utility import OpBacktrack, OpLit, OpNot, OpOr, OpAnd
-from .items import recruit_table
+from .items import recruit_table, recruit_table_irisu
 from .names import ItemName, LocationName
 from .options import RabiRibiOptions, TrickDifficulty, Knowledge
 from .utility import convert_existing_rando_name_to_ap_name
@@ -205,7 +205,7 @@ def can_recruit_irisu(state: CollectionState, player: int):
     """Player can recruit Irisu"""
     return state.can_reach(LocationName.warp_destination_hospital, "Region", player) and \
         state.has("Chapter 5", player) and \
-        can_recruit_n_town_members(state, 15, player) and \
+        state.count_from_list_unique(recruit_table_irisu, player) >= 15 and \
         state.has(ItemName.miriam_recruit, player) and \
         state.has(ItemName.rumi_recruit, player)
 
