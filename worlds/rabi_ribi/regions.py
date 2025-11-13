@@ -304,34 +304,29 @@ class RegionHelper:
         self.add_event(ItemName.ashuri_2, LocationName.riverbank_level3)
         self.add_event(ItemName.cocoa_1, LocationName.forest_cocoa_room)
         self.add_event(ItemName.kotri_1, LocationName.park_kotri)
-        self.add_event(ItemName.kotri_2, LocationName.graveyard_kotri,
-                       lambda state: state.has(ItemName.kotri_1, self.player))
+        self.add_event(ItemName.kotri_2, LocationName.graveyard_kotri)
+        self.add_event(ItemName.seana_1, LocationName.aquarium_east)
+        self.add_event(ItemName.rita_recruit, LocationName.snowland_rita)
+        self.add_event(ItemName.cicini_recruit, LocationName.spectral_cicini_room)
+        self.add_event(ItemName.syaro_recruit, LocationName.system_interior_main)
+        self.add_event(ItemName.pandora_recruit, LocationName.pyramid_main)
+        self.add_event(ItemName.aruraune_recruit, LocationName.forest_night_west)
+        self.add_event(ItemName.vanilla_recruit, LocationName.sky_bridge_east_lower)
+
         self.add_event(ItemName.cocoa_recruit, LocationName.cave_cocoa,
                        lambda state: logic.can_recruit_cocoa(state, self.player))
         self.add_event(ItemName.ashuri_recruit, LocationName.spectral_west,
                        lambda state: logic.can_recruit_ashuri(state, self.player))
-        self.add_event(ItemName.rita_recruit, LocationName.snowland_rita,
-                       lambda state: logic.can_recruit_rita(state, self.player))
-        self.add_event(ItemName.cicini_recruit, LocationName.spectral_cicini_room,
-                       lambda state: logic.can_recruit_cicini(state, self.player))
         self.add_event(ItemName.saya_recruit, LocationName.evernight_saya,
                        lambda state: logic.can_recruit_saya(state, self.player))
-        self.add_event(ItemName.syaro_recruit, LocationName.system_interior_main,
-                       lambda state: logic.can_recruit_syaro(state, self.player))
-        self.add_event(ItemName.pandora_recruit, LocationName.pyramid_main,
-                       lambda state: logic.can_recruit_pandora(state, self.player))
         self.add_event(ItemName.nieve_recruit, LocationName.palace_level_5,
-                       lambda state: logic.can_recruit_nieve(state, self.player))
+                       lambda state: logic.can_recruit_nieve_and_nixie(state, self.player))
         self.add_event(ItemName.nixie_recruit, LocationName.icy_summit_nixie,
-                       lambda state: logic.can_recruit_nixie(state, self.player))
-        self.add_event(ItemName.aruraune_recruit, LocationName.forest_night_west,
-                       lambda state: logic.can_recruit_aruraune(state, self.player))
+                       lambda state: logic.can_recruit_nieve_and_nixie(state, self.player))
         self.add_event(ItemName.seana_recruit, LocationName.park_town_entrance,
                        lambda state: logic.can_recruit_seana(state, self.player))
         self.add_event(ItemName.lilith_recruit, LocationName.sky_island_main,
                        lambda state: logic.can_recruit_lilith(state, self.player))
-        self.add_event(ItemName.vanilla_recruit, LocationName.sky_bridge_east_lower,
-                       lambda state: logic.can_recruit_vanilla(state, self.player))
         self.add_event(ItemName.chocolate_recruit, LocationName.ravine_chocolate,
                        lambda state: logic.can_recruit_chocolate(state, self.player))
         self.add_event(ItemName.kotri_recruit, LocationName.volcanic_main,
@@ -353,10 +348,8 @@ class RegionHelper:
                        lambda state: logic.can_reach_chapter_5(state, self.player))
 
         if self.options.include_post_game.value or self.options.include_post_irisu.value:
-            self.add_event(ItemName.miriam_recruit, LocationName.hall_of_memories,
-                           lambda state: logic.can_recruit_miriam(state, self.player))
-            self.add_event(ItemName.rumi_recruit, LocationName.forgotten_cave_2,
-                           lambda state: logic.can_recruit_rumi(state, self.player))
+            self.add_event(ItemName.miriam_recruit, LocationName.hall_of_memories)
+            self.add_event(ItemName.rumi_recruit, LocationName.forgotten_cave_2)
             self.add_event(ItemName.irisu_recruit, LocationName.library_irisu,
                            lambda state: logic.can_recruit_irisu(state, self.player))
 

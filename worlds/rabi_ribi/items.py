@@ -150,7 +150,8 @@ item_groups: Dict[str, Set[str]] = {
     "Consumables": set(consumable_table.keys())
 }
 
-recruit_table: Set[str] = {
+# Keke Bunny does not count for Irisu fight.
+recruit_table_irisu: Set[str] = {
     ItemName.cocoa_recruit,
     ItemName.ashuri_recruit,
     ItemName.rita_recruit,
@@ -165,7 +166,11 @@ recruit_table: Set[str] = {
     ItemName.lilith_recruit,
     ItemName.vanilla_recruit,
     ItemName.chocolate_recruit,
-    ItemName.kotri_recruit,
+    ItemName.kotri_recruit
+}
+
+recruit_table: Set[str] = {
+    *recruit_table_irisu,
     ItemName.keke_bunny_recruit
 }
 
@@ -175,6 +180,7 @@ event_table: Set[str] = {
     ItemName.cocoa_1,
     ItemName.kotri_1,
     ItemName.kotri_2,
+    ItemName.seana_1,
     ItemName.rumi_recruit,
     ItemName.miriam_recruit,
     ItemName.irisu_recruit,

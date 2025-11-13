@@ -250,7 +250,9 @@ class RabiRibiWorld(World):
                 "include_halloween",
                 "number_of_constraint_changes",
                 "shuffle_map_transitions",
-                "shuffle_start_location")
+                "shuffle_start_location",
+                "max_number_of_easter_eggs",
+                "percentage_of_easter_eggs",)
         }
 
     def set_rules(self) -> None:
