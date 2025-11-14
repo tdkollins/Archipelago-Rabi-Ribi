@@ -50,7 +50,7 @@ jobs:
       - name: Create Template YAML
         run: |
           python Launcher.py "Generate Template Options" -- --skip_open_folder
-          echo "AP_WORLD_YAML=Players/Templates/${{ env.AP_WORLD_DIR }}.yaml" >> $GITHUB_ENV
+          echo "AP_WORLD_YAML=Players/Templates/${{ env.AP_WORLD_NAME }}.yaml" >> $GITHUB_ENV
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
