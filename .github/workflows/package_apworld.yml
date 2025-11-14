@@ -1,3 +1,5 @@
+# This workflow will create an AP world release and store builds to it when an X.Y.Z tag is pushed
+# Copied from https://github.com/Tranquilite0/Archipelago-SoulBlazer
 name: Package APWorld
 
 on:
@@ -5,32 +7,60 @@ on:
     tags:
       - '*.*.*'
 
+env:
+  # Name of APWorld
+  AP_WORLD_NAME: Rabi-Ribi
+  # Name of world's directory (in the worlds directory).
+  AP_WORLD_DIR: rabi_ribi
+  # The following will be redefined in subsequent steps,
+  # but defining them here makes the syntax highlighter stop complaining.
+  RELEASE_VERSION: 0.0.0
+  VERSION_NUM: "0.0.0"
+  AP_WORLD_PATH: ""
+  AP_WORLD_YAML: ""
+
 jobs:
-  build-and-deploy:
+  create-release:
     runs-on: ubuntu-latest
     steps:
-    - name: Set env
-      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-
-    - name: Checkout
-      uses: actions/checkout@v5.0.0
-
-    - name: Create Artifacts Folder
-      run: mkdir artifacts
-
-    - name: Compress APWorld Folder
-      run: |
-        cd ./worlds
-        zip -r ../artifacts/rabi_ribi.zip ./rabi_ribi
-        mv ../artifacts/rabi_ribi.zip ../artifacts/rabi_ribi.apworld
-
-    - name: Add to Release
-      uses: softprops/action-gh-release@975c1b265e11dd76618af1c374e7981f9a6ff44a
-      with:
-        draft: true
-        prerelease: false
-        name: ${{ env.RELEASE_VERSION }}
-        files: |
-          artifacts/rabi_ribi.apworld
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Setup Environment
+      #   run: |
+      #     echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      #     echo "VERSION_NUM=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Checkout APWorld Repo
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: worlds/${{ env.AP_WORLD_DIR }}
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '~3.12.7'
+          check-latest: true
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python ModuleUpdate.py --yes --force
+      - name: Update World Version in Manifest
+        run:  |
+          cd worlds/${{ env.AP_WORLD_DIR }}
+          json="$(jq '.world_version = "${{ env.VERSION_NUM }}"' archipelago.json)"
+          echo "${json}" > archipelago.json
+      - name: Create APWorld Archive # Press the button, Max!
+        run: |
+          python Launcher.py "Build APWorlds" -- "${{ env.AP_WORLD_NAME }}"
+          echo "AP_WORLD_PATH=build/apworlds/${{ env.AP_WORLD_DIR }}.apworld" >> $GITHUB_ENV
+      - name: Create Template YAML
+        run: |
+          python Launcher.py "Generate Template Options" -- --skip_open_folder
+          echo "AP_WORLD_YAML=Players/Templates/${{ env.AP_WORLD_DIR }}.yaml" >> $GITHUB_ENV
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true  # Don't publish right away
+          prerelease: false
+          name: ${{ env.AP_WORLD_NAME }} APWorld ${{ env.RELEASE_VERSION }}
+          files: |
+            ${{ env.AP_WORLD_PATH }}
+            ${{ env.AP_WORLD_YAML }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
