@@ -3,7 +3,7 @@ name: Package APWorld
 on:
   push:
     tags:
-      - 'beta-*.*.*'
+      - '*.*.*'
 
 jobs:
   build-and-deploy:
