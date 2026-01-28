@@ -250,9 +250,23 @@ class ShuffleMusic(Toggle):
 class ShuffleBackgrounds(Toggle):
     """
     If this flag is true, the randomizer will shuffle the room backgrounds in each area.
-    Note that some backgrounds that introduce lag or make tricks difficult to perform are disabled.
+    By default, some backgrounds that introduce lag or make tricks difficult to perform are disabled.
     """
     display_name = "Shuffle Backgrounds"
+
+class AllowLaggyBackgrounds(Toggle):
+    """
+    If this flag is true, the randomizer will add backgrounds that introduce lag
+    to the pool of backgrounds to choose from when shuffling backgrounds.
+    """
+    display_name = "Allow Difficult Backgrounds"
+
+class AllowDifficultBackgrounds(Toggle):
+    """
+    If this flag is true, the randomizer will add backgrounds that can make tricks difficult to perform
+    to the pool of backgrounds to choose from when shuffling backgrounds.
+    """
+    display_name = "Allow Difficult Backgrounds"
 
 class ShuffleStartLocation(Toggle):
     """
@@ -298,4 +312,6 @@ class RabiRibiOptions(PerGameCommonOptions):
     shuffle_start_location: ShuffleStartLocation
     shuffle_music: ShuffleMusic
     shuffle_backgrounds: ShuffleBackgrounds
+    allow_laggy_backgrounds: AllowLaggyBackgrounds
+    allow_difficult_backgrounds: AllowDifficultBackgrounds
     death_link: DeathLink
