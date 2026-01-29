@@ -36,10 +36,10 @@ class CarrotShooterInLogic(Toggle):
 
 class RainbowShotInLogic(Toggle):
     """
-    If set to false, Rainbow Shot will not be considered as a collectable magic type
+    If set to false, Rainbow Egg will not be considered as a collectable magic type
     to enable the item menu.
     """
-    display_name = "Rainbow Shot In Logic"
+    display_name = "Rainbow Egg In Logic"
 
 class MaxNumberOfEasterEggs(Range):
     """
