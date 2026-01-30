@@ -112,20 +112,12 @@ class RabiRibiWorld(World):
             logging.warning(f"Rabi-Ribi: Enabling open mode for Player {self.player} ({self.player_name}) due to shuffled start location.")
             self.options.open_mode.value = Toggle.option_true
 
-        if self.options.apply_beginner_mod.value and \
-            (self.options.include_warp_destination.value or
-            self.options.include_post_game.value or
-            self.options.include_post_irisu.value or
-            self.options.include_halloween.value):
-            raise OptionError(f"Rabi-Ribi: Beginner Mod is not compatible with post game and DLC. Player {self.player} ({self.player_name}) "
-                              "needs to disable post game and/or DLC locations.")
-
         if not self.options.randomize_hammer.value and self.options.shuffle_start_location.value:
             raise OptionError(f"Rabi-Ribi: Piko Hammer must be shuffled to shuffle start location. Player {self.player} ({self.player_name}) "
                               "needs to enable Randomize Hammer.")
         
         if self.options.encourage_eggs_in_late_spheres.value and self.options.rainbow_shot_in_logic.value:
-            raise OptionError(f"Rabi-Ribi: Rainbow Shot In Logic is not compatible with Encourage Eggs in Late Spheres. "
+            raise OptionError(f"Rabi-Ribi: Rainbow Egg In Logic is not compatible with Encourage Eggs in Late Spheres. "
                               f"Player {self.player} ({self.player_name}) needs to disable one of these options.")
 
         self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
