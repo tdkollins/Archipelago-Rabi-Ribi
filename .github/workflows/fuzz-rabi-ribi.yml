@@ -71,13 +71,3 @@ jobs:
         with:
           name: fuzz-output
           path: archipelago/fuzz_output
-
-      - uses: Eijebong/ap-actions/fuzz@main
-        with:
-          apworld-path: worlds/rabi_ribi
-          ap-version: 'latest'
-          python-version: '3.12'
-          fuzzer-commit: f027bf2ebf8ceae5da75232112039e6f26da3e85
-          runs: 100
-          yamls-per-run: 5
-          meta: "${{github.workspace}}/meta/fuzz_rabi_ribi.yaml"
