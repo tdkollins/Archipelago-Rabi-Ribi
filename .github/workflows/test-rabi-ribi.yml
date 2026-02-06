@@ -10,5 +10,5 @@ jobs:
       - uses: Eijebong/ap-actions/ap-tests@main
         with:
           apworld-path: worlds/rabi_ribi
-          ap-version: '0.6.6'
+          ap-version: 'latest'
           python-version: '3.12'

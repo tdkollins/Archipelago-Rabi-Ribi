@@ -10,6 +10,7 @@ jobs:
       - uses: Eijebong/ap-actions/fuzz@main
         with:
           apworld-path: worlds/rabi_ribi
-          ap-version: '0.6.6'
+          ap-version: 'latest'
           python-version: '3.12'
           runs: 1000
+          yamls-per-run: 3
