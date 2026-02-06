@@ -1,0 +1,15 @@
+name: Fuzz APWorld for Rabi-Ribi
+on:
+  push:
+  pull_request:
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Eijebong/ap-actions/fuzz@main
+        with:
+          apworld-path: worlds/rabi_ribi
+          ap-version: '0.6.6'
+          python-version: '3.12'
+          runs: 1000

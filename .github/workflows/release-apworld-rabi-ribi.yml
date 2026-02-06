@@ -1,0 +1,12 @@
+name: Release APWorld for Rabi-Ribi
+on:
+  push:
+    tags:
+      - '**'
+jobs:
+  release:
+    uses: Eijebong/ap-actions/.github/workflows/release-apworld.yml@main
+    with:
+      apworld-path: worlds/rabi_ribi
+      ap-version: '0.6.6'
+      python-version: '3.12'
