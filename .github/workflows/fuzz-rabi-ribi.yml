@@ -13,4 +13,5 @@ jobs:
           ap-version: 'latest'
           python-version: '3.12'
           runs: 1000
-          yamls-per-run: 3
+          yamls-per-run: 2
+          meta: meta_rabi_ribi_fuzz.yaml
