@@ -2,12 +2,14 @@ import logging
 
 from random import Random
 from typing import Any, List, Set, Tuple
+from worlds.AutoWorld import World
 from .existing_randomizer.analyzer import Analyzer
 from .existing_randomizer.dataparser import RandomizerData
 from .existing_randomizer.allocation import Allocation
 from .utility import convert_existing_rando_name_to_ap_name
 
 logger = logging.getLogger('Rabi-Ribi')
+MAX_ATTEMPTS = 10000
 
 class MapAllocation(Allocation):
     """An implementation of Allocation that replaces all items in the pool with item locations to obtain."""
@@ -57,14 +59,14 @@ class MapAllocation(Allocation):
 class MapGenerator(object):
     """The MapAnalyzer class is an reimplementation of the Generator class with simplified validation,
     only ensuring that all locations are reachable if the player has all upgrades."""
-    def __init__(self, data: RandomizerData, settings: Any, locations_to_reach: Set[str], random: Random):
+    def __init__(self, data: RandomizerData, settings: Any, locations_to_reach: Set[str], world: World):
         self.data = data
         self.settings = settings
-        self.allocation = MapAllocation(data, settings, random)
+        self.allocation = MapAllocation(data, settings, world.random)
         self.locations_to_reach = locations_to_reach
+        self.world = world
 
     def generate_seed(self):
-        MAX_ATTEMPTS = self.settings.max_attempts
         success = False
 
         for i in range(MAX_ATTEMPTS):
@@ -73,14 +75,14 @@ class MapGenerator(object):
 
             if analyzer.success:
                 success = True
-                logger.debug(f'Generated a valid seed after {i} attempts.')
+                logger.debug(f'Rabi-Ribi: Valid map transition and/or constraint set for Player {self.world.player} ({self.world.player_name}) found after {i+1} attempts.')
                 break
 
             # Revert graph for next attempt
             self.allocation.revert_graph(self.data)
 
         if not success:
-            raise RuntimeError(f'Unable to generate a valid seed after {MAX_ATTEMPTS} attempts.')
+            raise RuntimeError(f'Rabi-Ribi: Unable to find a valid map transition and/or constraint set for Player {self.world.player} ({self.world.player_name}) after {MAX_ATTEMPTS} attempts.')
 
         return self.allocation, analyzer
 

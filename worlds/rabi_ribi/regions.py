@@ -125,7 +125,7 @@ class RegionHelper:
         self.location_table = setup_locations(self.options)
 
     def generate_seed(self):
-        generator: MapGenerator = MapGenerator(self.randomizer_data, self.existing_randomizer_args, set(self.location_table.keys()), self.world.random)
+        generator: MapGenerator = MapGenerator(self.randomizer_data, self.existing_randomizer_args, set(self.location_table.keys()), self.world)
         self.allocation, _ = generator.generate_seed()
 
         self.picked_templates = self.allocation.picked_templates
