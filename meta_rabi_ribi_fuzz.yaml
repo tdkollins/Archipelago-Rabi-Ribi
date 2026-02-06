@@ -1,2 +1,6 @@
 Rabi-Ribi:
-  encourage_eggs_in_late_spheres: false
+  fuzz_constraints:
+    - option: rainbow_shot_in_logic
+      if_value: 'true'
+      then:
+        encourage_eggs_in_late_spheres: 'false'
