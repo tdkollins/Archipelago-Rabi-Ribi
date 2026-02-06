@@ -12,6 +12,7 @@ env:
   yamls-per-run: 1
   meta: "${{github.workspace}}/meta/fuzz_rabi_ribi.yaml"
   use-empty-hook: true
+  empty-apworld-version: 0.0.3
   dump-ignored: false
 
 jobs:
@@ -43,6 +44,14 @@ jobs:
           mkdir archipelago/hooks && curl -SsL -o archipelago/hooks/with_empty.py https://raw.githubusercontent.com/Eijebong/Archipelago-fuzzer/${FUZZER_COMMIT}/hooks/with_empty.py
         env:
           FUZZER_COMMIT: ${{ env.fuzzer-commit }}
+
+      - name: Get empty apworld
+        if: 
+        shell: bash
+        run: |
+          curl -SsL -o archipelago/worlds/empty.apworld https://github.com/Eijebong/empty-apworld/releases/download/${EMPTY_APWORLD_VERSION}/empty.apworld
+        env:
+          EMPTY_APWORLD_VERSION: ${{ env.empty-apworld-version }}
 
       - name: Run fuzzer
         shell: bash
