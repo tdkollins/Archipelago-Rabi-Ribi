@@ -1,4 +1,5 @@
 Rabi-Ribi:
+  accessibility: full
   fuzz_constraints:
     - option: rainbow_shot_in_logic
       if_value: 'true'

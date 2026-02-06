@@ -13,6 +13,6 @@ jobs:
           ap-version: 'latest'
           python-version: '3.12'
           fuzzer-commit: f027bf2ebf8ceae5da75232112039e6f26da3e85
-          runs: 500
-          yamls-per-run: 3
+          runs: 1000
+          yamls-per-run: 2
           meta: "${{github.workspace}}/meta/fuzz_rabi_ribi.yaml"
