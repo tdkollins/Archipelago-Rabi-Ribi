@@ -14,4 +14,4 @@ jobs:
           python-version: '3.12'
           runs: 1000
           yamls-per-run: 2
-          meta: meta_rabi_ribi_fuzz.yaml
+          meta: "${{github.workspace}}/meta/fuzz_rabi_ribi.yaml"
