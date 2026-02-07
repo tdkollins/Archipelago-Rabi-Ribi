@@ -915,7 +915,10 @@ PROLOGUE_TRIGGER & (
 "prereq": "
     (POST_GAME | POST_IRISU)
     // library open flag
-    & (ADV & UPRPRC_LOWER & PARK_WARP & (4TILE_ZIP | SYSINT2_END))
+    & (UPRPRC_LOWER & PARK_WARP & (
+        (ADV & 4TILE_ZIP) // zip to Irisu in UPRPRC base
+        | SYSINT2_END
+        ))
     // entering library
     & ((15TM & TM_MIRIAM & TM_RUMI & CHAPTER_6) | 3TILE_ZIP)
 ",
