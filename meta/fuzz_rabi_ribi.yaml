@@ -1,0 +1,7 @@
+Rabi-Ribi:
+  accessibility: full
+  fuzz_constraints:
+    - option: rainbow_shot_in_logic
+      if_value: 'true'
+      then:
+        encourage_eggs_in_late_spheres: 'false'

@@ -112,10 +112,6 @@ class RabiRibiWorld(World):
             logging.warning(f"Rabi-Ribi: Enabling open mode for Player {self.player} ({self.player_name}) due to shuffled start location.")
             self.options.open_mode.value = Toggle.option_true
 
-        if not self.options.randomize_hammer.value and self.options.shuffle_start_location.value:
-            raise OptionError(f"Rabi-Ribi: Piko Hammer must be shuffled to shuffle start location. Player {self.player} ({self.player_name}) "
-                              "needs to enable Randomize Hammer.")
-        
         if self.options.encourage_eggs_in_late_spheres.value and self.options.rainbow_shot_in_logic.value:
             raise OptionError(f"Rabi-Ribi: Rainbow Egg In Logic is not compatible with Encourage Eggs in Late Spheres. "
                               f"Player {self.player} ({self.player_name}) needs to disable one of these options.")

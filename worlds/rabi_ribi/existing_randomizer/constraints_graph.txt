@@ -915,7 +915,10 @@ PROLOGUE_TRIGGER & (
 "prereq": "
     (POST_GAME | POST_IRISU)
     // library open flag
-    & UPRPRC_LOWER & PARK_WARP & (4TILE_ZIP | SYSINT2_END)
+    & (UPRPRC_LOWER & PARK_WARP & (
+        (ADV & 4TILE_ZIP) // zip to Irisu in UPRPRC base
+        | SYSINT2_END
+        ))
     // entering library
     & ((15TM & TM_MIRIAM & TM_RUMI & CHAPTER_6) | 3TILE_ZIP)
 ",
@@ -2766,7 +2769,7 @@ ITM & (
     (ITM_HARD & WALL_JUMP & AIR_JUMP & AIR_DASH)
     | (ADV_VHARD & RABI_SLIPPERS & BUNNY_AMULET & (
         (WALL_JUMP & AIR_JUMP)
-        | (WALL_JUMP_LV2 & AIR_DASH)
+        // | (WALL_JUMP_LV2 & AIR_DASH) // Removed due to requiring -bettercontrols?
     ))
     | (AIR_JUMP & BUNNY_AMULET_LV2 & (
         (ADV_EXT & WALL_JUMP_LV2)

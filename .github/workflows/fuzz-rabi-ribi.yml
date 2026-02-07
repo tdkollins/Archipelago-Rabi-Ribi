@@ -1,0 +1,73 @@
+name: Fuzz APWorld for Rabi-Ribi
+on:
+  push:
+  pull_request:
+
+env:
+  ap-version: 'latest'
+  python-version: '3.12'
+  apworld-path: worlds/rabi_ribi
+  fuzzer-commit: f027bf2ebf8ceae5da75232112039e6f26da3e85
+  runs: 1000
+  yamls-per-run: 1
+  meta: "${{github.workspace}}/meta/fuzz_rabi_ribi.yaml"
+  use-empty-hook: true
+  empty-apworld-version: 0.0.3
+  dump-ignored: false
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: Eijebong/ap-actions/setup-ap@main
+        with:
+          version: ${{ env.ap-version }}
+          python-version: ${{ env.python-version }}
+
+      - uses: Eijebong/ap-actions/copy-apworld-source@main
+        id: copy
+        with:
+          apworld-path: ${{ env.apworld-path }}
+
+      - name: Get fuzzer
+        shell: bash
+        run: |
+          curl -SsL -o archipelago/fuzz.py https://raw.githubusercontent.com/Eijebong/Archipelago-fuzzer/${FUZZER_COMMIT}/fuzz.py
+        env:
+          FUZZER_COMMIT: ${{ env.fuzzer-commit }}
+
+      - name: Get with empty hook
+        if: ${{ env.use-empty-hook != 'false' }}
+        shell: bash
+        run: |
+          mkdir archipelago/hooks && curl -SsL -o archipelago/hooks/with_empty.py https://raw.githubusercontent.com/Eijebong/Archipelago-fuzzer/${FUZZER_COMMIT}/hooks/with_empty.py
+        env:
+          FUZZER_COMMIT: ${{ env.fuzzer-commit }}
+
+      - name: Get empty apworld
+        if: 
+        shell: bash
+        run: |
+          curl -SsL -o archipelago/worlds/empty.apworld https://github.com/Eijebong/empty-apworld/releases/download/${EMPTY_APWORLD_VERSION}/empty.apworld
+        env:
+          EMPTY_APWORLD_VERSION: ${{ env.empty-apworld-version }}
+
+      - name: Run fuzzer
+        shell: bash
+        run: |
+          cd archipelago && uv run python fuzz.py -j 4 -g ${APWORLD_NAME} -r ${RUNS} -n ${YAMLS_PER_RUN} ${META:+-m $META} ${FUZZ_EXTRA_ARGS} ${DUMP_IGNORED}
+        env:
+          APWORLD_NAME: ${{ steps.copy.outputs.apworld-name }}
+          RUNS: ${{ env.runs }}
+          YAMLS_PER_RUN: ${{ env.yamls-per-run }}
+          META: ${{ env.meta }}
+          FUZZ_EXTRA_ARGS: ${{ env.use-empty-hook == 'true' && '--hook hooks.with_empty:Hook' || '' }}
+          DUMP_IGNORED: ${{ env.dump-ignored == 'true' && '--dump-ignored' || '' }}
+
+      - name: Upload fuzzer failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-output
+          path: archipelago/fuzz_output

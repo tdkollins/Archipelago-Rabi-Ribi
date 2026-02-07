@@ -8,6 +8,7 @@
 "settings": {
     "DARKNESS_WITHOUT_LIGHT_ORB": true,
     "UNDERWATER_WITHOUT_WATER_ORB": true,
+    "EXPLOSIVES_WITH_CARROT_SHOOTER": true,
     "ZIP_REQUIRED": true,
     "BUNSTRIKE_ZIP_REQUIRED": true,
     "BORING_TRICKS_REQUIRED": true,
