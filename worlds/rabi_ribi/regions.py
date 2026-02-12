@@ -30,6 +30,7 @@ logger = logging.getLogger("Rabi-Ribi")
 # TODO: Move these region names
 plurkwood_regions: Set[str] = {
     "Plurkwood Main",
+    "Item P Hairpin",
     "Item Egg Plurk East",
     "Item Egg Plurk Cave",
     "Item Egg Plurk Cats"
