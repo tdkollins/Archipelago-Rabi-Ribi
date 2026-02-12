@@ -110,9 +110,9 @@ def patch_map_files(ctx: RabiRibiContext):
 
 def initialize_settings(ctx: RabiRibiContext):
     settings = parse_args()
-    settings.open_mode = ctx.slot_data["openMode"]
+    settings.open_mode = True
     settings.num_hard_to_reach = ctx.slot_data["required_egg_count"]
-    settings.shuffle_gift_items = ctx.slot_data["randomize_gift_items"]
+    settings.shuffle_gift_items = True
 
     # Need a unique seed to ensure that the background and music shuffles can be regenerated if needed.
     settings.random_seed = ctx.seed_player

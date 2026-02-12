@@ -25,8 +25,6 @@ class MapAllocation(Allocation):
         self.item_at_item_location = { key: f'LOC_{key}' for key in data.item_slots }
         for name in data.item_slots:
             data.configured_variables[f'LOC_{name}'] = False
-        if not settings.ap_options.randomize_hammer.value:
-            self.item_at_item_location[PIKO_HAMMER] = PIKO_HAMMER
 
         # Shuffle Constraints
         self.choose_constraint_templates(data, settings)
@@ -141,15 +139,9 @@ class MapAnalyzer(Analyzer):
         for item in self.data.must_be_reachable:
             variables[item] = True
 
-        if not self.settings.ap_options.randomize_hammer.value:
-            variables[PIKO_HAMMER] = False
-
         reachable, _, _, _ = self.verify_reachable_items(variables, backward_exitable)
 
         # Convert item locations back to actual names
         item_location_reachable = {convert_existing_rando_name_to_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
-
-        if not self.settings.ap_options.randomize_hammer.value and PIKO_HAMMER in reachable:
-            item_location_reachable.add(ItemName.piko_hammer)
 
         return self.locations_to_reach.issubset(item_location_reachable)

@@ -108,10 +108,6 @@ class RabiRibiWorld(World):
         # Universal Tracker: Load options from slot data instead of YAML
         ut_helpers.apply_options_from_slot_data_if_available(self)
 
-        if not self.options.open_mode.value and self.options.shuffle_start_location.value:
-            logging.warning(f"Rabi-Ribi: Enabling open mode for Player {self.player} ({self.player_name}) due to shuffled start location.")
-            self.options.open_mode.value = Toggle.option_true
-
         if self.options.encourage_eggs_in_late_spheres.value and self.options.rainbow_shot_in_logic.value:
             raise OptionError(f"Rabi-Ribi: Rainbow Egg In Logic is not compatible with Encourage Eggs in Late Spheres. "
                               f"Player {self.player} ({self.player_name}) needs to disable one of these options.")
@@ -176,18 +172,7 @@ class RabiRibiWorld(World):
 
     def create_items(self) -> None:
         base_item_list = get_base_item_list(self.options, self.randomizer_data)
-
-        for item in map(self.create_item, base_item_list):
-            if (not self.options.randomize_hammer.value) and (item.name == ItemName.piko_hammer):
-                self.multiworld.get_location(LocationName.piko_hammer, self.player).place_locked_item(self.create_item(ItemName.piko_hammer))
-                continue
-            elif (not self.options.randomize_gift_items.value) and (item.name in shufflable_gift_items):
-                continue
-            elif (not self.options.randomize_gift_items) and \
-                self.options.include_plurkwood and \
-                item.name in shufflable_gift_items_plurkwood:
-                continue
-            self.multiworld.itempool.append(item)
+        self.multiworld.itempool.extend(map(self.create_item, base_item_list))
 
         max_egg_locations_in_pool = self.total_locations - len(base_item_list)
         total_egg_count = min(max_egg_locations_in_pool, self.options.max_number_of_easter_eggs.value)
@@ -203,10 +188,8 @@ class RabiRibiWorld(World):
     def fill_slot_data(self) -> dict:
         return {
             "required_egg_count": self.required_egg_count,
-            "openMode": bool(self.options.open_mode.value),
             "attackMode": self.options.attack_mode.value,
             "apply_beginner_mod": bool(self.options.apply_beginner_mod.value),
-            "randomize_gift_items": bool(self.options.randomize_gift_items.value),
             "include_plurkwood": bool(self.options.include_plurkwood.value),
             "include_warp_destination": bool(self.options.include_warp_destination.value),
             "include_post_game": bool(self.options.include_post_game.value),
@@ -222,7 +205,6 @@ class RabiRibiWorld(World):
             "shuffle_backgrounds": bool(self.options.shuffle_backgrounds.value),
             "death_link": bool(self.options.death_link.value),
             "options": self.options.as_dict(
-                "open_mode",
                 "knowledge",
                 "trick_difficulty",
                 "block_clips_required",
@@ -232,8 +214,6 @@ class RabiRibiWorld(World):
                 "underwater_without_water_orb",
                 "carrot_shooter_in_logic",
                 "event_warps_in_logic",
-                "randomize_hammer",
-                "randomize_gift_items",
                 "include_plurkwood",
                 "include_warp_destination",
                 "include_post_game",
@@ -270,8 +250,8 @@ class RabiRibiWorld(World):
     def _convert_options_to_existing_randomizer_args(self):
         args = parse_args()
         args.ap_options = self.options
-        args.open_mode = self.options.open_mode.value
-        args.shuffle_gift_items = self.options.randomize_gift_items.value
+        args.open_mode = True
+        args.shuffle_gift_items = True
         args.shuffle_map_transitions = self.options.shuffle_map_transitions.value
         args.shuffle_start_location = self.options.shuffle_start_location.value
         args.constraint_changes = self.options.number_of_constraint_changes.value

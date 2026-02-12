@@ -528,7 +528,7 @@ def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, r
             "4 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 4),
             "6 Amulet Food": lambda state: has_enough_amulet_food(state, player, options, 6),
             "Many Amulet Food": lambda state: has_many_amulet_food(state, player, options),
-            "Open Mode": lambda _: options.open_mode.value,
+            "Open Mode": lambda _: True,
             "Block Clips Required": lambda state: can_block_clip(state, player, options),
             "Semisolid Clips Required": lambda state: can_semi_solid_clip(state, player, options),
             "Zip Required": lambda state: can_zip(state, player, options),
