@@ -843,17 +843,8 @@
 "weight": 10,
 "changes": [
     {
-    "edge": "FOREST_COCOA_ROOM -> FOREST_WARP",
-    "prereq": "
-        FIRE_ORB | (
-            SLIDING_POWDER | AIR_JUMP | AIR_DASH | WHIRL_BONK
-            | (SPEED5 & ADV_HARD)
-            | (ADV_EXT & (
-                SPEED3 // quick drop jump
-                | (BUNNY_AMULET & 2_AMULET_FOOD) //  qd jump, qd, amulet, wk, velocity cancel
-            ))
-        )
-        ",
+    "edge": "FOREST_WARP -> FOREST_COCOA_ROOM",
+    "prereq": "FIRE_ORB",
     }
 ]}
 
@@ -862,17 +853,8 @@
 "weight": 10,
 "changes": [
     {
-    "edge": "FOREST_COCOA_ROOM -> FOREST_WARP",
-    "prereq": "
-        PIKO_HAMMER | (
-            SLIDING_POWDER | AIR_JUMP
-            | (SPEED5 & ADV_HARD)
-            | (ADV_EXT & (
-                SPEED3 // quick drop jump
-                | (BUNNY_AMULET & 2_AMULET_FOOD) //  qd jump, qd, amulet, wk, velocity cancel
-            ))
-        )
-        ",
+    "edge": "FOREST_WARP -> FOREST_COCOA_ROOM",
+    "prereq": "PIKO_HAMMER | EXPLOSIVES_ENEMY",
     }
 ]}
 
