@@ -25,12 +25,22 @@
 }
 
 {
-"edge": "FOREST_WARP -> FOREST_COCOA_ROOM",
+"edge": "FOREST_WARP -> FOREST_BEFORE_COCOA_ROOM",
 "prereq": "NONE",
 }
 
 {
-"edge": "FOREST_COCOA_ROOM -> FOREST_WARP",
+"edge": "FOREST_BEFORE_COCOA_ROOM -> FOREST_COCOA_ROOM",
+"prereq": "NONE",
+}
+
+{
+"edge": "FOREST_COCOA_ROOM -> FOREST_BEFORE_COCOA_ROOM",
+"prereq": "NONE",
+}
+
+{
+"edge": "FOREST_BEFORE_COCOA_ROOM -> FOREST_WARP",
 "prereq": "NONE",
 // Ribbon assumed to always be reachable
 // "prereq": "

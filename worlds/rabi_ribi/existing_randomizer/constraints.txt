@@ -170,13 +170,13 @@
 "exit_prereq": "PIKO_HAMMER | EXPLOSIVES | (CARROT_SHOOTER_ENTRY & OBS_VHARD)",
 
 "alternate_entries": {
-    "FOREST_COCOA_ROOM": "EXPLOSIVES_ENEMY",
+    "FOREST_BEFORE_COCOA_ROOM": "EXPLOSIVES_ENEMY",
     },
 
 "alternate_exits": {
     // only relevant if boost is not obtained
-    "FOREST_COCOA_ROOM": "
-        CARROT_SHOOTER_ENTRY & (
+    "FOREST_BEFORE_COCOA_ROOM": "
+        CARROT_SHOOTER_ENTRY & BACKTRACK_1 & (
             AIR_JUMP | (ITM & RABI_SLIPPERS & WALL_JUMP & (SPEED1 | HARD))
         )",
     },
