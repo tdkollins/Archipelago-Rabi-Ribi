@@ -27,6 +27,7 @@ from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.options import AttackMode
 from worlds.rabi_ribi.utility import (
     CLIENT_VERSION,
+    GAME_NAME,
     load_text_file,
     convert_existing_rando_name_to_ap_name
 )
@@ -149,7 +150,7 @@ class RabiRibiCommandProcessor(TrackerCommandProcessor): # type: ignore
 
 class RabiRibiContext(TrackerGameContext): # type: ignore
     """Rabi Ribi Game Context"""
-    game = "Rabi-Ribi"
+    game = GAME_NAME
     tags = {"AP"}
 
     @property

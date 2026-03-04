@@ -6,13 +6,14 @@ from .existing_randomizer.dataparser import RandomizerData
 from .names import ItemName
 from .options import RabiRibiOptions
 from .utility import (
+    GAME_NAME,
     get_rabi_ribi_base_id,
     convert_existing_rando_name_to_ap_name
 )
 
 class RabiRibiItem(Item):
     """Rabi Ribi Item Definition"""
-    game: str = "Rabi-Ribi"
+    game: str = GAME_NAME
 
     def __init__(self, name, classification: ItemClassification, code: Optional[int], player: int):
         super(RabiRibiItem, self).__init__(name, classification, code, player)

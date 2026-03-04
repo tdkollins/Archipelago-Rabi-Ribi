@@ -7,9 +7,9 @@ from .existing_randomizer.analyzer import Analyzer
 from .existing_randomizer.dataparser import RandomizerData
 from .existing_randomizer.allocation import Allocation
 from .names import ItemName
-from .utility import convert_existing_rando_name_to_ap_name, convert_ap_name_to_existing_rando_name
+from .utility import GAME_NAME, convert_existing_rando_name_to_ap_name, convert_ap_name_to_existing_rando_name
 
-logger = logging.getLogger('Rabi-Ribi')
+logger = logging.getLogger(GAME_NAME)
 MAX_ATTEMPTS = 10000
 PIKO_HAMMER = convert_ap_name_to_existing_rando_name(ItemName.piko_hammer)
 

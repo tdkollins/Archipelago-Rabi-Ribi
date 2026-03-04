@@ -3,11 +3,11 @@ from typing import Dict
 from BaseClasses import Location
 from .options import RabiRibiOptions
 from .names import LocationName
-from .utility import get_rabi_ribi_base_id
+from .utility import GAME_NAME, get_rabi_ribi_base_id
 
 class RabiRibiLocation(Location):
     """Rabi Ribi Location Definition"""
-    game: str = "Rabi-Ribi"
+    game: str = GAME_NAME
 
 # Item Locations
 southern_woodland_locations = {

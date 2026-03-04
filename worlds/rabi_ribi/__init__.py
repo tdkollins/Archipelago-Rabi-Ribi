@@ -20,12 +20,13 @@ from .names import ItemName, LocationName
 from .options import RabiRibiOptions
 from .regions import RegionHelper
 from .utility import (
+    GAME_NAME,
     get_rabi_ribi_base_id,
     convert_existing_rando_name_to_ap_name
 )
 from . import ut_helpers
 
-logger = logging.getLogger('Rabi-Ribi')
+logger = logging.getLogger(GAME_NAME)
 
 def launch_client():
     """Launch a rabi ribi client instance"""
@@ -73,7 +74,7 @@ class RabiRibiWorld(World):
     released in 2016. It follows bunny-girl Erina and her fairy companion Ribbon in this
     cute, action-packed, and possibly pretty difficult adventure.
     """
-    game: str = "Rabi-Ribi"
+    game: str = GAME_NAME
     options_dataclass = RabiRibiOptions
     options: RabiRibiOptions
     settings: ClassVar[RabiRibiSettings]
@@ -172,7 +173,8 @@ class RabiRibiWorld(World):
 
     def create_items(self) -> None:
         base_item_list = get_base_item_list(self.options, self.randomizer_data)
-        self.multiworld.itempool.extend(map(self.create_item, base_item_list))
+        base_items = map(self.create_item, base_item_list)
+        self.multiworld.itempool.extend(base_items)
 
         max_egg_locations_in_pool = self.total_locations - len(base_item_list)
         total_egg_count = min(max_egg_locations_in_pool, self.options.max_number_of_easter_eggs.value)
@@ -261,7 +263,7 @@ class RabiRibiWorld(World):
     @staticmethod
     def _handle_encourage_eggs_in_late_spheres(multiworld: MultiWorld):
         worlds_with_option_enabled = set([
-            world.player for world in multiworld.get_game_worlds("Rabi-Ribi")
+            world.player for world in multiworld.get_game_worlds(GAME_NAME)
             if isinstance(world, RabiRibiWorld) and world.options.encourage_eggs_in_late_spheres.value
         ])
         rr_player_spheres = defaultdict(list)
@@ -272,7 +274,7 @@ class RabiRibiWorld(World):
                 break
             new_player_spheres = defaultdict(list)
             for location in sphere:
-                if location.game == "Rabi-Ribi" and location.player in worlds_with_option_enabled:
+                if location.game == GAME_NAME and location.player in worlds_with_option_enabled:
                     new_player_spheres[location.player].append(location)
             for player, sphere in new_player_spheres.items():
                 rr_player_spheres[player].append(sphere)
