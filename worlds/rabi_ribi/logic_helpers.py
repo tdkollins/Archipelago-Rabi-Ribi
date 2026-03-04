@@ -390,7 +390,7 @@ class AllowedOutOfLogic(rules.WrapperRule["RabiRibiWorld"], game=GAME_NAME):
                 player=world.player,
                 caching_enabled=getattr(world, "rule_caching_enabled", False),
             )
-        return rules.False_().resolve(world)
+        return self.child.resolve(world)
 
     class Resolved(rules.WrapperRule.Resolved):
         @override
