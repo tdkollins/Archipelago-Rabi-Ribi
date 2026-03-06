@@ -295,50 +295,32 @@ class RegionHelper:
         self.add_event(ItemName.aruraune_recruit, LocationName.forest_night_west)
         self.add_event(ItemName.vanilla_recruit, LocationName.sky_bridge_east_lower)
 
-        self.add_event(ItemName.cocoa_recruit, LocationName.cave_cocoa,
-                       logic.can_recruit_cocoa())
-        self.add_event(ItemName.ashuri_recruit, LocationName.spectral_west,
-                       logic.can_recruit_ashuri())
-        self.add_event(ItemName.saya_recruit, LocationName.evernight_saya,
-                       logic.can_recruit_saya())
-        self.add_event(ItemName.nieve_recruit, LocationName.palace_level_5,
-                       logic.can_recruit_nieve_and_nixie())
-        self.add_event(ItemName.nixie_recruit, LocationName.icy_summit_nixie,
-                       logic.can_recruit_nieve_and_nixie())
-        self.add_event(ItemName.seana_recruit, LocationName.park_town_entrance,
-                       logic.can_recruit_seana())
-        self.add_event(ItemName.lilith_recruit, LocationName.sky_island_main,
-                       logic.can_recruit_lilith())
-        self.add_event(ItemName.chocolate_recruit, LocationName.ravine_chocolate,
-                       logic.can_recruit_chocolate())
-        self.add_event(ItemName.kotri_recruit, LocationName.volcanic_main,
-                       logic.can_recruit_kotri())
+        self.add_event(ItemName.cocoa_recruit, LocationName.cave_cocoa, logic.can_recruit_cocoa)
+        self.add_event(ItemName.ashuri_recruit, LocationName.spectral_west, logic.can_recruit_ashuri)
+        self.add_event(ItemName.saya_recruit, LocationName.evernight_saya, logic.can_recruit_saya)
+        self.add_event(ItemName.nieve_recruit, LocationName.palace_level_5, logic.can_recruit_nieve_and_nixie)
+        self.add_event(ItemName.nixie_recruit, LocationName.icy_summit_nixie, logic.can_recruit_nieve_and_nixie)
+        self.add_event(ItemName.seana_recruit, LocationName.park_town_entrance, logic.can_recruit_seana)
+        self.add_event(ItemName.lilith_recruit, LocationName.sky_island_main, logic.can_recruit_lilith)
+        self.add_event(ItemName.chocolate_recruit, LocationName.ravine_chocolate, logic.can_recruit_chocolate)
+        self.add_event(ItemName.kotri_recruit, LocationName.volcanic_main, logic.can_recruit_kotri)
 
         # Note: While out of logic, the player could go to Plurkwood to recruit Keke Bunny
         if self.options.include_plurkwood or ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
-            self.add_event(ItemName.keke_bunny_recruit, LocationName.plurkwood_main,
-                           logic.can_recruit_keke_bunny())
+            self.add_event(ItemName.keke_bunny_recruit, LocationName.plurkwood_main, logic.can_recruit_keke_bunny)
 
         self.add_event("Chapter 1", LocationName.town_main)
-        self.add_event("Chapter 2", LocationName.town_main,
-                       logic.can_reach_chapter_2())
-        self.add_event("Chapter 3", LocationName.town_main,
-                       logic.can_reach_chapter_3())
-        self.add_event("Chapter 4", LocationName.town_main,
-                       logic.can_reach_chapter_4())
-        self.add_event("Chapter 5", LocationName.town_main,
-                       logic.can_reach_chapter_5())
+        self.add_event("Chapter 2", LocationName.town_main, logic.can_reach_chapter_2)
+        self.add_event("Chapter 3", LocationName.town_main, logic.can_reach_chapter_3)
+        self.add_event("Chapter 4", LocationName.town_main, logic.can_reach_chapter_4)
+        self.add_event("Chapter 5", LocationName.town_main, logic.can_reach_chapter_5)
 
         if self.options.include_post_game.value or self.options.include_post_irisu.value:
             self.add_event(ItemName.miriam_recruit, LocationName.hall_of_memories)
             self.add_event(ItemName.rumi_recruit, LocationName.forgotten_cave_2)
-            self.add_event(ItemName.irisu_recruit, LocationName.library_irisu,
-                           logic.can_recruit_irisu())
-
-            self.add_event("Chapter 6", LocationName.town_main,
-                           logic.can_reach_chapter_6())
-            self.add_event("Chapter 7", LocationName.town_main,
-                           logic.can_reach_chapter_7())
+            self.add_event(ItemName.irisu_recruit, LocationName.library_irisu, logic.can_recruit_irisu)
+            self.add_event("Chapter 6", LocationName.town_main, logic.can_reach_chapter_6)
+            self.add_event("Chapter 7", LocationName.town_main, logic.can_reach_chapter_7)
 
     def add_event(self, event_name: str, location_name: str, rule: Optional[Rule] = None):
         """Places a locked item to represent an in-game event."""
@@ -363,7 +345,5 @@ class RegionHelper:
             self.world.map_transition_shuffle_spoiler.append(f'{left_name} <=> {right_name}')
 
     def _get_region_name_list(self):
-        return [
-            convert_existing_rando_name_to_ap_name(name) for \
-            name in self.randomizer_data.graph_vertices
-        ]
+        return [convert_existing_rando_name_to_ap_name(name) \
+            for name in self.randomizer_data.graph_vertices]
