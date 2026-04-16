@@ -572,6 +572,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         super().on_deathlink(data)
 
     def trigger_death(self):
+        self.rr_interface.set_player_health_to_zero()
         self.time_since_last_death = time.time()
         self.death_link_buffer = []
         self.has_died = True
