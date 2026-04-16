@@ -646,6 +646,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         """
         Reset client back to default values
         """
+        self.locations_checked = set()
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 
