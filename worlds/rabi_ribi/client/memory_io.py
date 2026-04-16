@@ -177,10 +177,13 @@ class RabiRibiMemoryIO():
         :returns: The tile position represented as an integer 2-tuple
         """
         area_id = self._read_int(OFFSET_AREA_ID)
-        player_x = round(self._read_float(OFFSET_PLAYER_X))
-        player_y = round(self._read_float(OFFSET_PLAYER_Y))
+        player_x =self._read_float(OFFSET_PLAYER_X)
+        player_y = self._read_float(OFFSET_PLAYER_Y)
 
-        return (area_id, player_x, player_y)
+        tile_x = round(player_x / TILE_LENGTH)
+        tile_y = round(player_y / TILE_LENGTH)
+
+        return (area_id, tile_x, tile_y)
     
     def read_tile_event_id(self, x:int, y:int):
         """
