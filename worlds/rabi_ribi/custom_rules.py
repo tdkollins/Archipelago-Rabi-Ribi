@@ -59,7 +59,7 @@ class TrickDifficultyRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
 
     @override
     def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
-        if world.options.knowledge >= self.value:
+        if world.options.trick_difficulty >= self.value:
             return rules.True_().resolve(world)
 
         if getattr(world.multiworld, "generation_is_fake", False):
