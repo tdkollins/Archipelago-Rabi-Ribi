@@ -732,10 +732,10 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
             if ctx.in_deathlink_eligible_state():
                 ctx.trigger_death()
 
-            if ctx.has_zero_health() and not ctx.has_died and 'DeathLink' in ctx.tags:
+            if ctx.has_zero_health() and not ctx.has_died and ctx.death_link_enabled:
                 ctx.has_died = True
                 ctx.time_since_last_death = time.time()
-                await ctx.send_death("Erina was defeated...")
+                await ctx.send_death(f"{ctx.player_names[ctx.slot]} was defeated...")
 
             await ctx.handle_egg_changes()
 
