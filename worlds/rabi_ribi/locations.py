@@ -1,9 +1,8 @@
 """This module represents location definitions for Rabi-Ribi"""
-from typing import Dict
 from BaseClasses import Location
 from .options import RabiRibiOptions
 from .names import LocationName
-from .utility import GAME_NAME, get_rabi_ribi_base_id
+from .constants import GAME_NAME, BASE_ID
 
 class RabiRibiLocation(Location):
     """Rabi Ribi Location Definition"""
@@ -11,319 +10,319 @@ class RabiRibiLocation(Location):
 
 # Item Locations
 southern_woodland_locations = {
-    LocationName.nature_orb                   : get_rabi_ribi_base_id() + 0x01,
-    LocationName.pack_up_forest_night         : get_rabi_ribi_base_id() + 0x02,
-    LocationName.hp_up_west_spectral          : get_rabi_ribi_base_id() + 0x03,
-    LocationName.atk_up_forest_night          : get_rabi_ribi_base_id() + 0x04,
-    LocationName.pack_up_spectral             : get_rabi_ribi_base_id() + 0x05,
-    LocationName.mp_up_cave                   : get_rabi_ribi_base_id() + 0x06,
-    LocationName.hp_up_cave                   : get_rabi_ribi_base_id() + 0x07,
-    LocationName.toxic_strike                 : get_rabi_ribi_base_id() + 0x08,
-    LocationName.piko_hammer                  : get_rabi_ribi_base_id() + 0x09,
-    LocationName.mp_up_forest_cave            : get_rabi_ribi_base_id() + 0x0A,
-    LocationName.tough_skin                   : get_rabi_ribi_base_id() + 0x0B,
-    LocationName.regen_up_cave                : get_rabi_ribi_base_id() + 0x0C,
-    LocationName.hp_up_north_forest           : get_rabi_ribi_base_id() + 0x0D,
-    LocationName.wall_jump                    : get_rabi_ribi_base_id() + 0x0E,
-    LocationName.regen_up_mid_forest          : get_rabi_ribi_base_id() + 0x0F,
-    LocationName.mp_up_mid_spectral           : get_rabi_ribi_base_id() + 0x10,
-    LocationName.hp_up_mid_spectral           : get_rabi_ribi_base_id() + 0x11,
-    LocationName.carrot_bomb                  : get_rabi_ribi_base_id() + 0x12,
-    LocationName.def_trade                    : get_rabi_ribi_base_id() + 0x13,
-    LocationName.light_orb                    : get_rabi_ribi_base_id() + 0x14,
-    LocationName.hp_up_forest_post_cocoa      : get_rabi_ribi_base_id() + 0x15,
-    LocationName.charge_ring                  : get_rabi_ribi_base_id() + 0x16,
-    LocationName.arm_strength                 : get_rabi_ribi_base_id() + 0x17,
-    LocationName.regen_up_east_forest         : get_rabi_ribi_base_id() + 0x18,
-    LocationName.mana_wager                   : get_rabi_ribi_base_id() + 0x19,
-    LocationName.mp_up_east_forest            : get_rabi_ribi_base_id() + 0x1A,
-    LocationName.pack_up_east_forest          : get_rabi_ribi_base_id() + 0x1B,
-    LocationName.mp_up_cicini                 : get_rabi_ribi_base_id() + 0x1C,
-    LocationName.mp_up_northeast_forest       : get_rabi_ribi_base_id() + 0x1D,
+    LocationName.nature_orb                   : BASE_ID + 0x01,
+    LocationName.pack_up_forest_night         : BASE_ID + 0x02,
+    LocationName.hp_up_west_spectral          : BASE_ID + 0x03,
+    LocationName.atk_up_forest_night          : BASE_ID + 0x04,
+    LocationName.pack_up_spectral             : BASE_ID + 0x05,
+    LocationName.mp_up_cave                   : BASE_ID + 0x06,
+    LocationName.hp_up_cave                   : BASE_ID + 0x07,
+    LocationName.toxic_strike                 : BASE_ID + 0x08,
+    LocationName.piko_hammer                  : BASE_ID + 0x09,
+    LocationName.mp_up_forest_cave            : BASE_ID + 0x0A,
+    LocationName.tough_skin                   : BASE_ID + 0x0B,
+    LocationName.regen_up_cave                : BASE_ID + 0x0C,
+    LocationName.hp_up_north_forest           : BASE_ID + 0x0D,
+    LocationName.wall_jump                    : BASE_ID + 0x0E,
+    LocationName.regen_up_mid_forest          : BASE_ID + 0x0F,
+    LocationName.mp_up_mid_spectral           : BASE_ID + 0x10,
+    LocationName.hp_up_mid_spectral           : BASE_ID + 0x11,
+    LocationName.carrot_bomb                  : BASE_ID + 0x12,
+    LocationName.def_trade                    : BASE_ID + 0x13,
+    LocationName.light_orb                    : BASE_ID + 0x14,
+    LocationName.hp_up_forest_post_cocoa      : BASE_ID + 0x15,
+    LocationName.charge_ring                  : BASE_ID + 0x16,
+    LocationName.arm_strength                 : BASE_ID + 0x17,
+    LocationName.regen_up_east_forest         : BASE_ID + 0x18,
+    LocationName.mana_wager                   : BASE_ID + 0x19,
+    LocationName.mp_up_east_forest            : BASE_ID + 0x1A,
+    LocationName.pack_up_east_forest          : BASE_ID + 0x1B,
+    LocationName.mp_up_cicini                 : BASE_ID + 0x1C,
+    LocationName.mp_up_northeast_forest       : BASE_ID + 0x1D,
 }
 
 western_coast_locations = {
-    LocationName.survival                     : get_rabi_ribi_base_id() + 0x1E,
-    LocationName.health_wager                 : get_rabi_ribi_base_id() + 0x1F,
-    LocationName.atk_up_beach_cave            : get_rabi_ribi_base_id() + 0x20,
-    LocationName.mp_up_graveyard_warp         : get_rabi_ribi_base_id() + 0x21,
-    LocationName.hp_up_graveyard              : get_rabi_ribi_base_id() + 0x22,
-    LocationName.sunny_beam                   : get_rabi_ribi_base_id() + 0x23,
-    LocationName.mp_up_upper_graveyard        : get_rabi_ribi_base_id() + 0x24,
-    LocationName.auto_earrings                : get_rabi_ribi_base_id() + 0x25,
-    LocationName.health_plus                  : get_rabi_ribi_base_id() + 0x26,
-    LocationName.mp_up_pyramid_dark_room      : get_rabi_ribi_base_id() + 0x27,
-    LocationName.crisis_boost                 : get_rabi_ribi_base_id() + 0x28,
-    LocationName.atk_up_graveyard             : get_rabi_ribi_base_id() + 0x29,
-    LocationName.hp_up_inner_pyramid          : get_rabi_ribi_base_id() + 0x2A,
-    LocationName.hp_up_beach                  : get_rabi_ribi_base_id() + 0x2B,
-    LocationName.atk_up_pyramid               : get_rabi_ribi_base_id() + 0x2C,
-    LocationName.pack_up_pyramid              : get_rabi_ribi_base_id() + 0x2D,
-    LocationName.armored                      : get_rabi_ribi_base_id() + 0x2E,
-    LocationName.chaos_rod                    : get_rabi_ribi_base_id() + 0x2F,
-    LocationName.pack_up_beach                : get_rabi_ribi_base_id() + 0x30,
-    LocationName.top_form                     : get_rabi_ribi_base_id() + 0x31,
-    LocationName.hp_up_pyramid_entrance       : get_rabi_ribi_base_id() + 0x32,
-    LocationName.mp_up_pyramid_bombblock_room : get_rabi_ribi_base_id() + 0x33,
-    LocationName.air_dash                     : get_rabi_ribi_base_id() + 0x34,
-    LocationName.regen_up_pyramid             : get_rabi_ribi_base_id() + 0x35,
-    LocationName.pure_love                    : get_rabi_ribi_base_id() + 0x36,
-    LocationName.mp_up_beach_tunnel           : get_rabi_ribi_base_id() + 0x37,
-    LocationName.hourglass                    : get_rabi_ribi_base_id() + 0x38,
-    LocationName.hp_up_sky_island             : get_rabi_ribi_base_id() + 0x39,
-    LocationName.pack_up_sky_island           : get_rabi_ribi_base_id() + 0x3A,
-    LocationName.regen_up_sky_island          : get_rabi_ribi_base_id() + 0x3B,
-    LocationName.mp_up_beach_pillar           : get_rabi_ribi_base_id() + 0x3C,
+    LocationName.survival                     : BASE_ID + 0x1E,
+    LocationName.health_wager                 : BASE_ID + 0x1F,
+    LocationName.atk_up_beach_cave            : BASE_ID + 0x20,
+    LocationName.mp_up_graveyard_warp         : BASE_ID + 0x21,
+    LocationName.hp_up_graveyard              : BASE_ID + 0x22,
+    LocationName.sunny_beam                   : BASE_ID + 0x23,
+    LocationName.mp_up_upper_graveyard        : BASE_ID + 0x24,
+    LocationName.auto_earrings                : BASE_ID + 0x25,
+    LocationName.health_plus                  : BASE_ID + 0x26,
+    LocationName.mp_up_pyramid_dark_room      : BASE_ID + 0x27,
+    LocationName.crisis_boost                 : BASE_ID + 0x28,
+    LocationName.atk_up_graveyard             : BASE_ID + 0x29,
+    LocationName.hp_up_inner_pyramid          : BASE_ID + 0x2A,
+    LocationName.hp_up_beach                  : BASE_ID + 0x2B,
+    LocationName.atk_up_pyramid               : BASE_ID + 0x2C,
+    LocationName.pack_up_pyramid              : BASE_ID + 0x2D,
+    LocationName.armored                      : BASE_ID + 0x2E,
+    LocationName.chaos_rod                    : BASE_ID + 0x2F,
+    LocationName.pack_up_beach                : BASE_ID + 0x30,
+    LocationName.top_form                     : BASE_ID + 0x31,
+    LocationName.hp_up_pyramid_entrance       : BASE_ID + 0x32,
+    LocationName.mp_up_pyramid_bombblock_room : BASE_ID + 0x33,
+    LocationName.air_dash                     : BASE_ID + 0x34,
+    LocationName.regen_up_pyramid             : BASE_ID + 0x35,
+    LocationName.pure_love                    : BASE_ID + 0x36,
+    LocationName.mp_up_beach_tunnel           : BASE_ID + 0x37,
+    LocationName.hourglass                    : BASE_ID + 0x38,
+    LocationName.hp_up_sky_island             : BASE_ID + 0x39,
+    LocationName.pack_up_sky_island           : BASE_ID + 0x3A,
+    LocationName.regen_up_sky_island          : BASE_ID + 0x3B,
+    LocationName.mp_up_beach_pillar           : BASE_ID + 0x3C,
 }
 
 island_core_locations = {
-    LocationName.def_grow                     : get_rabi_ribi_base_id() + 0x3D,
-    LocationName.atk_up_park                  : get_rabi_ribi_base_id() + 0x3E,
-    LocationName.atk_trade                    : get_rabi_ribi_base_id() + 0x3F,
-    LocationName.hp_up_park                   : get_rabi_ribi_base_id() + 0x40,
-    LocationName.rabi_slippers                : get_rabi_ribi_base_id() + 0x41,
-    LocationName.regen_up_park                : get_rabi_ribi_base_id() + 0x42,
-    LocationName.health_surge                 : get_rabi_ribi_base_id() + 0x43,
-    LocationName.mp_up_sky_bridge             : get_rabi_ribi_base_id() + 0x44,
-    LocationName.mp_up_uprprc_hq              : get_rabi_ribi_base_id() + 0x45,
-    LocationName.mp_up_park                   : get_rabi_ribi_base_id() + 0x46,
-    LocationName.hex_cancel                   : get_rabi_ribi_base_id() + 0x47,
-    LocationName.hp_up_sky_bridge             : get_rabi_ribi_base_id() + 0x48,
-    LocationName.pack_up_sky_bridge           : get_rabi_ribi_base_id() + 0x49,
-    LocationName.regen_up_sky_bridge          : get_rabi_ribi_base_id() + 0x4A,
-    LocationName.lucky_seven                  : get_rabi_ribi_base_id() + 0x4B,
-    LocationName.atk_up_vanilla               : get_rabi_ribi_base_id() + 0x4C,
-    LocationName.hammer_wave                  : get_rabi_ribi_base_id() + 0x4D,
-    LocationName.atk_up_west_ravine           : get_rabi_ribi_base_id() + 0x4E,
-    LocationName.hp_up_south_ravine           : get_rabi_ribi_base_id() + 0x4F,
-    LocationName.atk_up_north_ravine          : get_rabi_ribi_base_id() + 0x50,
-    LocationName.hp_up_mid_ravine             : get_rabi_ribi_base_id() + 0x51,
-    LocationName.mp_up_ravine                 : get_rabi_ribi_base_id() + 0x52,
-    LocationName.regen_up_ravine              : get_rabi_ribi_base_id() + 0x53,
-    LocationName.mana_surge                   : get_rabi_ribi_base_id() + 0x54,
+    LocationName.def_grow                     : BASE_ID + 0x3D,
+    LocationName.atk_up_park                  : BASE_ID + 0x3E,
+    LocationName.atk_trade                    : BASE_ID + 0x3F,
+    LocationName.hp_up_park                   : BASE_ID + 0x40,
+    LocationName.rabi_slippers                : BASE_ID + 0x41,
+    LocationName.regen_up_park                : BASE_ID + 0x42,
+    LocationName.health_surge                 : BASE_ID + 0x43,
+    LocationName.mp_up_sky_bridge             : BASE_ID + 0x44,
+    LocationName.mp_up_uprprc_hq              : BASE_ID + 0x45,
+    LocationName.mp_up_park                   : BASE_ID + 0x46,
+    LocationName.hex_cancel                   : BASE_ID + 0x47,
+    LocationName.hp_up_sky_bridge             : BASE_ID + 0x48,
+    LocationName.pack_up_sky_bridge           : BASE_ID + 0x49,
+    LocationName.regen_up_sky_bridge          : BASE_ID + 0x4A,
+    LocationName.lucky_seven                  : BASE_ID + 0x4B,
+    LocationName.atk_up_vanilla               : BASE_ID + 0x4C,
+    LocationName.hammer_wave                  : BASE_ID + 0x4D,
+    LocationName.atk_up_west_ravine           : BASE_ID + 0x4E,
+    LocationName.hp_up_south_ravine           : BASE_ID + 0x4F,
+    LocationName.atk_up_north_ravine          : BASE_ID + 0x50,
+    LocationName.hp_up_mid_ravine             : BASE_ID + 0x51,
+    LocationName.mp_up_ravine                 : BASE_ID + 0x52,
+    LocationName.regen_up_ravine              : BASE_ID + 0x53,
+    LocationName.mana_surge                   : BASE_ID + 0x54,
 }
 
 northern_tundra_locations = {
-    LocationName.hp_up_palace                 : get_rabi_ribi_base_id() + 0x55,
-    LocationName.water_orb                    : get_rabi_ribi_base_id() + 0x56,
-    LocationName.hp_up_west_aquarium          : get_rabi_ribi_base_id() + 0x57,
-    LocationName.mana_plus                    : get_rabi_ribi_base_id() + 0x58,
-    LocationName.atk_up_palace                : get_rabi_ribi_base_id() + 0x59,
-    LocationName.atk_up_snowland              : get_rabi_ribi_base_id() + 0x5A,
-    LocationName.regen_up_palace              : get_rabi_ribi_base_id() + 0x5B,
-    LocationName.stamina_plus                 : get_rabi_ribi_base_id() + 0x5C,
-    LocationName.mp_up_palace                 : get_rabi_ribi_base_id() + 0x5D,
-    LocationName.self_defense                 : get_rabi_ribi_base_id() + 0x5E,
-    LocationName.hp_up_upper_aquarium         : get_rabi_ribi_base_id() + 0x5F,
-    LocationName.gold_carrot                  : get_rabi_ribi_base_id() + 0x60,
-    LocationName.atk_up_upper_aquarium        : get_rabi_ribi_base_id() + 0x61,
-    LocationName.pack_up_icy_summit           : get_rabi_ribi_base_id() + 0x62,
-    LocationName.atk_up_icy_summit            : get_rabi_ribi_base_id() + 0x63,
-    LocationName.atk_up_mid_aquarium          : get_rabi_ribi_base_id() + 0x64,
-    LocationName.mp_up_icy_summit             : get_rabi_ribi_base_id() + 0x65,
-    LocationName.mp_up_snowland               : get_rabi_ribi_base_id() + 0x66,
-    LocationName.quick_barrette               : get_rabi_ribi_base_id() + 0x67,
-    LocationName.hp_up_icy_summit             : get_rabi_ribi_base_id() + 0x68,
-    LocationName.super_carrot                 : get_rabi_ribi_base_id() + 0x69,
-    LocationName.regen_up_snowland_water      : get_rabi_ribi_base_id() + 0x6A,
-    LocationName.mp_up_aquarium               : get_rabi_ribi_base_id() + 0x6B,
-    LocationName.hp_up_snowland               : get_rabi_ribi_base_id() + 0x6C,
-    LocationName.carrot_boost                 : get_rabi_ribi_base_id() + 0x6D,
-    LocationName.regen_up_aquarium            : get_rabi_ribi_base_id() + 0x6E,
-    LocationName.pack_up_aquarium             : get_rabi_ribi_base_id() + 0x6F,
+    LocationName.hp_up_palace                 : BASE_ID + 0x55,
+    LocationName.water_orb                    : BASE_ID + 0x56,
+    LocationName.hp_up_west_aquarium          : BASE_ID + 0x57,
+    LocationName.mana_plus                    : BASE_ID + 0x58,
+    LocationName.atk_up_palace                : BASE_ID + 0x59,
+    LocationName.atk_up_snowland              : BASE_ID + 0x5A,
+    LocationName.regen_up_palace              : BASE_ID + 0x5B,
+    LocationName.stamina_plus                 : BASE_ID + 0x5C,
+    LocationName.mp_up_palace                 : BASE_ID + 0x5D,
+    LocationName.self_defense                 : BASE_ID + 0x5E,
+    LocationName.hp_up_upper_aquarium         : BASE_ID + 0x5F,
+    LocationName.gold_carrot                  : BASE_ID + 0x60,
+    LocationName.atk_up_upper_aquarium        : BASE_ID + 0x61,
+    LocationName.pack_up_icy_summit           : BASE_ID + 0x62,
+    LocationName.atk_up_icy_summit            : BASE_ID + 0x63,
+    LocationName.atk_up_mid_aquarium          : BASE_ID + 0x64,
+    LocationName.mp_up_icy_summit             : BASE_ID + 0x65,
+    LocationName.mp_up_snowland               : BASE_ID + 0x66,
+    LocationName.quick_barrette               : BASE_ID + 0x67,
+    LocationName.hp_up_icy_summit             : BASE_ID + 0x68,
+    LocationName.super_carrot                 : BASE_ID + 0x69,
+    LocationName.regen_up_snowland_water      : BASE_ID + 0x6A,
+    LocationName.mp_up_aquarium               : BASE_ID + 0x6B,
+    LocationName.hp_up_snowland               : BASE_ID + 0x6C,
+    LocationName.carrot_boost                 : BASE_ID + 0x6D,
+    LocationName.regen_up_aquarium            : BASE_ID + 0x6E,
+    LocationName.pack_up_aquarium             : BASE_ID + 0x6F,
 }
 
 eastern_highlands_locations = {
-    LocationName.regen_up_northwest_riverbank : get_rabi_ribi_base_id() + 0x70,
-    LocationName.pack_up_riverbank            : get_rabi_ribi_base_id() + 0x71,
-    LocationName.mp_up_southwest_riverbank    : get_rabi_ribi_base_id() + 0x72,
-    LocationName.atk_grow                     : get_rabi_ribi_base_id() + 0x73,
-    LocationName.regen_up_south_riverbank     : get_rabi_ribi_base_id() + 0x74,
-    LocationName.atk_up_riverbank_pit         : get_rabi_ribi_base_id() + 0x75,
-    LocationName.bunny_whirl                  : get_rabi_ribi_base_id() + 0x76,
-    LocationName.explode_shot                 : get_rabi_ribi_base_id() + 0x77,
-    LocationName.mp_up_mid_riverbank          : get_rabi_ribi_base_id() + 0x78,
-    LocationName.atk_up_east_riverbank        : get_rabi_ribi_base_id() + 0x79,
-    LocationName.spike_barrier                : get_rabi_ribi_base_id() + 0x7A,
-    LocationName.frame_cancel                 : get_rabi_ribi_base_id() + 0x7B,
-    LocationName.hp_up_lab_slide_tunnel       : get_rabi_ribi_base_id() + 0x7C,
-    LocationName.mp_up_lab                    : get_rabi_ribi_base_id() + 0x7D,
-    LocationName.hp_up_riverbank              : get_rabi_ribi_base_id() + 0x7E,
-    LocationName.mp_up_evernight              : get_rabi_ribi_base_id() + 0x7F,
-    LocationName.hp_up_evernight              : get_rabi_ribi_base_id() + 0x80,
-    LocationName.hp_up_lab_pit                : get_rabi_ribi_base_id() + 0x81,
-    LocationName.sliding_powder               : get_rabi_ribi_base_id() + 0x82,
-    LocationName.atk_up_evernight_uprprc      : get_rabi_ribi_base_id() + 0x83,
-    LocationName.cashback                     : get_rabi_ribi_base_id() + 0x84,
-    LocationName.plus_necklace                : get_rabi_ribi_base_id() + 0x85,
-    LocationName.weaken                       : get_rabi_ribi_base_id() + 0x86,
-    LocationName.atk_up_lab_computer          : get_rabi_ribi_base_id() + 0x87,
-    LocationName.pack_up_south_evernight      : get_rabi_ribi_base_id() + 0x88,
-    LocationName.pack_up_north_evernight      : get_rabi_ribi_base_id() + 0x89,
-    LocationName.regen_up_evernight           : get_rabi_ribi_base_id() + 0x8A,
-    LocationName.atk_up_evernight             : get_rabi_ribi_base_id() + 0x8B,
-    LocationName.atk_up_east_lab              : get_rabi_ribi_base_id() + 0x8C,
-    LocationName.pack_up_lab                  : get_rabi_ribi_base_id() + 0x8D,
-    LocationName.hammer_roll                  : get_rabi_ribi_base_id() + 0x8E,
+    LocationName.regen_up_northwest_riverbank : BASE_ID + 0x70,
+    LocationName.pack_up_riverbank            : BASE_ID + 0x71,
+    LocationName.mp_up_southwest_riverbank    : BASE_ID + 0x72,
+    LocationName.atk_grow                     : BASE_ID + 0x73,
+    LocationName.regen_up_south_riverbank     : BASE_ID + 0x74,
+    LocationName.atk_up_riverbank_pit         : BASE_ID + 0x75,
+    LocationName.bunny_whirl                  : BASE_ID + 0x76,
+    LocationName.explode_shot                 : BASE_ID + 0x77,
+    LocationName.mp_up_mid_riverbank          : BASE_ID + 0x78,
+    LocationName.atk_up_east_riverbank        : BASE_ID + 0x79,
+    LocationName.spike_barrier                : BASE_ID + 0x7A,
+    LocationName.frame_cancel                 : BASE_ID + 0x7B,
+    LocationName.hp_up_lab_slide_tunnel       : BASE_ID + 0x7C,
+    LocationName.mp_up_lab                    : BASE_ID + 0x7D,
+    LocationName.hp_up_riverbank              : BASE_ID + 0x7E,
+    LocationName.mp_up_evernight              : BASE_ID + 0x7F,
+    LocationName.hp_up_evernight              : BASE_ID + 0x80,
+    LocationName.hp_up_lab_pit                : BASE_ID + 0x81,
+    LocationName.sliding_powder               : BASE_ID + 0x82,
+    LocationName.atk_up_evernight_uprprc      : BASE_ID + 0x83,
+    LocationName.cashback                     : BASE_ID + 0x84,
+    LocationName.plus_necklace                : BASE_ID + 0x85,
+    LocationName.weaken                       : BASE_ID + 0x86,
+    LocationName.atk_up_lab_computer          : BASE_ID + 0x87,
+    LocationName.pack_up_south_evernight      : BASE_ID + 0x88,
+    LocationName.pack_up_north_evernight      : BASE_ID + 0x89,
+    LocationName.regen_up_evernight           : BASE_ID + 0x8A,
+    LocationName.atk_up_evernight             : BASE_ID + 0x8B,
+    LocationName.atk_up_east_lab              : BASE_ID + 0x8C,
+    LocationName.pack_up_lab                  : BASE_ID + 0x8D,
+    LocationName.hammer_roll                  : BASE_ID + 0x8E,
 
-    LocationName.pbpb_box                     : get_rabi_ribi_base_id() + 0xDE,
+    LocationName.pbpb_box                     : BASE_ID + 0xDE,
 }
 
 subterranean_area_locations = {
-    LocationName.hp_up_volcanic               : get_rabi_ribi_base_id() + 0x8F,
-    LocationName.fire_orb                     : get_rabi_ribi_base_id() + 0x90,
-    LocationName.pack_up_volcanic             : get_rabi_ribi_base_id() + 0x91,
+    LocationName.hp_up_volcanic               : BASE_ID + 0x8F,
+    LocationName.fire_orb                     : BASE_ID + 0x90,
+    LocationName.pack_up_volcanic             : BASE_ID + 0x91,
 }
 
 system_interior_locations = {
-    LocationName.regen_up_cyberspace          : get_rabi_ribi_base_id() + 0x92,
-    LocationName.pack_up_cyberspace           : get_rabi_ribi_base_id() + 0x93,
-    LocationName.air_jump                     : get_rabi_ribi_base_id() + 0x94,
-    LocationName.hp_up_cyberspace             : get_rabi_ribi_base_id() + 0x95,
-    LocationName.atk_up_cyberspace            : get_rabi_ribi_base_id() + 0x96,
-    LocationName.mp_up_cyberspace             : get_rabi_ribi_base_id() + 0x97,
+    LocationName.regen_up_cyberspace          : BASE_ID + 0x92,
+    LocationName.pack_up_cyberspace           : BASE_ID + 0x93,
+    LocationName.air_jump                     : BASE_ID + 0x94,
+    LocationName.hp_up_cyberspace             : BASE_ID + 0x95,
+    LocationName.atk_up_cyberspace            : BASE_ID + 0x96,
+    LocationName.mp_up_cyberspace             : BASE_ID + 0x97,
 }
 
 # Shufflable Gift Item Locations
 shufflable_gift_item_plurkwood_locations = {
-    LocationName.p_hairpin                    : get_rabi_ribi_base_id() + 0x98,
+    LocationName.p_hairpin                    : BASE_ID + 0x98,
 }
 
 shufflable_gift_item_town_locations = {
-    LocationName.speed_boost                  : get_rabi_ribi_base_id() + 0x99,
-    LocationName.bunny_strike                 : get_rabi_ribi_base_id() + 0x9A,
+    LocationName.speed_boost                  : BASE_ID + 0x99,
+    LocationName.bunny_strike                 : BASE_ID + 0x9A,
 }
 
 # Egg Locations
 southern_woodland_egg_locations = {
-    LocationName.egg_forestnight_aruraune     : get_rabi_ribi_base_id() + 0x9B,
-    LocationName.egg_spectral_west            : get_rabi_ribi_base_id() + 0x9C,
-    LocationName.egg_cave_under_hammer        : get_rabi_ribi_base_id() + 0x9D,
-    LocationName.egg_forestnight_east         : get_rabi_ribi_base_id() + 0x9E,
-    LocationName.egg_spectral_slide           : get_rabi_ribi_base_id() + 0x9F,
-    LocationName.egg_cave_cocoa               : get_rabi_ribi_base_id() + 0xA0,
-    LocationName.egg_forest_ne_ledge          : get_rabi_ribi_base_id() + 0xA1,
-    LocationName.egg_forest_ne_pedestal       : get_rabi_ribi_base_id() + 0xA2,
+    LocationName.egg_forestnight_aruraune     : BASE_ID + 0x9B,
+    LocationName.egg_spectral_west            : BASE_ID + 0x9C,
+    LocationName.egg_cave_under_hammer        : BASE_ID + 0x9D,
+    LocationName.egg_forestnight_east         : BASE_ID + 0x9E,
+    LocationName.egg_spectral_slide           : BASE_ID + 0x9F,
+    LocationName.egg_cave_cocoa               : BASE_ID + 0xA0,
+    LocationName.egg_forest_ne_ledge          : BASE_ID + 0xA1,
+    LocationName.egg_forest_ne_pedestal       : BASE_ID + 0xA2,
 }
 
 western_coast_egg_locations = {
-    LocationName.egg_beach_to_aquarium        : get_rabi_ribi_base_id() + 0xA3,
-    LocationName.egg_graveyard_near_library   : get_rabi_ribi_base_id() + 0xA4,
-    LocationName.egg_pyramid_beach            : get_rabi_ribi_base_id() + 0xA5,
-    LocationName.egg_pyramid_lower            : get_rabi_ribi_base_id() + 0xA6,
-    LocationName.egg_sky_town                 : get_rabi_ribi_base_id() + 0xA7,
+    LocationName.egg_beach_to_aquarium        : BASE_ID + 0xA3,
+    LocationName.egg_graveyard_near_library   : BASE_ID + 0xA4,
+    LocationName.egg_pyramid_beach            : BASE_ID + 0xA5,
+    LocationName.egg_pyramid_lower            : BASE_ID + 0xA6,
+    LocationName.egg_sky_town                 : BASE_ID + 0xA7,
 }
 
 island_core_egg_locations = {
-    LocationName.egg_park_spikes              : get_rabi_ribi_base_id() + 0xA8,
-    LocationName.egg_park_green_kotri         : get_rabi_ribi_base_id() + 0xA9,
-    LocationName.egg_uprprc_base              : get_rabi_ribi_base_id() + 0xAA,
-    LocationName.egg_sky_bridge_warp          : get_rabi_ribi_base_id() + 0xAB,
-    LocationName.egg_sky_bridge_by_vanilla    : get_rabi_ribi_base_id() + 0xAC,
-    LocationName.egg_ravine_above_chocolate   : get_rabi_ribi_base_id() + 0xAD,
-    LocationName.egg_ravine_mid               : get_rabi_ribi_base_id() + 0xAE,
+    LocationName.egg_park_spikes              : BASE_ID + 0xA8,
+    LocationName.egg_park_green_kotri         : BASE_ID + 0xA9,
+    LocationName.egg_uprprc_base              : BASE_ID + 0xAA,
+    LocationName.egg_sky_bridge_warp          : BASE_ID + 0xAB,
+    LocationName.egg_sky_bridge_by_vanilla    : BASE_ID + 0xAC,
+    LocationName.egg_ravine_above_chocolate   : BASE_ID + 0xAD,
+    LocationName.egg_ravine_mid               : BASE_ID + 0xAE,
 
-    LocationName.egg_sky_bridge_above_warp    : get_rabi_ribi_base_id() + 0xDF,
+    LocationName.egg_sky_bridge_above_warp    : BASE_ID + 0xDF,
 }
 
 northern_tundra_egg_locations = {
-    LocationName.egg_snowland_to_evernight    : get_rabi_ribi_base_id() + 0xAF,
-    LocationName.egg_palace_bridge            : get_rabi_ribi_base_id() + 0xB0,
-    LocationName.egg_aquarium                 : get_rabi_ribi_base_id() + 0xB1,
-    LocationName.egg_palace_wall              : get_rabi_ribi_base_id() + 0xB2,
-    LocationName.egg_snowland_warp            : get_rabi_ribi_base_id() + 0xB3,
-    LocationName.egg_icy_summit_nixie         : get_rabi_ribi_base_id() + 0xB4,
-    LocationName.egg_icy_summit_warp          : get_rabi_ribi_base_id() + 0xB5,
-    LocationName.egg_snowland_lake            : get_rabi_ribi_base_id() + 0xB6,
+    LocationName.egg_snowland_to_evernight    : BASE_ID + 0xAF,
+    LocationName.egg_palace_bridge            : BASE_ID + 0xB0,
+    LocationName.egg_aquarium                 : BASE_ID + 0xB1,
+    LocationName.egg_palace_wall              : BASE_ID + 0xB2,
+    LocationName.egg_snowland_warp            : BASE_ID + 0xB3,
+    LocationName.egg_icy_summit_nixie         : BASE_ID + 0xB4,
+    LocationName.egg_icy_summit_warp          : BASE_ID + 0xB5,
+    LocationName.egg_snowland_lake            : BASE_ID + 0xB6,
 
-    LocationName.egg_snowland_spikes_room     : get_rabi_ribi_base_id() + 0xE0,
+    LocationName.egg_snowland_spikes_room     : BASE_ID + 0xE0,
 }
 
 eastern_highlands_egg_locations = {
-    LocationName.egg_riverbank_spider_spike   : get_rabi_ribi_base_id() + 0xB7,
-    LocationName.egg_riverbank_wall           : get_rabi_ribi_base_id() + 0xB8,
-    LocationName.egg_lab                      : get_rabi_ribi_base_id() + 0xB9,
-    LocationName.egg_evernight_mid            : get_rabi_ribi_base_id() + 0xBA,
-    LocationName.egg_evernight_saya           : get_rabi_ribi_base_id() + 0xBB,
+    LocationName.egg_riverbank_spider_spike   : BASE_ID + 0xB7,
+    LocationName.egg_riverbank_wall           : BASE_ID + 0xB8,
+    LocationName.egg_lab                      : BASE_ID + 0xB9,
+    LocationName.egg_evernight_mid            : BASE_ID + 0xBA,
+    LocationName.egg_evernight_saya           : BASE_ID + 0xBB,
 
-    LocationName.egg_lab_entrance             : get_rabi_ribi_base_id() + 0xE1,
+    LocationName.egg_lab_entrance             : BASE_ID + 0xE1,
 }
 
 rabi_rabi_town_egg_locations = {
-    LocationName.egg_town                     : get_rabi_ribi_base_id() + 0xBC,
+    LocationName.egg_town                     : BASE_ID + 0xBC,
 }
 
 plurkwood_egg_locations = {
-    LocationName.egg_plurk_cats               : get_rabi_ribi_base_id() + 0xBD,
-    LocationName.egg_plurk_cave               : get_rabi_ribi_base_id() + 0xBE,
-    LocationName.egg_plurk_east               : get_rabi_ribi_base_id() + 0xBF,
+    LocationName.egg_plurk_cats               : BASE_ID + 0xBD,
+    LocationName.egg_plurk_cave               : BASE_ID + 0xBE,
+    LocationName.egg_plurk_east               : BASE_ID + 0xBF,
 }
 
 subterranean_area_egg_locations = {
-    LocationName.egg_volcanic_bomb_bunnies    : get_rabi_ribi_base_id() + 0xC0,
-    LocationName.egg_volcanic_fire_orb        : get_rabi_ribi_base_id() + 0xC1,
-    LocationName.egg_volcanic_ne              : get_rabi_ribi_base_id() + 0xC2,
-    LocationName.egg_volcanic_big_drop        : get_rabi_ribi_base_id() + 0xC3,
+    LocationName.egg_volcanic_bomb_bunnies    : BASE_ID + 0xC0,
+    LocationName.egg_volcanic_fire_orb        : BASE_ID + 0xC1,
+    LocationName.egg_volcanic_ne              : BASE_ID + 0xC2,
+    LocationName.egg_volcanic_big_drop        : BASE_ID + 0xC3,
 }
 
 warp_destination_egg_locations = {
-    LocationName.egg_crespirit                : get_rabi_ribi_base_id() + 0xC4,
+    LocationName.egg_crespirit                : BASE_ID + 0xC4,
 }
 
 system_interior_egg_locations = {
-    LocationName.egg_sysint1                  : get_rabi_ribi_base_id() + 0xC5,
+    LocationName.egg_sysint1                  : BASE_ID + 0xC5,
 }
 
 # Post Game Locations
 southern_woodland_post_game_locations = {
-    LocationName.blessed                      : get_rabi_ribi_base_id() + 0xC6,
-    LocationName.egg_rumi                     : get_rabi_ribi_base_id() + 0xC7,
+    LocationName.blessed                      : BASE_ID + 0xC6,
+    LocationName.egg_rumi                     : BASE_ID + 0xC7,
 }
 
 western_coast_post_game_locations = {
-    LocationName.auto_trigger                 : get_rabi_ribi_base_id() + 0xC8,
-    LocationName.hitbox_down                  : get_rabi_ribi_base_id() + 0xC9,
-    LocationName.egg_library                  : get_rabi_ribi_base_id() + 0xCA,
+    LocationName.auto_trigger                 : BASE_ID + 0xC8,
+    LocationName.hitbox_down                  : BASE_ID + 0xC9,
+    LocationName.egg_library                  : BASE_ID + 0xCA,
 }
 
 subterranean_area_post_game_locations = {
-    LocationName.carrot_shooter               : get_rabi_ribi_base_id() + 0xCB,
-    LocationName.egg_memories_sysint          : get_rabi_ribi_base_id() + 0xCC,
-    LocationName.egg_memories_ravine          : get_rabi_ribi_base_id() + 0xCD,
+    LocationName.carrot_shooter               : BASE_ID + 0xCB,
+    LocationName.egg_memories_sysint          : BASE_ID + 0xCC,
+    LocationName.egg_memories_ravine          : BASE_ID + 0xCD,
 
-    LocationName.egg_memories_cars_room       : get_rabi_ribi_base_id() + 0xE2,
+    LocationName.egg_memories_cars_room       : BASE_ID + 0xE2,
 }
 
 warp_destination_post_game_locations = {
-    LocationName.egg_hospital_wall            : get_rabi_ribi_base_id() + 0xCE,
-    LocationName.egg_hospital_box             : get_rabi_ribi_base_id() + 0xCF,
+    LocationName.egg_hospital_wall            : BASE_ID + 0xCE,
+    LocationName.egg_hospital_box             : BASE_ID + 0xCF,
 }
 
 system_interior_post_game_locations = {
-    LocationName.cyber_flower                 : get_rabi_ribi_base_id() + 0xD0,
-    LocationName.egg_sysint2                  : get_rabi_ribi_base_id() + 0xD1,
+    LocationName.cyber_flower                 : BASE_ID + 0xD0,
+    LocationName.egg_sysint2                  : BASE_ID + 0xD1,
 
-    LocationName.egg_sysint2_long_jump        : get_rabi_ribi_base_id() + 0xE3
+    LocationName.egg_sysint2_long_jump        : BASE_ID + 0xE3
 }
 
 # Post Irisu Locations
 rabi_rabi_town_post_irisu_locations = {
-    LocationName.ribbon_badge                 : get_rabi_ribi_base_id() + 0xD2,
-    LocationName.erina_badge                  : get_rabi_ribi_base_id() + 0xD3,
+    LocationName.ribbon_badge                 : BASE_ID + 0xD2,
+    LocationName.erina_badge                  : BASE_ID + 0xD3,
 }
 
 # Halloween Locations
 western_coast_halloween_locations = {
-    LocationName.egg_halloween_cicini_room    : get_rabi_ribi_base_id() + 0xD4,
-    LocationName.egg_halloween_west           : get_rabi_ribi_base_id() + 0xD5,
-    LocationName.egg_halloween_mid            : get_rabi_ribi_base_id() + 0xD6,
-    LocationName.egg_halloween_sw_slide       : get_rabi_ribi_base_id() + 0xD7,
-    LocationName.egg_halloween_near_boss      : get_rabi_ribi_base_id() + 0xD8,
-    LocationName.egg_halloween_warp_zone      : get_rabi_ribi_base_id() + 0xD9,
-    LocationName.egg_halloween_left_pillar    : get_rabi_ribi_base_id() + 0xDA,
-    LocationName.egg_halloween_right_pillar   : get_rabi_ribi_base_id() + 0xDB,
-    LocationName.egg_halloween_past_pillars1  : get_rabi_ribi_base_id() + 0xDC,
-    LocationName.egg_halloween_past_pillars2  : get_rabi_ribi_base_id() + 0xDD,
+    LocationName.egg_halloween_cicini_room    : BASE_ID + 0xD4,
+    LocationName.egg_halloween_west           : BASE_ID + 0xD5,
+    LocationName.egg_halloween_mid            : BASE_ID + 0xD6,
+    LocationName.egg_halloween_sw_slide       : BASE_ID + 0xD7,
+    LocationName.egg_halloween_near_boss      : BASE_ID + 0xD8,
+    LocationName.egg_halloween_warp_zone      : BASE_ID + 0xD9,
+    LocationName.egg_halloween_left_pillar    : BASE_ID + 0xDA,
+    LocationName.egg_halloween_right_pillar   : BASE_ID + 0xDB,
+    LocationName.egg_halloween_past_pillars1  : BASE_ID + 0xDC,
+    LocationName.egg_halloween_past_pillars2  : BASE_ID + 0xDD,
 }
 
 # Area Location Tables
@@ -436,7 +435,7 @@ location_groups = {
 }
 
 def setup_locations(options: RabiRibiOptions):
-    location_table: Dict[str, int] = {
+    location_table: dict[str, int] = {
         **default_locations
     }
 

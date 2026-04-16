@@ -1,13 +1,14 @@
 import logging
 
 from random import Random
-from typing import Any, List, Set, Tuple
+from typing import Any
 from worlds.AutoWorld import World
+from .constants import GAME_NAME
 from .existing_randomizer.analyzer import Analyzer
 from .existing_randomizer.dataparser import RandomizerData
 from .existing_randomizer.allocation import Allocation
 from .names import ItemName
-from .utility import GAME_NAME, convert_existing_rando_name_to_ap_name, convert_ap_name_to_existing_rando_name
+from .utility import convert_existing_rando_name_to_ap_name, convert_ap_name_to_existing_rando_name
 
 logger = logging.getLogger(GAME_NAME)
 MAX_ATTEMPTS = 10000
@@ -15,7 +16,7 @@ PIKO_HAMMER = convert_ap_name_to_existing_rando_name(ItemName.piko_hammer)
 
 class MapAllocation(Allocation):
     """An implementation of Allocation that replaces all items in the pool with item locations to obtain."""
-    def __init__(self, data: RandomizerData, settings: Tuple[str, Any], random: Random):
+    def __init__(self, data: RandomizerData, settings: tuple[str, Any], random: Random):
         super().__init__(data, settings, random)
 
     def shuffle(self, data, settings):
@@ -38,7 +39,7 @@ class MapAllocation(Allocation):
         # Choose Starting Location
         self.choose_starting_location(data, settings)
 
-    def construct_set_seed(self, data, settings, picked_templates:List[str], map_transition_shuffle_order: List[int], start_location: str):
+    def construct_set_seed(self, data, settings, picked_templates: list[str], map_transition_shuffle_order: list[int], start_location: str):
         self.map_modifications = list(data.default_map_modifications)
 
         # Apply the selected templates for the graph
@@ -61,7 +62,7 @@ class MapAllocation(Allocation):
 class MapGenerator(object):
     """The MapAnalyzer class is an reimplementation of the Generator class with simplified validation,
     only ensuring that all locations are reachable if the player has all upgrades."""
-    def __init__(self, data: RandomizerData, settings: Any, locations_to_reach: Set[str], world: World):
+    def __init__(self, data: RandomizerData, settings: Any, locations_to_reach: set[str], world: World):
         self.data = data
         self.settings = settings
         self.allocation = MapAllocation(data, settings, world.random)
@@ -94,7 +95,7 @@ class MapGenerator(object):
 class MapAnalyzer(Analyzer):
     """The MapAnalyzer class is an extension of the Analyzer class with simplified validation,
     only ensuring that all locations are reachable if the player has all upgrades."""
-    def __init__(self, data: RandomizerData, settings: Any, allocation: MapAllocation, locations_to_reach: Set[str]):
+    def __init__(self, data: RandomizerData, settings: Any, allocation: MapAllocation, locations_to_reach: set[str]):
         self.data = data
         self.settings = settings
         self.allocation = allocation

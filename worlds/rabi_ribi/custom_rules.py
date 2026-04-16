@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, cast, override
+from typing import Any, cast, override
 
 from BaseClasses import CollectionState
 from NetUtils import JSONMessagePart
@@ -6,21 +6,19 @@ from Options import CommonOptions, Option
 from rule_builder import rules
 from rule_builder.options import OPERATORS, REVERSE_OPERATORS, Operator
 
+from .bases import RabiRibiWorldBase
+from .constants import GAME_NAME
 from .items import consumable_table, magic_table, recruit_table
 from .names import ItemName
 from .options import *
-from .utility import GAME_NAME
-
-if TYPE_CHECKING:
-    from . import RabiRibiWorld
 
 @dataclass()
-class KnowledgeRule(rules.Rule["RabiRibiWorld"], game = GAME_NAME):
+class KnowledgeRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
     """Rule to check if the player has an knowledge level set or if the rule should be evaluated when out of logic."""
     value: int
 
     @override
-    def _instantiate(self, world: "RabiRibiWorld") -> rules.Rule.Resolved:
+    def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
         if world.options.knowledge >= self.value:
             return rules.True_().resolve(world)
 
@@ -55,12 +53,12 @@ class KnowledgeRule(rules.Rule["RabiRibiWorld"], game = GAME_NAME):
             return messages
 
 @dataclass()
-class TrickDifficultyRule(rules.Rule["RabiRibiWorld"], game = GAME_NAME):
+class TrickDifficultyRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
     """Rule to check if the player has an trick difficulty set or if the rule should be evaluated when out of logic."""
     value: int
 
     @override
-    def _instantiate(self, world: "RabiRibiWorld") -> rules.Rule.Resolved:
+    def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
         if world.options.knowledge >= self.value:
             return rules.True_().resolve(world)
 
@@ -95,7 +93,7 @@ class TrickDifficultyRule(rules.Rule["RabiRibiWorld"], game = GAME_NAME):
             return messages
 
 @dataclass()
-class OutOfLogicOptionRule(rules.Rule["RabiRibiWorld"], game = GAME_NAME):
+class OutOfLogicOptionRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
     """Rule to check if the player has an option set or if the rule should be evaluated when out of logic."""
     name: str
     option: type[Option[Any]]
@@ -103,7 +101,7 @@ class OutOfLogicOptionRule(rules.Rule["RabiRibiWorld"], game = GAME_NAME):
     operator: Operator = "eq"
 
     @override
-    def _instantiate(self, world: "RabiRibiWorld") -> rules.Rule.Resolved:
+    def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
         if self.check(world.options):
             return rules.True_().resolve(world)
 
@@ -152,12 +150,12 @@ class OutOfLogicOptionRule(rules.Rule["RabiRibiWorld"], game = GAME_NAME):
             return messages
 
 @dataclass()
-class HasEnoughAmuletFood(rules.Rule["RabiRibiWorld"], game = GAME_NAME):
+class HasEnoughAmuletFood(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
     """Rule to check if the player can utilize enough items to perform a trick."""
     num_amulet_food: int
 
     @override
-    def _instantiate(self, world: "RabiRibiWorld") -> rules.Rule.Resolved:
+    def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
         has_advanced_knowledge = world.options.knowledge.value >= Knowledge.option_advanced
         rainbow_shot_in_logic_enabled = bool(world.options.rainbow_shot_in_logic.value)
         return self.Resolved(

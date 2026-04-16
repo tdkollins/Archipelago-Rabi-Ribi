@@ -1,15 +1,4 @@
-"""
-Utility used across the apworld
-"""
 import pkgutil, pkg_resources
-from Utils import Version
-
-CLIENT_VERSION = Version(1, 4, 6)
-GAME_NAME = "Rabi-Ribi"
-rabi_ribi_base_id: int = 8350438193300
-
-def get_rabi_ribi_base_id() -> int:
-    return rabi_ribi_base_id
 
 def load_text_file(path):
     data = pkgutil.get_data(__name__, path)

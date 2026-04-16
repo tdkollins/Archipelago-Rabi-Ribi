@@ -3,9 +3,8 @@ This module defines helper methods used for evaluating rules.
 It's probably a little haphazardly sorted. but the method names are descriptive
 enough for it not to be confusing.
 """
-
-from typing import TYPE_CHECKING, Set
 from rule_builder import rules
+from worlds.rabi_ribi.bases import RabiRibiWorldBase
 
 from .custom_rules import HasEnoughAmuletFood, KnowledgeRule, TrickDifficultyRule, OutOfLogicOptionRule, from_option
 from .existing_randomizer.utility import OpBacktrack, OpLit, OpNot, OpOr, OpAnd
@@ -13,9 +12,6 @@ from .items import recruit_table, recruit_table_irisu
 from .names import ItemName, LocationName
 from .options import *
 from .utility import convert_existing_rando_name_to_ap_name
-
-if TYPE_CHECKING:
-    from . import RabiRibiWorld
 
 is_at_least_hard_difficulty = TrickDifficultyRule(TrickDifficulty.option_hard)
 is_at_least_v_hard_difficulty = TrickDifficultyRule(TrickDifficulty.option_v_hard)
@@ -273,7 +269,7 @@ has_many_amulet_food = \
 #           Utility used by other modules
 ####################################################
 
-literal_eval_map: dict[str, rules.Rule["RabiRibiWorld"]] = {
+literal_eval_map: dict[str, rules.Rule[RabiRibiWorldBase]] = {
     "True": rules.True_(),
     "None": rules.True_(),
     "False": rules.False_(),
@@ -369,7 +365,7 @@ literal_eval_map: dict[str, rules.Rule["RabiRibiWorld"]] = {
     "Event Warps Required" : can_use_event_warps,
 }
 
-def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, regions: Set[str], options: RabiRibiOptions) -> rules.Rule["RabiRibiWorld"]:
+def convert_existing_rando_rule_to_ap_rule(existing_rule: object, player: int, regions: set[str], options: RabiRibiOptions) -> rules.Rule[RabiRibiWorldBase]:
     """
     This method converts a rule from the existing randomizer to a lambda which can be passed to AP.
     The existing randomizer evaluates a defined logic expression, which it seperates into 5 classes:

@@ -10,7 +10,6 @@ in realtime. This is used to:
 """
 import asyncio
 import struct
-from typing import List, Tuple
 
 from pymem import pymem
 
@@ -375,12 +374,12 @@ class RabiRibiMemoryIO():
         # to allow warping to Starting Forest. Using -1 allows all warps to be selected.
         self.rr_mem.write_int(self.rr_mem.base_address + OFFSET_CURRENT_WARP_ID, -1)
 
-    def get_collected_eggs(self) -> List[Tuple[int, int, int]]:
+    def get_collected_eggs(self) -> list[tuple[int, int, int]]:
         """
         Returns the locations of all eggs collected by the player.
         """
         data = self.rr_mem.read_bytes(self.rr_mem.base_address + OFFSET_EGG_START, EGG_ARRAY_LENGTH)
-        eggs: List[Tuple[int, int, int]] = list(struct.iter_unpack('3h', data))
+        eggs: list[tuple[int, int, int]] = list(struct.iter_unpack('3h', data))
 
         # Check if the player has 80 eggs
         if (0,0,0) not in eggs:

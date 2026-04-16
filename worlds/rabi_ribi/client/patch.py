@@ -4,10 +4,7 @@ This is done on the client side upon connect to allow for a smoother setup exper
 """
 import os
 import struct
-from typing import Any, List, Optional
-
-from Options import Option
-from worlds.rabi_ribi import RabiRibiWorld
+from worlds.rabi_ribi.world import RabiRibiWorld
 from worlds.rabi_ribi.client.client import RabiRibiContext
 from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
 from worlds.rabi_ribi.existing_randomizer.mapfileio import (
@@ -50,7 +47,7 @@ class Allocation():
         if not ctx.slot_data:
             raise RuntimeError("Missing slot data while attempting to patch maps")
 
-        map_transition_shuffle_order: List[int] = ctx.slot_data["map_transition_shuffle_order"]
+        map_transition_shuffle_order: list[int] = ctx.slot_data["map_transition_shuffle_order"]
 
         self.map_modifications += randomizer_data.default_map_modifications
         self.walking_left_transitions = [randomizer_data.walking_left_transitions[x] for x in map_transition_shuffle_order]

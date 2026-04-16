@@ -1,4 +1,4 @@
-from typing import Dict, NamedTuple, Optional, Set, Tuple, TYPE_CHECKING
+from typing import NamedTuple, Optional
 import ast
 import asyncio
 import os
@@ -19,18 +19,17 @@ from NetUtils import ClientStatus
 
 from Utils import get_intended_text
 from worlds.AutoWorld import World
-from worlds.rabi_ribi import RabiRibiWorld
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
+from worlds.rabi_ribi.constants import CLIENT_VERSION, GAME_NAME
 from worlds.rabi_ribi.items import event_table, consumable_table
 from worlds.rabi_ribi.locations import all_locations
 from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.options import AttackMode
 from worlds.rabi_ribi.utility import (
-    CLIENT_VERSION,
-    GAME_NAME,
     load_text_file,
     convert_existing_rando_name_to_ap_name
 )
+from worlds.rabi_ribi.world import RabiRibiWorld
 
 try:
     from worlds.tracker.TrackerClient import UT_VERSION, TrackerCommandProcessor, TrackerGameContext # type: ignore
@@ -102,7 +101,7 @@ class RabiRibiCommandProcessor(TrackerCommandProcessor): # type: ignore
             goal_location: Location | None = None
             goal_region: Region | None = None
             region_name = ""
-            location_or_event: Set[str] = {
+            location_or_event: set[str] = {
                 *world.location_names,
                 *event_table
             }
@@ -182,15 +181,15 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 
-        self.ap_location_name_to_location_coordinates: Dict[str, Tuple[int, int, int]] = {}
+        self.ap_location_name_to_location_coordinates: dict[str, tuple[int, int, int]] = {}
         for area, v in self.location_coordinates_to_ap_location_name.items():
             for (x, y), name in v.items():
                 self.ap_location_name_to_location_coordinates[name] = (area, x, y)
 
         self.current_area_id = -1
-        self.current_room: Tuple[int, int] = (-1, 1)
+        self.current_room: tuple[int, int] = (-1, 1)
         self.state_giving_item = False
-        self.collected_eggs: Set[Tuple[int,int,int]] = set()
+        self.collected_eggs: set[tuple[int,int,int]] = set()
         self.seed_name = None
         self.slot_data = None
 
@@ -708,7 +707,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
             self.read_location_coordinates_and_rr_item_ids()
 
-        self.ap_location_name_to_location_coordinates: Dict[str, Tuple[int, int, int]] = {}
+        self.ap_location_name_to_location_coordinates: dict[str, tuple[int, int, int]] = {}
         for area, v in self.location_coordinates_to_ap_location_name.items():
             for (x, y), name in v.items():
                 self.ap_location_name_to_location_coordinates[name] = (area, x, y)

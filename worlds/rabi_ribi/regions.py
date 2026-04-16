@@ -1,11 +1,12 @@
 """This module represents region definitions for Rabi-Ribi"""
 import logging
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set
-from BaseClasses import CollectionState, Region, ItemClassification
+from typing import Any, Optional
+from BaseClasses import Region, ItemClassification
 from rule_builder.rules import Rule
-from worlds.rabi_ribi import ut_helpers
 from . import logic_helpers as logic
+from .bases import RabiRibiWorldBase
+from .constants import GAME_NAME
 from .entrance_shuffle import MapAllocation, MapGenerator
 from .existing_randomizer.utility import GraphEdge
 from .items import RabiRibiItem
@@ -14,18 +15,14 @@ from .logic_helpers import convert_existing_rando_rule_to_ap_rule
 from .names import ItemName, LocationName
 from .options import Knowledge, TrickDifficulty
 from .utility import (
-    GAME_NAME,
     convert_existing_rando_name_to_ap_name,
     convert_ap_name_to_existing_rando_name
 )
 
-if TYPE_CHECKING:
-    from . import RabiRibiWorld
-
 logger = logging.getLogger(GAME_NAME)
 
 # TODO: Move these region names
-plurkwood_regions: Set[str] = {
+plurkwood_regions: set[str] = {
     "Plurkwood Main",
     "Item P Hairpin",
     "Item Egg Plurk East",
@@ -33,7 +30,7 @@ plurkwood_regions: Set[str] = {
     "Item Egg Plurk Cats"
 }
 
-warp_destination_regions: Set[str] = {
+warp_destination_regions: set[str] = {
     "Warp Destination Hospital",
     "Warp Destination Outside",
     "Item Egg Crespirit",
@@ -41,7 +38,7 @@ warp_destination_regions: Set[str] = {
     "Item Egg Hospital Box"
 }
 
-post_game_regions: Set[str] = {
+post_game_regions: set[str] = {
     "Unreachable Location",
     "Forgotten Cave 2",
     "Hall Of Memories",
@@ -68,12 +65,12 @@ post_game_regions: Set[str] = {
     "Item Egg Sysint2 Long Jump"
 }
 
-post_irisu_regions: Set[str] = {
+post_irisu_regions: set[str] = {
     "Item Ribbon Badge",
     "Item Erina Badge",
 }
 
-halloween_regions: Set[str] = {
+halloween_regions: set[str] = {
     "Halloween Central",
     "Halloween Dark Shaft",
     "Halloween Exit",
@@ -95,11 +92,11 @@ halloween_regions: Set[str] = {
 
 # Impossible to reach without being on a high enough difficulty
 # TODO: Ensure Library OOB is updated to only be reachable if Sky Island OOB is reachable.
-adv_vhard_regions: Set[str] = {
+adv_vhard_regions: set[str] = {
     "Sky Island Oob",
 }
 
-adv_vhard_post_game_regions: Set[str] = {
+adv_vhard_post_game_regions: set[str] = {
     "Library Oob",
 }
 
@@ -108,11 +105,11 @@ class RegionHelper:
     This class provides methods associated with defining and connecting regions, locations,
     and the access rules for those regions and locations.
     """
-    regions: Set[str] = set()
-    location_table: Dict[str, int]
-    unreachable_regions: Set[str]
+    regions: set[str] = set()
+    location_table: dict[str, int]
+    unreachable_regions: set[str]
 
-    def __init__(self, world: "RabiRibiWorld"):
+    def __init__(self, world: RabiRibiWorldBase):
         self.world = world
         self.player = self.world.player
         self.multiworld = self.world.multiworld
@@ -129,16 +126,6 @@ class RegionHelper:
         self.picked_templates = self.allocation.picked_templates
         self.map_transition_shuffle_order = [self.randomizer_data.walking_left_transitions.index(x) for x in self.allocation.walking_left_transitions]
         self.start_location = convert_existing_rando_name_to_ap_name(self.allocation.start_location.location)
-
-    def regenerate_seed_for_universal_tracker(self, passthrough: Dict[str, Any]):
-        """
-        This method utilizes Universal Tracker's re_gen_passthrough data to set variables that were randomly assigned
-        when generating the seed to the same values that were used during seed generation.
-        """
-        self.picked_templates = passthrough["picked_templates"]
-        self.map_transition_shuffle_order = passthrough["map_transition_shuffle_order"]
-        self.start_location = passthrough["start_location"]
-        self.generate_set_seed()
 
     def generate_set_seed(self):
         existing_rando_start_location = convert_ap_name_to_existing_rando_name(self.start_location)
@@ -168,18 +155,18 @@ class RegionHelper:
 
         if self.options.knowledge < Knowledge.option_advanced or \
             self.options.trick_difficulty < TrickDifficulty.option_v_hard or \
-            not ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
+            self.world.is_ut:
             self.unreachable_regions.update(adv_vhard_regions)
 
         if self.options.knowledge < Knowledge.option_advanced or \
             self.options.trick_difficulty < TrickDifficulty.option_v_hard or \
             not self.options.include_post_game or \
-            not ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
+            not self.world.is_ut:
             self.unreachable_regions.update(adv_vhard_post_game_regions)
 
         # Include Plurkwood with UT, as the player could recruit Keke Bunny out of logic
         if not self.options.include_plurkwood and \
-            not ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
+            not self.world.is_ut:
             self.unreachable_regions.update(plurkwood_regions)
 
         if not self.options.include_warp_destination and \
@@ -213,9 +200,9 @@ class RegionHelper:
         """
         self.multiworld.get_region("Menu", self.player).connect(self._get_region(self.start_location))
     
-        edge_constraints: List[GraphEdge] = self.allocation.edges
+        edge_constraints: list[GraphEdge] = self.allocation.edges
 
-        added_exits: Set[str] = set()
+        added_exits: set[str] = set()
 
         for edge in edge_constraints:
             rule = convert_existing_rando_rule_to_ap_rule(edge.satisfied_expr, self.player, self.regions, self.options)
@@ -306,7 +293,7 @@ class RegionHelper:
         self.add_event(ItemName.kotri_recruit, LocationName.volcanic_main, logic.can_recruit_kotri)
 
         # Note: While out of logic, the player could go to Plurkwood to recruit Keke Bunny
-        if self.options.include_plurkwood or ut_helpers.should_regenerate_seed_for_universal_tracker(self.world):
+        if self.options.include_plurkwood or self.world.is_ut:
             self.add_event(ItemName.keke_bunny_recruit, LocationName.plurkwood_main, logic.can_recruit_keke_bunny)
 
         self.add_event("Chapter 1", LocationName.town_main)
