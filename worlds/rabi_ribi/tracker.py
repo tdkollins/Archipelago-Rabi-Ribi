@@ -303,6 +303,7 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
             # Get the passed through slot data from the real generation
             slot_data: dict[str, Any] = re_gen_passthrough[self.game]
             slot_options: dict[str, Any] = slot_data.get("options", {})
+
             # Set all your options here instead of getting them from the YAML
             for key, value in slot_options.items():
                 opt: Optional[Option] = getattr(self.options, key, None)
@@ -310,6 +311,6 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
                     # You can also set .value directly but that won't work if you have OptionSets
                     setattr(self.options, key, opt.from_any(value))
 
-        self.picked_templates = slot_data["picked_templates"]
-        self.map_transition_shuffle_order = slot_data["map_transition_shuffle_order"]
-        self.start_location = slot_data["start_location"]
+            self.picked_templates = slot_data["picked_templates"]
+            self.map_transition_shuffle_order = slot_data["map_transition_shuffle_order"]
+            self.start_location = slot_data["start_location"]
