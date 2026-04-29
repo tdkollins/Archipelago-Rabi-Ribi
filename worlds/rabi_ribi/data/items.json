@@ -1,0 +1,581 @@
+[
+  {
+    "id": 0,
+    "name": "Easter Egg",
+    "logic_key": "EASTER_EGG",
+    "classification": "progression_skip_balancing",
+    "tags": ["Collectables"],
+    "max_count": 80,
+    "exclude_from_default_pool": true
+  },
+  {
+    "id": 1,
+    "name": "Piko Hammer",
+    "logic_key": "PIKO_HAMMER",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 2,
+    "name": "Air Jump",
+    "logic_key": "AIR_JUMP",
+    "classification": "progression",
+    "tags": ["Upgrades"]
+  },
+  {
+    "id": 3,
+    "name": "Sliding Powder",
+    "logic_key": "SLIDING_POWDER",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 4,
+    "name": "Carrot Bomb",
+    "logic_key": "CARROT_BOMB",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 5,
+    "name": "Hourglass",
+    "logic_key": "HOURGLASS",
+    "classification": "filler",
+    "tags": ["Upgrades"]
+  },
+  {
+    "id": 6,
+    "name": "Speed Boost",
+    "logic_key": "SPEED_BOOST",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 7,
+    "name": "Auto Earrings",
+    "logic_key": "AUTO_EARRINGS",
+    "classification": "filler",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 9,
+    "name": "Soul Heart",
+    "logic_key": "SOUL_HEART",
+    "classification": "filler",
+    "tags": ["Upgrades"]
+  },
+  {
+    "id": 10,
+    "name": "Rabi Slippers",
+    "logic_key": "RABI_SLIPPERS",
+    "classification": "progression",
+    "tags": ["Upgrades"]
+  },
+  {
+    "id": 11,
+    "name": "Bunny Whirl",
+    "logic_key": "BUNNY_WHIRL",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 12,
+    "name": "Quick Barrette",
+    "logic_key": "QUICK_BARRETTE",
+    "classification": "filler",
+    "tags": ["Upgrades"]
+  },
+  {
+    "id": 13,
+    "name": "Book of Carrot",
+    "logic_key": "BOOK_OF_CARROT",
+    "classification": "useful",
+    "tags": ["Upgrades"]
+  },
+  {
+    "id": 14,
+    "name": "Chaos Rod",
+    "logic_key": "CHAOS_ROD",
+    "classification": "progression",
+    "tags": ["Upgrades", "Magic"]
+  },
+  {
+    "id": 15,
+    "name": "Hammer Wave",
+    "logic_key": "HAMMER_WAVE",
+    "classification": "filler",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 16,
+    "name": "Hammer Roll",
+    "logic_key": "HAMMER_ROLL",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 17,
+    "name": "Light Orb",
+    "logic_key": "LIGHT_ORB",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 18,
+    "name": "Water Orb",
+    "logic_key": "WATER_ORB",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 19,
+    "name": "Fire Orb",
+    "logic_key": "FIRE_ORB",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 20,
+    "name": "Nature Orb",
+    "logic_key": "NATURE_ORB",
+    "classification": "filler",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 21,
+    "name": "P Hairpin",
+    "logic_key": "P_HAIRPIN",
+    "classification": "filler",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 22,
+    "name": "Sunny Beam",
+    "logic_key": "SUNNY_BEAM",
+    "classification": "progression",
+    "tags": ["Upgrades", "Magic"]
+  },
+  {
+    "id": 23,
+    "name": "Plus Necklace",
+    "logic_key": "PLUS_NECKLACE",
+    "classification": "filler",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 24,
+    "name": "Cyber Flower",
+    "logic_key": "CYBER_FLOWER",
+    "classification": "filler",
+    "tags": ["Upgrades"]
+  },
+  {
+    "id": 25,
+    "name": "Healing Staff",
+    "logic_key": "HEALING_STAFF",
+    "classification": "progression",
+    "tags": ["Upgrades", "Magic"]
+  },
+  {
+    "id": 26,
+    "name": "Max Bracelet",
+    "logic_key": "MAX_BRACELET",
+    "classification": "filler",
+    "tags": ["Upgrades"]
+  },
+  {
+    "id": 27,
+    "name": "Explode Shot",
+    "logic_key": "EXPLODE_SHOT",
+    "classification": "progression",
+    "tags": ["Upgrades", "Magic"]
+  },
+  {
+    "id": 28,
+    "name": "Air Dash",
+    "logic_key": "AIR_DASH",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 29,
+    "name": "Bunny Strike",
+    "logic_key": "BUNNY_STRIKE",
+    "classification": "progression",
+    "tags": ["Upgrades"]
+  },
+  {
+    "id": 30,
+    "name": "Strange Box",
+    "logic_key": "STRANGE_BOX",
+    "classification": "filler",
+    "tags": ["Upgrades"],
+    "exclude_from_default_pool": true
+  },
+  {
+    "id": 31,
+    "name": "Wall Jump",
+    "logic_key": "WALL_JUMP",
+    "classification": "progression",
+    "tags": ["Upgrades"]
+  },
+  {
+    "id": 32,
+    "name": "Spike Barrier",
+    "logic_key": "SPIKE_BARRIER",
+    "classification": "filler",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 33,
+    "name": "Bunny Amulet",
+    "logic_key": "BUNNY_AMULET",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 4
+  },
+  {
+    "id": 34,
+    "name": "Charge Ring",
+    "logic_key": "CHARGE_RING",
+    "classification": "progression",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 35,
+    "name": "Carrot Shooter",
+    "logic_key": "CARROT_SHOOTER",
+    "classification": "progression",
+    "tags": ["Upgrades", "Magic"]
+  },
+  {
+    "id": 36,
+    "name": "Super Carrot",
+    "logic_key": "SUPER_CARROT",
+    "classification": "filler",
+    "tags": ["Upgrades"],
+    "max_upgrades": 2
+  },
+  {
+    "id": 37,
+    "name": "Rumi Donut",
+    "logic_key": "RUMI_DONUT",
+    "classification": "progression",
+    "tags": ["Consumables"]
+  },
+  {
+    "id": 38,
+    "name": "Rumi Cake",
+    "logic_key": "RUMI_CAKE",
+    "classification": "progression",
+    "tags": ["Consumables"]
+  },
+  {
+    "id": 39,
+    "name": "Gold Carrot",
+    "logic_key": "GOLD_CARROT",
+    "classification": "progression",
+    "tags": ["Consumables"]
+  },
+  {
+    "id": 40,
+    "name": "Cocoa Bomb",
+    "logic_key": "COCOA_BOMB",
+    "classification": "progression",
+    "tags": ["Consumables"]
+  },
+  {
+    "id": 43,
+    "name": "Nothing",
+    "logic_key": "NOTHING",
+    "classification": "filler",
+    "tags": ["Collectables"],
+    "exclude_from_default_pool": true
+  },
+  {
+    "id": 58,
+    "name": "Rabi-Ribi Cart",
+    "logic_key": "PBPB_BOX",
+    "classification": "trap",
+    "tags": ["Traps"]
+  },
+  {
+    "id": 64,
+    "name": "Health Plus",
+    "logic_key": "HEALTH_PLUS",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 65,
+    "name": "Health Surge",
+    "logic_key": "HEALTH_SURGE",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 66,
+    "name": "Mana Plus",
+    "logic_key": "MANA_PLUS",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 67,
+    "name": "Mana Surge",
+    "logic_key": "MANA_SURGE",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 68,
+    "name": "Crisis Boost",
+    "logic_key": "CRISIS_BOOST",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 69,
+    "name": "Atk Grow",
+    "logic_key": "ATK_GROW",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 70,
+    "name": "Def Grow",
+    "logic_key": "DEF_GROW",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 71,
+    "name": "Atk Trade",
+    "logic_key": "ATK_TRADE",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 72,
+    "name": "Def Trade",
+    "logic_key": "DEF_TRADE",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 73,
+    "name": "Arm Strength",
+    "logic_key": "ARM_STRENGTH",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 74,
+    "name": "Carrot Boost",
+    "logic_key": "CARROT_BOOST",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 75,
+    "name": "Weaken",
+    "logic_key": "WEAKEN",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 76,
+    "name": "Self Defense",
+    "logic_key": "SELF_DEFENSE",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 77,
+    "name": "Armored",
+    "logic_key": "ARMORED",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 78,
+    "name": "Lucky Seven",
+    "logic_key": "LUCKY_SEVEN",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 79,
+    "name": "Hex Cancel",
+    "logic_key": "HEX_CANCEL",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 80,
+    "name": "Pure Love",
+    "logic_key": "PURE_LOVE",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 81,
+    "name": "Toxic Strike",
+    "logic_key": "TOXIC_STRIKE",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 82,
+    "name": "Frame Cancel",
+    "logic_key": "FRAME_CANCEL",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 83,
+    "name": "Health Wager",
+    "logic_key": "HEALTH_WAGER",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 84,
+    "name": "Mana Wager",
+    "logic_key": "MANA_WAGER",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 85,
+    "name": "Stamina Plus",
+    "logic_key": "STAMINA_PLUS",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 86,
+    "name": "Blessed",
+    "logic_key": "BLESSED",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 87,
+    "name": "Hitbox Down",
+    "logic_key": "HITBOX_DOWN",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 88,
+    "name": "Cashback",
+    "logic_key": "CASHBACK",
+    "classification": "useful",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 89,
+    "name": "Survival",
+    "logic_key": "SURVIVAL",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 90,
+    "name": "Top Form",
+    "logic_key": "TOP_FORM",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 91,
+    "name": "Tough Skin",
+    "logic_key": "TOUGH_SKIN",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 92,
+    "name": "Erina Badge",
+    "logic_key": "ERINA_BADGE",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 93,
+    "name": "Ribbon Badge",
+    "logic_key": "RIBBON_BADGE",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 94,
+    "name": "Auto Trigger",
+    "logic_key": "AUTO_TRIGGER",
+    "classification": "filler",
+    "tags": ["Badges"]
+  },
+  {
+    "id": 96,
+    "name": "Health Up",
+    "logic_key": "HP_UP",
+    "classification": "useful",
+    "tags": ["Collectables"],
+    "max_count": 25,
+    "exclude_from_default_pool": true
+  },
+  {
+    "id": 160,
+    "name": "Attack Up",
+    "logic_key": "ATTACK_UP",
+    "classification": "useful",
+    "tags": ["Collectables"],
+    "max_count": 20,
+    "exclude_from_default_pool": true
+  },
+  {
+    "id": 224,
+    "name": "Mana Up",
+    "logic_key": "MP_UP",
+    "classification": "filler",
+    "tags": ["Collectables"],
+    "max_count": 25,
+    "exclude_from_default_pool": true
+  },
+  {
+    "id": 288,
+    "name": "Regen Up",
+    "logic_key": "REGEN_UP",
+    "classification": "filler",
+    "tags": ["Collectables"],
+    "max_count": 15,
+    "exclude_from_default_pool": true
+  },
+  {
+    "id": 352,
+    "name": "Pack Up",
+    "logic_key": "PACK_UP",
+    "classification": "filler",
+    "tags": ["Collectables"],
+    "max_count": 15,
+    "exclude_from_default_pool": true
+  }
+]

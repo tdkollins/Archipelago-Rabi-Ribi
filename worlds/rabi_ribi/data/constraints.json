@@ -1,0 +1,760 @@
+[
+  {
+    "name": "Starting Forest - Above Hammer: Fire Orb Wall",
+    "logic_key": "above_hammer_fireorb",
+    "weight": 60
+  },
+  {
+    "name": "Starting Forest - Above Hammer: Unclimbable",
+    "logic_key": "above_hammer_unclimbable",
+    "weight": 170
+  },
+  {
+    "name": "Natural Aquarium - Far East Access: Fire Orb Wall",
+    "logic_key": "aquarium_bomb_walled_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - Far East Access: Hammer Wall",
+    "logic_key": "aquarium_bomb_walled_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - Beach Entrance: Fire Orb Wall",
+    "logic_key": "aquarium_east_transition_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - Beach Entrance: Open",
+    "logic_key": "aquarium_east_transition_nothing",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - Beach Entrance: Slide Wall",
+    "logic_key": "aquarium_east_transition_slide",
+    "weight": 5
+  },
+  {
+    "name": "Natural Aquarium - Beach Entrance: Whirl Block Wall",
+    "logic_key": "aquarium_east_transition_whirlblocks",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - Upper Entrance: Fire Orb Wall",
+    "logic_key": "aquarium_entrance_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - Upper Entrance: Hammer Wall",
+    "logic_key": "aquarium_entrance_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - Top Entrance: Slide Zip Wall",
+    "logic_key": "aquarium_entrance_underwater_zip",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - Left Interior Entrance: Semisolid Wall",
+    "logic_key": "aquarium_interior_left_entrance_semisolid",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - Left Interior Entrance: Walled Off",
+    "logic_key": "aquarium_interior_left_entrance_wall",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - East Access: Hammer Wall",
+    "logic_key": "aquarium_upperlevel_east_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Natural Aquarium - East Area: Slide Zip Wall",
+    "logic_key": "aquarium_upperlevel_east_wall",
+    "weight": 10
+  },
+  {
+    "name": "Aurora Palace - Entrance: Fire Orb Wall",
+    "logic_key": "aurora_palace_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Aurora Palace - Entrance: Missing Spring",
+    "logic_key": "aurora_palace_nospring",
+    "weight": 10
+  },
+  {
+    "name": "Aurora Palace - Entrance: Walled Off",
+    "logic_key": "aurora_palace_wall",
+    "weight": 5,
+    "requires_minimal_accessibility": "TRUE"
+  },
+  {
+    "name": "Aurora Palace - Entrance: Whirl Block Wall",
+    "logic_key": "aurora_palace_whirlblocks",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Beach - Aquarium Entrance: Fire Orb Wall",
+    "logic_key": "beach_aquarium_entrance_fireorb",
+    "weight": 20
+  },
+  {
+    "name": "Rabi Rabi Beach - Forest Entrance: Walled Off",
+    "logic_key": "beach_east_wall",
+    "weight": 30
+  },
+  {
+    "name": "Rabi Rabi Beach - Volcanic Entrance: Fire Orb Wall",
+    "logic_key": "beach_volcanic_entrance_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Beach - Volcanic Entrance: Hammer Wall",
+    "logic_key": "beach_volcanic_entrance_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Beach - Volcanic Entrance: One Way Blocks",
+    "logic_key": "beach_volcanic_entrance_oneway",
+    "weight": 10
+  },
+  {
+    "name": "Forgotten Cave - Shortcut to West Area: Fire Orb Floor",
+    "logic_key": "cave_west_fireorb",
+    "weight": 20,
+    "requires_start_location_shuffle": "TRUE"
+  },
+  {
+    "name": "Forgotten Cave - Shortcut to West Area: Walled Off",
+    "logic_key": "cave_west_wall",
+    "weight": 40,
+    "requires_start_location_shuffle": "TRUE"
+  },
+  {
+    "name": "Forgotten Cave - Shortcut to West Area: Whirl Block Floor",
+    "logic_key": "cave_west_whirlblocks",
+    "weight": 20,
+    "requires_start_location_shuffle": "TRUE"
+  },
+  {
+    "name": "Spectral Cave - Cicini Access: Fire Orb Wall",
+    "logic_key": "cicini_room_fireorb",
+    "weight": 15
+  },
+  {
+    "name": "Spectral Cave - Cicini Access: Hammer Wall",
+    "logic_key": "cicini_room_hammer",
+    "weight": 15
+  },
+  {
+    "name": "Spectral Cave - Cicini Access: No Wimpy Launch",
+    "logic_key": "cicini_room_nostupid",
+    "weight": 50
+  },
+  {
+    "name": "Spectral Cave - Cicini Access: Slide Wall",
+    "logic_key": "cicini_room_slide",
+    "weight": 20
+  },
+  {
+    "name": "Starting Forest - Cocoa 1 Access: Fire Orb Wall",
+    "logic_key": "cocoa_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Starting Forest - Cocoa 1 Access: Hammer Wall",
+    "logic_key": "cocoa_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Exotic Laboratory - Computer Entrance: 5 Tile Jump",
+    "logic_key": "computer_entrance_5tile",
+    "weight": 10
+  },
+  {
+    "name": "Exotic Laboratory - Computer Entrance: Fire Orb Wall",
+    "logic_key": "computer_entrance_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Exotic Laboratory - Computer Entrance: Hammer Wall",
+    "logic_key": "computer_entrance_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Evernight Peak - Saya Access: Slide Tunnel Only",
+    "logic_key": "evernight_saya_left_wall",
+    "weight": 10
+  },
+  {
+    "name": "Evernight Peak - East Side Drop to Lab: Fire Orb Wall",
+    "logic_key": "evernight_to_lower_riverbank_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Evernight Peak - East Side Drop to Lab: Hammer Wall",
+    "logic_key": "evernight_to_lower_riverbank_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Evernight Peak - Warp Open, Northwest One Way",
+    "logic_key": "evernight_warp_left_redirect",
+    "weight": 15
+  },
+  {
+    "name": "Starting Forest - Area Above East Spring: Walled Off",
+    "logic_key": "forest_east_above_spring_wall",
+    "weight": 30
+  },
+  {
+    "name": "Starting Forest - Green Bomb Bunny Room: One Way Wall",
+    "logic_key": "forest_green_uprprc_oneway",
+    "weight": 30
+  },
+  {
+    "name": "Starting Forest - East of Hammer Pedestal: Fire Orb Wall",
+    "logic_key": "forest_hammer_pedestal_fireorb",
+    "weight": 25,
+    "requires_start_location_shuffle": "TRUE"
+  },
+  {
+    "name": "Starting Forest - East of Hammer Pedestal: Hammer Only Wall",
+    "logic_key": "forest_hammer_pedestal_hammer_nobomb",
+    "weight": 50,
+    "requires_start_location_shuffle": "TRUE"
+  },
+  {
+    "name": "Starting Forest - East of Hammer Pedestal: Walled Off",
+    "logic_key": "forest_hammer_pedestal_wall",
+    "weight": 25,
+    "requires_start_location_shuffle": "TRUE"
+  },
+  {
+    "name": "Starting Forest - Lower Riverbank Entrance: Fire Orb Wall",
+    "logic_key": "forest_lower_riverbank_exit_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Starting Forest - Lower Riverbank Entrance: Whirl Block Wall",
+    "logic_key": "forest_lower_riverbank_exit_whirlblocks",
+    "weight": 10
+  },
+  {
+    "name": "Forest Night - West Area Access: Missing Spike Floor",
+    "logic_key": "forest_night_spike_gap",
+    "weight": 15
+  },
+  {
+    "name": "Forest Night - Upper Area Access: One-way Blocks",
+    "logic_key": "forest_northwest_oneway",
+    "weight": 50
+  },
+  {
+    "name": "Floating Graveyard - East Upper Access: Walled Off",
+    "logic_key": "graveyard_upper_wall",
+    "weight": 15
+  },
+  {
+    "name": "Azure Snow Land - Icy Summit Entrance: Air Jump Required",
+    "logic_key": "icy_summit_entrance_airjump",
+    "weight": 10
+  },
+  {
+    "name": "Icy Summit - Entrance: Fire Orb Wall",
+    "logic_key": "icy_summit_entrance_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Exotic Laboratory - West Area Upper Entrance: Fire Orb Wall",
+    "logic_key": "lab_west_to_mid_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Exotic Laboratory - West Area Upper Entrance: Hammer Wall",
+    "logic_key": "lab_west_to_mid_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Exotic Laboratory - West Area Upper Entrance: Walled Off",
+    "logic_key": "lab_west_to_mid_wall",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Lower Health Up Room Access: No Spring",
+    "logic_key": "lower_riverbank_east_nospring",
+    "weight": 20
+  },
+  {
+    "name": "Golden Riverbank - Lower Area East Access: One Way Blocks",
+    "logic_key": "lower_riverbank_east_oneway",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Lower Area East Access: Fire Orb Wall",
+    "logic_key": "lower_riverbank_east_oneway_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Lower Area East Access: Hammer Wall",
+    "logic_key": "lower_riverbank_east_oneway_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Lower Area West Access: Slide Wall",
+    "logic_key": "mid_lower_riverbank_left_semisolid",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Lower Area West Access: Fire Orb Wall",
+    "logic_key": "mid_lower_riverbank_left_semisolid_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Lower Area West Access: Hammer Wall",
+    "logic_key": "mid_lower_riverbank_left_semisolid_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Starting Forest - Upper East Access: Fire Orb Wall",
+    "logic_key": "pacifist_jump_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Starting Forest - Upper East Access: Walled Off",
+    "logic_key": "pacifist_jump_wall",
+    "weight": 10
+  },
+  {
+    "name": "Starting Forest - Upper East Access: Whirl Block Wall",
+    "logic_key": "pacifist_jump_whirlblocks",
+    "weight": 10
+  },
+  {
+    "name": "Aurora Palace - Attack Up Tunnel: One Way Blocks",
+    "logic_key": "palace_attack_up_oneway",
+    "weight": 8
+  },
+  {
+    "name": "Aurora Palace - Level 2 Access: Fire Orb Wall",
+    "logic_key": "palace_level2_fireorb",
+    "weight": 4
+  },
+  {
+    "name": "Aurora Palace - Level 2 Access: Hammer Wall",
+    "logic_key": "palace_level2_hammer",
+    "weight": 4
+  },
+  {
+    "name": "Aurora Palace - Level 2 Access: No Spring",
+    "logic_key": "palace_level2_nospring",
+    "weight": 4
+  },
+  {
+    "name": "Aurora Palace - Level 2 Access: Walled Off",
+    "logic_key": "palace_level2_wall",
+    "weight": 4
+  },
+  {
+    "name": "Aurora Palace - Level 3 Access: No Spring",
+    "logic_key": "palace_level3_semisolid_spring",
+    "weight": 8
+  },
+  {
+    "name": "Aurora Palace - Level 4 Access: No Spring",
+    "logic_key": "palace_level4_nospring",
+    "weight": 6
+  },
+  {
+    "name": "Rabi Rabi Park - Def Grow Room: Semisolid Floor",
+    "logic_key": "park_defgrow_semisolid",
+    "weight": 30
+  },
+  {
+    "name": "Rabi Rabi Park - Kotri 1 Access: 4 Tile Jump",
+    "logic_key": "park_kotri_right_4tile",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Park - Kotri 1 Access: Fire Orb Wall",
+    "logic_key": "park_kotri_right_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Park - Kotri 1 Access: Hammer or Slide Wall",
+    "logic_key": "park_kotri_right_hammer_slide",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Park - Above Warp Access: Fire Orb Wall",
+    "logic_key": "park_warp_fireorb",
+    "weight": 8
+  },
+  {
+    "name": "Rabi Rabi Park - Above Warp Access: One Way Blocks",
+    "logic_key": "park_warp_oneway",
+    "weight": 8
+  },
+  {
+    "name": "Rabi Rabi Park - Above Warp Access: Whirl Block Wall",
+    "logic_key": "park_warp_whirlblocks",
+    "weight": 8
+  },
+  {
+    "name": "Golden Pyramid - Dark Room Access: Fire Orb Floor",
+    "logic_key": "pyramid_darkroom_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Pyramid - Entrance: Fire Orb Wall",
+    "logic_key": "pyramid_entrance_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Pyramid - Entrance: Hammer Only Wall",
+    "logic_key": "pyramid_entrance_hammer_nobomb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Pyramid - Ribbon Entrance: Walled Off",
+    "logic_key": "pyramid_entrance_left_wall",
+    "weight": 10
+  },
+  {
+    "name": "Golden Pyramid - West of Warp: Fire Orb Wall",
+    "logic_key": "pyramid_lower_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Pyramid - West of Warp: Hammer Only Wall",
+    "logic_key": "pyramid_lower_hammer_nobomb",
+    "weight": 20
+  },
+  {
+    "name": "Golden Pyramid - West of Warp: Walled Off",
+    "logic_key": "pyramid_lower_wall",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Ravine - Room Before Chocolate: No Semisolid Clip",
+    "logic_key": "ravine_chocolate_nostupid",
+    "weight": 30
+  },
+  {
+    "name": "Rabi Rabi Ravine - Chocolate Exit: One Way Blocks",
+    "logic_key": "ravine_chocolate_oneway",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Ravine - Mana Surge Access: Air Dash Setup",
+    "logic_key": "ravine_lower_to_mid_airdash",
+    "weight": 5
+  },
+  {
+    "name": "Rabi Rabi Ravine - Mana Surge Access: Fire Orb Wall",
+    "logic_key": "ravine_lower_to_mid_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Ravine - Mana Surge Access: Hammer Wall",
+    "logic_key": "ravine_lower_to_mid_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Ravine - Mana Surge Access: Walled Off",
+    "logic_key": "ravine_lower_to_mid_wall",
+    "weight": 5
+  },
+  {
+    "name": "Rabi Rabi Ravine - Town Entrance: Fire Orb Wall",
+    "logic_key": "ravine_town_entrance_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Ravine - Town Entrance: Hammer Wall",
+    "logic_key": "ravine_town_entrance_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Ravine - Town Entrance: Walled Off",
+    "logic_key": "ravine_town_entrance_wall",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Ravine - Warp Access: Fire Orb Wall",
+    "logic_key": "ravine_upper_fireorb",
+    "weight": 7
+  },
+  {
+    "name": "Rabi Rabi Ravine - Warp Access: Hammer Wall",
+    "logic_key": "ravine_upper_hammer_nobomb",
+    "weight": 7
+  },
+  {
+    "name": "Rabi Rabi Ravine - Warp Access: Walled Off",
+    "logic_key": "ravine_upper_wall",
+    "weight": 6
+  },
+  {
+    "name": "Azure Snow Land - Rita Access: Hammer Wall",
+    "logic_key": "rita_right_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Azure Snow Land - Rita Access: Slide Wall",
+    "logic_key": "rita_right_slide",
+    "weight": 10
+  },
+  {
+    "name": "Azure Snow Land - Rita Access: Walled Off",
+    "logic_key": "rita_right_wall",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Level 2 Access: Fire Orb Wall",
+    "logic_key": "riverbank_level1_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Level 2 Access: Hammer Only Wall",
+    "logic_key": "riverbank_level1_hammer_nobomb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Level 2 Access: Walled Off",
+    "logic_key": "riverbank_level1_wall",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Level 3 Access: Walled Off",
+    "logic_key": "riverbank_level2_wall",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - SW Underwater Room Entrance: Fire Orb Floor",
+    "logic_key": "riverbank_lower_exit_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Lower Forest Entrance: Walled Off",
+    "logic_key": "riverbank_lower_exit_wall",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - After Ashuri 2: Fire Orb Wall",
+    "logic_key": "riverbank_post_ashuri2_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - After Ashuri 2: Hammer Wall",
+    "logic_key": "riverbank_post_ashuri2_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - After Ashuri 2: Walled Off",
+    "logic_key": "riverbank_post_ashuri2_wall",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Lower Area Ribbon Access: Fire Orb Blocks",
+    "logic_key": "riverbank_ribbonblocks_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Golden Riverbank - Lower Area Ribbon Access: Hammer Blocks",
+    "logic_key": "riverbank_ribbonblocks_hammer",
+    "weight": 14
+  },
+  {
+    "name": "Golden Riverbank - Lower Area Ribbon Access: Walled Off",
+    "logic_key": "riverbank_ribbonblocks_wall",
+    "weight": 5
+  },
+  {
+    "name": "Rabi Rabi Town - Shop Access: Fire Orb Wall",
+    "logic_key": "shop_entrance_fireorb",
+    "weight": 14
+  },
+  {
+    "name": "Rabi Rabi Town - Shop Access: Hammer Only Wall",
+    "logic_key": "shop_entrance_hammer_nobomb",
+    "weight": 14
+  },
+  {
+    "name": "Rabi Rabi Town - Shop Access: Slide Wall",
+    "logic_key": "shop_entrance_slide",
+    "weight": 7
+  },
+  {
+    "name": "Floating Graveyard - Kotri 2 Access: Fire Orb Wall",
+    "logic_key": "sky_island_entrance_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Floating Graveyard - Kotri 2 Access: Hammer Wall",
+    "logic_key": "sky_island_entrance_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Floating Graveyard - Kotri 2 Access: Wall Jump",
+    "logic_key": "sky_island_entrance_walljump",
+    "weight": 10
+  },
+  {
+    "name": "Sky-High Bridge - East Area Access: Fire Orb Wall",
+    "logic_key": "skybridge_eastwest_fireorb",
+    "weight": 7
+  },
+  {
+    "name": "Sky-High Bridge - East Area Access: Hammer Wall",
+    "logic_key": "skybridge_eastwest_hammer",
+    "weight": 7
+  },
+  {
+    "name": "Sky-High Bridge - West Access: 4 Tile Jump",
+    "logic_key": "skybridge_eastwest_slippers",
+    "weight": 10
+  },
+  {
+    "name": "Sky-High Bridge - East Area Access: Walled Off",
+    "logic_key": "skybridge_eastwest_wall",
+    "weight": 7
+  },
+  {
+    "name": "Sky-High Bridge - Sky-High Bridge Entrance: Fire Orb Wall",
+    "logic_key": "skybridge_west_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Ravine - Sky-High Bridge Entrance: Hammer Wall",
+    "logic_key": "skybridge_west_hammer",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Park - Sky-High Bridge Entrance: Walled Off",
+    "logic_key": "skybridge_west_wall",
+    "weight": 5
+  },
+  {
+    "name": "Azure Snow Land - Middle Area East Access: 4 Tile Jump or Slide",
+    "logic_key": "snowland_east_mid_4tile",
+    "weight": 10
+  },
+  {
+    "name": "Azure Snow Land - Middle Area East Access: Walled Off",
+    "logic_key": "snowland_east_mid_wall",
+    "weight": 10
+  },
+  {
+    "name": "Azure Snow Land - Middle Area East Access: Whirl Block Wall",
+    "logic_key": "snowland_east_mid_whirlblocks",
+    "weight": 10
+  },
+  {
+    "name": "Azure Snow Land - Left Lake Entrance: Semisolid Wall",
+    "logic_key": "snowland_lake_left_entrance_semisolid",
+    "weight": 10
+  },
+  {
+    "name": "Azure Snow Land - Left Lake Entrance: Walled Off",
+    "logic_key": "snowland_lake_left_entrance_wall",
+    "weight": 10
+  },
+  {
+    "name": "Azure Snow Land - Left Lake Entrance: Whirl Block Wall",
+    "logic_key": "snowland_lake_left_entrance_whirlblocks",
+    "weight": 10
+  },
+  {
+    "name": "Azure Snow Land - Right Lake Entrance: Semisolid Wall",
+    "logic_key": "snowland_lake_right_entrance_semisolid",
+    "weight": 10
+  },
+  {
+    "name": "Azure Snow Land - Right Lake Entrance: Whirl Block Wall",
+    "logic_key": "snowland_lake_right_entrance_whirlblocks",
+    "weight": 10
+  },
+  {
+    "name": "Azure Snow Land - West Access: No Semisolid Clip",
+    "logic_key": "snowland_warp_nostupid",
+    "weight": 50
+  },
+  {
+    "name": "Azure Snow Land - West Entrance: 5 Tile Wall",
+    "logic_key": "snowland_west_entrance_5tile",
+    "weight": 20
+  },
+  {
+    "name": "Spectral Cave - West Area Access: Open",
+    "logic_key": "spectral_west_nothing",
+    "weight": 30,
+    "requires_start_location_shuffle": "TRUE"
+  },
+  {
+    "name": "Evernight Peak - Spike Barrier Room: Fire Orb Wall",
+    "logic_key": "spike_barrier_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Evernight Peak - Spike Barrier Room: No Wimpy Launch",
+    "logic_key": "spike_barrier_nostupid",
+    "weight": 20
+  },
+  {
+    "name": "Icy Summit - Upper Area East Access: 4 Tile Jump",
+    "logic_key": "upper_icy_summit_4tile",
+    "weight": 15
+  },
+  {
+    "name": "Icy Summit - Upper Area East Access: Walled Off",
+    "logic_key": "upper_icy_summit_wall",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Park - Upper Area Access: 4 Tile Jump",
+    "logic_key": "upper_park_4tile",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Park - Upper Area Access: Fire Orb Wall",
+    "logic_key": "upper_park_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Park - Upper Area Access: Hammer Wall",
+    "logic_key": "upper_park_whirlblocks",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Park - UPRPRC Base Entrance: Fire Orb Floor",
+    "logic_key": "uprprc_base_fireorb",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Park - UPRPRC Base Entrance: Walled Off",
+    "logic_key": "uprprc_base_wall",
+    "weight": 10
+  },
+  {
+    "name": "Rabi Rabi Park - UPRPRC Base Entrance: Whirl Block Floor",
+    "logic_key": "uprprc_base_whirlblocks",
+    "weight": 10
+  },
+  {
+    "name": "UPRPRC Base - Rabi Slippers Exit: No Wall Jump",
+    "logic_key": "uprprc_slippers_exit_4tile",
+    "weight": 10
+  },
+  {
+    "name": "Sky-High Bridge - Vanilla Access: One Way Blocks",
+    "logic_key": "vanilla_left_wall",
+    "weight": 30
+  },
+  {
+    "name": "Volcanic Area - Beach Entrance: No Damage Boost",
+    "logic_key": "volcanic_west_nostupid",
+    "weight": 30
+  }
+]

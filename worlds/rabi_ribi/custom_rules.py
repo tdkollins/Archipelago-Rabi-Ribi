@@ -8,7 +8,7 @@ from rule_builder.options import OPERATORS, REVERSE_OPERATORS, Operator
 
 from .bases import RabiRibiWorldBase
 from .constants import GAME_NAME
-from .items import consumable_table, magic_table, recruit_table
+from .items import item_groups, recruit_table, recruit_table_irisu
 from .names import ItemName
 from .options import *
 
@@ -149,8 +149,184 @@ class OutOfLogicOptionRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             ]
             return messages
 
+@dataclass
+class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+    """Rule to check if the player can use enough magic types."""
+    num_magic_types: int
+
+    @override
+    def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
+        return self.Resolved(
+            self.num_magic_types,
+            bool(world.options.rainbow_shot_in_logic.value),
+            player = world.player,
+            caching_enabled = getattr(world, "rule_caching_enabled", False)
+        )
+
+    class Resolved(rules.Rule.Resolved):
+        num_magic_types: int
+        rainbow_shot_in_logic_enabled: bool
+
+        @override
+        def _evaluate(self, state: CollectionState) -> bool:
+            curr_magic_types = self._count_magic_types(state)
+            return curr_magic_types >= self.num_magic_types
+
+        def _count_magic_types(self, state:CollectionState) -> int:
+            curr_magic_types = state.count_group_unique("Magic", self.player)
+            if self._rainbow_shot_in_logic(state):
+                curr_magic_types += 1
+            return curr_magic_types
+
+        def _rainbow_shot_in_logic(self, state: CollectionState) -> bool:
+            """Player has Rainbow Shot and it's not out of logic by options"""
+            return (
+                (
+                    self.rainbow_shot_in_logic_enabled
+                    or state.has(ItemName.glitched_logic, self.player)
+                )
+                and state.has(ItemName.easter_egg, self.player, count = 5)
+            )
+
+        def _rainbow_shot_out_of_logic(self, state: CollectionState) -> bool:
+            return (
+                not self.rainbow_shot_in_logic_enabled
+                and state.has(ItemName.glitched_logic, self.player)
+                and state.has(ItemName.easter_egg, self.player, count = 5)
+            )
+
+        @override
+        def item_dependencies(self) -> dict[str, set[int]]:
+            deps = super().item_dependencies()
+            for recruit in recruit_table:
+                deps.setdefault(recruit, set()).add(id(self))
+            return deps
+
+        @override
+        def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
+            messages: list[JSONMessagePart] = []
+            if state is None:
+                messages = [
+                    {"type": "text", "text": "Has "},
+                    {"type": "color", "color": "cyan", "text": str(self.num_magic_types)},
+                    {"type": "text", "text": " Magic Types"},
+                ]
+            else:
+                curr_magic_types = self._count_magic_types(state)
+                color = (
+                    "green" if curr_magic_types > self.num_magic_types
+                    else "yellow" if curr_magic_types == self.num_magic_types and self._rainbow_shot_out_of_logic(state)
+                    else "salmon"
+                )
+                messages = [
+                    {"type": "text", "text": "Has "},
+                    {
+                        "type": "color",
+                        "color": color,
+                        "text": f"{curr_magic_types}/{self.num_magic_types}",
+                    },
+                    {"type": "text", "text": " Magic Types"},
+                ]
+            return messages
+
+
+@dataclass
+class TownMemberCountRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+    """Rule to check if the player can reach enough town members for an event."""
+    num_town_members: int
+
+    @override
+    def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
+        return self.Resolved(
+            self.num_town_members,
+            player = world.player,
+            caching_enabled = getattr(world, "rule_caching_enabled", False)
+        )
+
+    class Resolved(rules.Rule.Resolved):
+        num_town_members: int
+
+        @override
+        def _evaluate(self, state: CollectionState) -> bool:
+            return state.has_from_list_unique(recruit_table, self.player, self.num_town_members)
+
+        @override
+        def item_dependencies(self) -> dict[str, set[int]]:
+            deps = super().item_dependencies()
+            for recruit in recruit_table:
+                deps.setdefault(recruit, set()).add(id(self))
+            return deps
+
+        @override
+        def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
+            messages: list[JSONMessagePart] = []
+            if state is None:
+                messages = [
+                    {"type": "text", "text": "Has "},
+                    {"type": "color", "color": "cyan", "text": str(self.num_town_members)},
+                    {"type": "text", "text": " Town Members"},
+                ]
+            else:
+                curr_town_members = state.count_from_list_unique(recruit_table, self.player)
+                color = "green" if curr_town_members >= self.num_town_members else "salmon"
+                messages = [
+                    {"type": "text", "text": "Has "},
+                    {
+                        "type": "color",
+                        "color": color,
+                        "text": f"{curr_town_members}/{self.num_town_members}",
+                    },
+                    {"type": "text", "text": " Town Members"},
+                ]
+            return messages
+
+@dataclass
+class TownMemberCountIrisuRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+    """Rule to check if the player can reach enough town members to fight Irisu."""
+    @override
+    def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
+        return self.Resolved(
+            player = world.player,
+            caching_enabled = getattr(world, "rule_caching_enabled", False)
+        )
+
+    class Resolved(rules.Rule.Resolved):
+        @override
+        def _evaluate(self, state: CollectionState) -> bool:
+            return state.has_from_list_unique(recruit_table_irisu, self.player, 15)
+
+        @override
+        def item_dependencies(self) -> dict[str, set[int]]:
+            deps = super().item_dependencies()
+            for recruit in recruit_table_irisu:
+                deps.setdefault(recruit, set()).add(id(self))
+            return deps
+
+        @override
+        def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
+            messages: list[JSONMessagePart] = []
+            if state is None:
+                messages = [
+                    {"type": "text", "text": "Has "},
+                    {"type": "color", "color": "cyan", "text": str(15)},
+                    {"type": "text", "text": " Main Game Town Members"},
+                ]
+            else:
+                curr_town_members = state.count_from_list_unique(recruit_table_irisu, self.player)
+                color = "green" if curr_town_members >= 15 else "salmon"
+                messages = [
+                    {"type": "text", "text": "Has "},
+                    {
+                        "type": "color",
+                        "color": color,
+                        "text": f"{curr_town_members}/{15}",
+                    },
+                    {"type": "text", "text": " Main Game Town Members"},
+                ]
+            return messages
+
 @dataclass()
-class HasEnoughAmuletFood(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
     """Rule to check if the player can utilize enough items to perform a trick."""
     num_amulet_food: int
 
@@ -171,24 +347,80 @@ class HasEnoughAmuletFood(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
         has_advanced_knowledge: bool
         rainbow_shot_in_logic_enabled: bool
 
-        @override
-        def _evaluate(self, state: CollectionState) -> bool:
-            amulet = self.count_amulet_charges(state)
+        def _count_amulet_food(self, state):
+            amulet = self._count_amulet_charges(state)
             food = 0
 
-            if self.has_item_menu(state):
-                if state.has(ItemName.rumi_donut, self.player) or state.has("Shop Access", self.player):
+            if self._has_item_menu(state):
+                if state.has(ItemName.rumi_donut, self.player) or state.has("Shop Reachable", self.player):
                     food = 1
                     # Eating a Rumi Donut gives an amulet charge
-                    if self.can_bunny_amulet(state):
+                    if self._can_bunny_amulet(state):
                         amulet += 1
-                    food += self.count_normal_consumable_items(state)
+                    food += self._count_normal_consumable_items(state)
                     # Kotri's buff can save enough amulet charge for an additional amulet use
                     if amulet >= 4 and state.has(ItemName.kotri_recruit, self.player) and \
                         state.has_from_list_unique(recruit_table, self.player, 3):
                         amulet += 1
+            return (amulet + food)
 
-            return (amulet + food) >= self.num_amulet_food
+        def _count_amulet_charges(self, state: CollectionState) -> int:
+            """Counts the number of amulet charges the player has"""
+            if state.has(ItemName.bunny_amulet, self.player) or state.has("Chapter 2", self.player):
+                if state.has(ItemName.rumi_recruit, self.player):
+                    return 4
+                if state.has("Shop Reachable", self.player) or state.has("Chapter 4", self.player):
+                    return 3
+                if state.has("Chapter 3", self.player):
+                    return 2
+                return 1
+            return 0
+
+        def _count_normal_consumable_items(self, state: CollectionState) -> int:
+            """Counts which normal consumable items the player can reach, either from locations or purchases."""
+            consumables = 0
+            if state.has(ItemName.rumi_cake, self.player) or state.has("Shop Reachable", self.player):
+                consumables += 1
+            if state.has(ItemName.cocoa_bomb, self.player) or self._can_purchase_cocoa_bomb(state):
+                consumables += 1
+            if state.has(ItemName.gold_carrot, self.player):
+                consumables += 1
+            return consumables
+
+        def _can_purchase_cocoa_bomb(self, state: CollectionState) -> bool:
+            """Player can purchase cocoa bomb"""
+            return state.has("Chapter 1", self.player) and \
+                state.has(ItemName.cocoa_recruit, self.player) and \
+                state.has_from_list_unique(recruit_table, self.player, 3)
+
+        def _can_bunny_amulet(self, state: CollectionState) -> bool:
+            """Player can use the bunny amulet"""
+            return state.has(ItemName.rumi_cake, self.player) or state.has("Shop Reachable", self.player)
+
+        def _has_item_menu(self, state: CollectionState) -> bool:
+            """Player has access to the item menu"""
+            return state.has("Chapter 1", self.player) or \
+                (self._is_at_least_advanced_knowledge(state) and self._has_3_magic_types(state))
+
+        def _has_3_magic_types(self, state: CollectionState) -> bool:
+            """Player has at least 3 types of magic"""
+            # If playing with more than 5 Easter Eggs, Rainbow Shot could be used as a magic type
+            return state.has_group_unique("Magic", self.player, 2) or \
+                (self._rainbow_shot_in_logic(state) and state.has_group_unique("Magic", self.player, 1))
+
+        def _is_at_least_advanced_knowledge(self, state: CollectionState) -> bool:
+            """Knowledge is at least advanced"""
+            return self.has_advanced_knowledge or state.has(ItemName.glitched_logic, self.player)
+
+        def _rainbow_shot_in_logic(self, state: CollectionState) -> bool:
+            """Player has Rainbow Shot and it's not out of logic by options"""
+            return (self.rainbow_shot_in_logic_enabled or state.has(ItemName.glitched_logic, self.player)) and \
+                state.has(ItemName.easter_egg, self.player, count = 5)
+
+        @override
+        def _evaluate(self, state: CollectionState) -> bool:
+            curr_amulet_food = self._count_amulet_food(state)
+            return curr_amulet_food >= self.num_amulet_food
 
         @override
         def item_dependencies(self) -> dict[str, set[int]]:
@@ -201,69 +433,94 @@ class HasEnoughAmuletFood(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             deps.setdefault("Chapter 2", set()).add(id(self))
             deps.setdefault("Chapter 3", set()).add(id(self))
             deps.setdefault("Chapter 4", set()).add(id(self))
-            deps.setdefault("Shop Access", set()).add(id(self))
+            deps.setdefault("Shop Reachable", set()).add(id(self))
 
-            for consumable in consumable_table.keys():
+            for consumable in item_groups["Consumables"]:
                 deps.setdefault(consumable, set()).add(id(self))
             for recruit in recruit_table:
                 deps.setdefault(recruit, set()).add(id(self))
-            for magic in magic_table.keys():
+            for magic in item_groups["Magic"]:
                 deps.setdefault(magic, set()).add(id(self))
 
             return deps
 
-        def count_amulet_charges(self, state: CollectionState) -> int:
-            """Counts the number of amulet charges the player has"""
-            if state.has(ItemName.bunny_amulet, self.player) or state.has("Chapter 2", self.player):
-                if state.has(ItemName.rumi_recruit, self.player):
-                    return 4
-                if state.has("Shop Access", self.player) or state.has("Chapter 4", self.player):
-                    return 3
-                if state.has("Chapter 3", self.player):
-                    return 2
-                return 1
-            return 0
+        @override
+        def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
+            messages: list[JSONMessagePart] = []
+            if state is None:
+                messages = [
+                    {"type": "text", "text": "Has "},
+                    {"type": "color", "color": "cyan", "text": str(self.num_amulet_food)},
+                    {"type": "text", "text": " Amulet/Food"},
+                ]
+            else:
+                curr_amulet_food = self._count_amulet_food(state)
+                color = "green" if self(state) else "salmon"
+                messages = [
+                    {"type": "text", "text": "Has "},
+                    {
+                        "type": "color",
+                        "color": color,
+                        "text": f"{curr_amulet_food}/{self.num_amulet_food}",
+                    },
+                    {"type": "text", "text": " Amulet/Food"},
+                ]
+            return messages
 
-        def count_normal_consumable_items(self, state: CollectionState) -> int:
-            """Counts which normal consumable items the player can reach, either from locations or purchases."""
-            consumables = 0
-            if state.has(ItemName.rumi_cake, self.player) or state.has("Shop Access", self.player):
-                consumables += 1
-            if state.has(ItemName.cocoa_bomb, self.player) or self.can_purchase_cocoa_bomb(state):
-                consumables += 1
-            if state.has(ItemName.gold_carrot, self.player):
-                consumables += 1
-            return consumables
+        @override
+        def explain_str(self, state: CollectionState | None = None) -> str:
+            suffix = ""
+            if state is not None:
+                suffix = " ✓" if self(state) else " ✕"
+            return f"Has {self.num_amulet_food} Amulet/Food{suffix}"
 
-        def can_purchase_cocoa_bomb(self, state: CollectionState) -> bool:
-            """Player can purchase cocoa bomb"""
-            return state.has("Chapter 1", self.player) and \
-                state.has(ItemName.cocoa_recruit, self.player) and \
-                state.has_from_list_unique(recruit_table, self.player, 3)
-
-        def can_bunny_amulet(self, state: CollectionState) -> bool:
-            """Player can use the bunny amulet"""
-            return state.has(ItemName.rumi_cake, self.player) or state.has("Shop Access", self.player)
-
-        def has_item_menu(self, state: CollectionState) -> bool:
-            """Player has access to the item menu"""
-            return state.has("Chapter 1", self.player) or \
-                (self.is_at_least_advanced_knowledge(state) and self.has_3_magic_types(state))
-
-        def has_3_magic_types(self, state: CollectionState) -> bool:
-            """Player has at least 3 types of magic"""
-            # If playing with more than 5 Easter Eggs, Rainbow Shot could be used as a magic type
-            return state.has_group_unique("Magic", self.player, 2) or \
-                (self.rainbow_shot_in_logic(state) and state.has_group_unique("Magic", self.player, 1))
-
-        def is_at_least_advanced_knowledge(self, state: CollectionState) -> bool:
-            """Knowledge is at least advanced"""
-            return self.has_advanced_knowledge or state.has(ItemName.glitched_logic, self.player)
-
-        def rainbow_shot_in_logic(self, state: CollectionState) -> bool:
-            """Player has Rainbow Shot and it's not out of logic by options"""
-            return (self.rainbow_shot_in_logic_enabled or state.has(ItemName.glitched_logic, self.player)) and \
-                state.has(ItemName.easter_egg, self.player, count = 5)
+        @override
+        def __str__(self) -> str:
+            return f"Has {self.num_amulet_food} Amulet/Food"
 
 def from_option(option: type[Option], value: Any, operator: Operator = "eq") -> rules.Rule:
     return rules.True_(options=[rules.OptionFilter(option, value, operator)])
+
+@dataclass()
+class Macro(rules.WrapperRule[RabiRibiWorldBase], game=GAME_NAME):
+    name: str
+    description: str = ""
+
+    @override
+    def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
+        if rule := world.rule_macros.get(self.name):
+            return rule
+        rule = self.Resolved(
+            self.child.resolve(world),
+            self.name,
+            self.description,
+            player=world.player,
+            caching_enabled=getattr(world, "rule_caching_enabled", False),
+        )
+        world.rule_macros[self.name] = rule
+        return rule
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}[{self.child}]"
+
+    class Resolved(rules.WrapperRule.Resolved):
+        name: str
+        description: str = ""
+
+        @override
+        def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
+            if state is None:
+                return [{"type": "text", "text": str(self)}]
+            return [{"type": "color", "color": "green" if self(state) else "salmon", "text": str(self)}]
+
+        @override
+        def explain_str(self, state: CollectionState | None = None) -> str:
+            suffix = ""
+            if state is not None:
+                suffix = " ✓" if self(state) else " ✕"
+            return f"{self.name}{suffix}"
+
+        @override
+        def __str__(self) -> str:
+            return self.name

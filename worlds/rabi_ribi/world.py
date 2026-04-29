@@ -5,20 +5,20 @@ import math
 import logging
 from collections import defaultdict
 from itertools import chain
-from typing import Any, Optional, TextIO, override
+from typing import Any, ClassVar, Optional, TextIO, override
 from BaseClasses import ItemClassification, MultiWorld
 from Fill import swap_location_item
 from Options import OptionError
 from worlds.AutoWorld import WebWorld
 from .constants import GAME_NAME, BASE_ID
-from .existing_randomizer.dataparser import RandomizerData
-from .existing_randomizer.randomizer import parse_args
+from .data import data
 from .items import RabiRibiItem, RabiRibiItemData, item_data_table, item_groups, item_table, filler_items, get_base_item_list
 from .locations import all_locations, location_groups
 from .names import ItemName
 from .regions import RegionHelper
+from .rules import parse_connections
+from .settings import RabiRibiSettings
 from .tracker import RabiRibiUTWorld
-from .utility import convert_existing_rando_name_to_ap_name
 from .web_world import RabiRibiWeb
 
 logger = logging.getLogger(GAME_NAME)
@@ -29,21 +29,21 @@ class RabiRibiWorld(RabiRibiUTWorld):
     released in 2016. It follows bunny-girl Erina and her fairy companion Ribbon in this
     cute, action-packed, and possibly pretty difficult adventure.
     """
-    game: str = GAME_NAME
-    web: WebWorld = RabiRibiWeb()
+
+    game: ClassVar[str] = GAME_NAME
+    settings: ClassVar[RabiRibiSettings] # pyright: ignore[reportIncompatibleVariableOverride]
+    web: ClassVar[WebWorld] = RabiRibiWeb()
     base_id: int = BASE_ID
     topology_present: bool = False
 
-    item_name_groups: dict[str, set[str]] = item_groups
-    location_name_groups: dict[str, set[str]] = location_groups
-    item_name_to_id = item_table
-    location_name_to_id: dict[str, int] = all_locations
+    item_name_groups: ClassVar[dict[str, set[str]]] = item_groups
+    location_name_groups: ClassVar[dict[str, set[str]]] = location_groups
+    item_name_to_id: ClassVar[dict[str, int]] = item_table
+    location_name_to_id: ClassVar[dict[str, int]] = all_locations
 
     total_locations: int
     required_egg_count: int
     filler_items: Optional[list[str]] = None
-    existing_randomizer_args: Any
-    randomizer_data: RandomizerData
 
     @override
     def generate_early(self) -> None:
@@ -54,11 +54,10 @@ class RabiRibiWorld(RabiRibiUTWorld):
             raise OptionError(f"Rabi-Ribi: Rainbow Egg In Logic is not compatible with Encourage Eggs in Late Spheres. "
                               f"Player {self.player} ({self.player_name}) needs to disable one of these options.")
 
-        self.existing_randomizer_args = self._convert_options_to_existing_randomizer_args()
-        self.randomizer_data = RandomizerData(self.existing_randomizer_args)
-
         # Will be configurable later, but for now always force eggs to be local
         self.options.local_items.value.add(ItemName.easter_egg)
+
+        parse_connections()
 
     @override
     def create_item(self, name: str, force_classification: Optional[ItemClassification] = None) -> RabiRibiItem:
@@ -114,7 +113,7 @@ class RabiRibiWorld(RabiRibiUTWorld):
         return self.filler_items.pop(0)
 
     def create_items(self) -> None:
-        base_item_list = get_base_item_list(self.randomizer_data)
+        base_item_list = get_base_item_list()
         base_items = map(self.create_item, base_item_list)
         self.multiworld.itempool.extend(base_items)
 
@@ -183,24 +182,19 @@ class RabiRibiWorld(RabiRibiUTWorld):
 
         if self.options.shuffle_map_transitions.value:
             spoiler_handle.write(f'\n\nMap Transitions ({self.player_name}):\n')
+            self.map_transition_shuffle_spoiler.sort()
             for entrance in self.map_transition_shuffle_spoiler:
                 spoiler_handle.write(f'\n{entrance}')
 
         if self.options.number_of_constraint_changes.value > 0:
             spoiler_handle.write(f'\n\nApplied Map Constraints ({self.player_name}):\n')
-            for template in self.picked_templates:
-                spoiler_handle.write(f'\n{convert_existing_rando_name_to_ap_name(template)}')
-
-    def _convert_options_to_existing_randomizer_args(self):
-        args = parse_args()
-        args.ap_options = self.options
-        args.open_mode = True
-        args.shuffle_gift_items = True
-        args.shuffle_map_transitions = self.options.shuffle_map_transitions.value
-        args.shuffle_start_location = self.options.shuffle_start_location.value
-        args.constraint_changes = self.options.number_of_constraint_changes.value
-
-        return args
+            constraint_names = [
+                data.get_constraint_by_logic_key(template).name
+                for template
+                in self.picked_templates]
+            constraint_names.sort()
+            for constraint in constraint_names:
+                spoiler_handle.write(f'\n{constraint}')
 
     @staticmethod
     def _handle_encourage_eggs_in_late_spheres(multiworld: MultiWorld):

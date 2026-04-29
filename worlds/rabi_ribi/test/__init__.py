@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from test.bases import WorldTestBase
-from ..utility import GAME_NAME
+from ..constants import GAME_NAME
 
 
 class RabiRibiTestBase(WorldTestBase):

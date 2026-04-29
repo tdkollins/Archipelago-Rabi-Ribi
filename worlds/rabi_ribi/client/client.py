@@ -21,14 +21,11 @@ from Utils import get_intended_text
 from worlds.AutoWorld import World
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
 from worlds.rabi_ribi.constants import CLIENT_VERSION, GAME_NAME
-from worlds.rabi_ribi.items import event_table, consumable_table
+from worlds.rabi_ribi.data import data
+from worlds.rabi_ribi.items import event_table, item_groups
 from worlds.rabi_ribi.locations import all_locations
 from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.options import AttackMode
-from worlds.rabi_ribi.utility import (
-    load_text_file,
-    convert_existing_rando_name_to_ap_name
-)
 from worlds.rabi_ribi.world import RabiRibiWorld
 
 try:
@@ -178,13 +175,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         self.items_handling = 0b101  # local except starting items
         self.command_processor = RabiRibiCommandProcessor
         self.rr_interface = RabiRibiMemoryIO()
-        self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
-            self.read_location_coordinates_and_rr_item_ids()
-
-        self.ap_location_name_to_location_coordinates: dict[str, tuple[int, int, int]] = {}
-        for area, v in self.location_coordinates_to_ap_location_name.items():
-            for (x, y), name in v.items():
-                self.ap_location_name_to_location_coordinates[name] = (area, x, y)
 
         self.current_area_id = -1
         self.current_room: tuple[int, int] = (-1, 1)
@@ -225,84 +215,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
 
         ui.base_title += " | AP"
         return ui
-
-    def read_location_coordinates_and_rr_item_ids(self):
-        """
-        This method retrieves the location coordinates of each item from
-        locations_items.txt, and dumps it in a mapping for later use.
-
-        It also retrieves the rabi ribi item ids for each item and dumps
-        that in a seperate map for later use.
-
-        This is a slightly modified version of the code found in
-        worlds.rabi_ribi.existing_randomizer.visualizer.load_item_locs()
-        """
-        coordinate_to_location_name = {}
-        item_name_to_rabi_ribi_item_id = {
-            ItemName.attack_up: 223,
-            ItemName.mp_up: 287,
-            ItemName.regen_up: 351,
-            ItemName.hp_up: 159,
-            ItemName.pack_up: 415
-        }
-
-        # location_items.txt contains 3 sets of items:
-        #   - Items, for items that can be found lying around.
-        #   - ShufflableGiftItems, for items normally gifted to the player, but have a location
-        #     added by the randomizer.
-        #   - AdditionalItems, for items that are either bought at the shop, or given to the player
-        #     but have not been added as a location to the randomizer
-        # While Items and ShufflableGiftItems have are stored in the same format, AdditionalItems
-        # does not contain location information, so we need to read them separately.
-        locations_items_file = os.path.join('existing_randomizer', 'locations_items.txt')
-        f = load_text_file(locations_items_file)
-        reading_items = False
-        reading_additional_items = False
-        for line in f.splitlines():
-            if '===Items===' in line or '===ShufflableGiftItems===' in line:
-                reading_items = True
-                continue
-            elif '===AdditionalItems===' in line:
-                reading_additional_items = True
-                continue
-            elif '===' in line:
-                reading_items = False
-                reading_additional_items = False
-                continue
-            if reading_items:
-                l = line
-                if '//' in line:
-                    l = l[:l.find('//')]
-                l = l.strip()
-                if len(l) == 0: continue
-                coords, areaid, rabi_ribi_item_id, name = (x.strip() for x in l.split(':'))
-
-                # Set location coordinate to location name mapping
-                area_id = int(areaid)
-                x, y = ast.literal_eval(coords)
-                ap_name = convert_existing_rando_name_to_ap_name(name)
-                if area_id not in coordinate_to_location_name:
-                    coordinate_to_location_name[area_id] = {(x, y): ap_name}
-                else:
-                    coordinate_to_location_name[area_id][(x, y)] = ap_name
-
-                # Set item name to Rabi Ribi item ID mapping
-                item_id = int(rabi_ribi_item_id)
-                item_name_to_rabi_ribi_item_id[ap_name] = item_id
-            if reading_additional_items:
-                l = line
-                if '//' in line:
-                    l = l[:l.find('//')]
-                l = l.strip()
-                if len(l) == 0: continue
-                name, rabi_ribi_item_id = (x.strip() for x in line.split(':'))
-
-                # Only set item name to Rabi Ribi item ID mapping
-                ap_name = convert_existing_rando_name_to_ap_name(name)
-                item_id = int(rabi_ribi_item_id)
-                item_name_to_rabi_ribi_item_id[ap_name] = item_id
-
-        return coordinate_to_location_name, item_name_to_rabi_ribi_item_id
 
     async def server_auth(self, password_requested: bool = False):
         if password_requested and not self.password:
@@ -438,11 +350,12 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
                 elif item_name == ItemName.easter_egg:
                     if network_item.player == self.slot:
                         location_name = self.location_names.lookup_in_game(network_item.location)
-                        egg_coordinates = self.ap_location_name_to_location_coordinates[location_name]
+                        location = data.get_location_by_ap_name(location_name)
+                        egg_coordinates = (location.area_id, location.x_position, location.y_position)
                         self.collected_eggs.add(egg_coordinates)
                 else:
                     self.items_received_rabi_ribi_ids.append(
-                        int(self.item_name_to_rabi_ribi_item_id[item_name]))
+                        int(data.get_item_by_ap_name(item_name).id))
 
     def is_item_queued(self):
         """
@@ -481,8 +394,8 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         for (area, x, y) in player_current_eggs:
             if (area, x, y) not in self.collected_eggs:
                 self.collected_eggs.add((area, x, y))
-                if area in self.location_coordinates_to_ap_location_name and (x, y) in self.location_coordinates_to_ap_location_name[area]:
-                    location_name = self.location_coordinates_to_ap_location_name[area][(x, y)]
+                if data.is_coordinates_location(area, x, y):
+                    location_name = data.get_location_name_by_coordinates(area, x, y)
                     location_id = all_locations[location_name]
                     if location_id not in self.locations_checked:
                         self.locations_checked.add(location_id)
@@ -493,11 +406,11 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         Checks if the player has any consumable items,
         and sets the events to open them at the start warp point.
         """
-        rumi_donut_id = self.item_name_to_rabi_ribi_item_id[ItemName.rumi_donut]
-        for item_name in consumable_table.keys():
-            item_id = self.item_name_to_rabi_ribi_item_id[item_name]
-            if self.rr_interface.does_player_have_item_id(self.item_name_to_rabi_ribi_item_id[item_name]):
-                event_id = TRIGGER_BLOCK_EVENT_ID1 + (item_id - rumi_donut_id)
+        rumi_donut_game_id = data.get_item_by_ap_name(ItemName.rumi_donut).id
+        for item_name in item_groups["Consumables"]:
+            game_item_id = data.get_item_by_ap_name(item_name).id
+            if self.rr_interface.does_player_have_item_id(game_item_id):
+                event_id = TRIGGER_BLOCK_EVENT_ID1 + (game_item_id - rumi_donut_game_id)
                 self.rr_interface.set_event_state(event_id, True)
 
     async def update_player_location(self):
@@ -654,17 +567,12 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         closest_location_coordinates = None
         closest_distance = 9999
 
-        if area_id not in self.location_coordinates_to_ap_location_name:
-            return None, None
-        for coordinate_entry, location_name in self.location_coordinates_to_ap_location_name[area_id].items():
-            if location_name.startswith("Unknown Item"):
-                # Skip DLC Items
-                continue
-            distance = abs(x - coordinate_entry[0]) + abs(y - coordinate_entry[1])
+        for location in data.get_locations_in_area(area_id).values():
+            distance = abs(x - location.x_position) + abs(y - location.y_position)
             if distance < closest_distance:
                 closest_distance = distance
-                closest_location_id = all_locations[location_name]
-                closest_location_coordinates = (area_id, *coordinate_entry)
+                closest_location_id = all_locations[location.name]
+                closest_location_coordinates = (area_id, location.x_position, location.y_position)
 
         if closest_distance < 10 and closest_location_id in self.server_locations:
             return closest_location_id, closest_location_coordinates
@@ -704,13 +612,6 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
         Reset client back to default values
         """
         self.locations_checked = set()
-        self.location_coordinates_to_ap_location_name, self.item_name_to_rabi_ribi_item_id = \
-            self.read_location_coordinates_and_rr_item_ids()
-
-        self.ap_location_name_to_location_coordinates: dict[str, tuple[int, int, int]] = {}
-        for area, v in self.location_coordinates_to_ap_location_name.items():
-            for (x, y), name in v.items():
-                self.ap_location_name_to_location_coordinates[name] = (area, x, y)
 
         self.current_area_id = -1
         self.current_room = (-1, -1)
@@ -748,6 +649,7 @@ async def rabi_ribi_watcher(ctx: RabiRibiContext):
 
     :RabiRibiContext ctx: The Rabi Ribi Client context instance.
     """
+    watch_menu_task = None
     await ctx.wait_for_initial_connection_info()
     while not ctx.exit_event.is_set():
         if not ctx.server:

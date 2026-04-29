@@ -4,15 +4,13 @@ from random import Random
 from typing import Any
 from worlds.AutoWorld import World
 from .constants import GAME_NAME
+from .data import data
 from .existing_randomizer.analyzer import Analyzer
 from .existing_randomizer.dataparser import RandomizerData
 from .existing_randomizer.allocation import Allocation
-from .names import ItemName
-from .utility import convert_existing_rando_name_to_ap_name, convert_ap_name_to_existing_rando_name
 
 logger = logging.getLogger(GAME_NAME)
 MAX_ATTEMPTS = 10000
-PIKO_HAMMER = convert_ap_name_to_existing_rando_name(ItemName.piko_hammer)
 
 class MapAllocation(Allocation):
     """An implementation of Allocation that replaces all items in the pool with item locations to obtain."""
@@ -71,6 +69,7 @@ class MapGenerator(object):
 
     def generate_seed(self):
         success = False
+        analyzer = None
 
         for i in range(MAX_ATTEMPTS):
             self.shuffle()
@@ -130,7 +129,7 @@ class MapAnalyzer(Analyzer):
         reachable, _, _, _ = self.verify_reachable_items(starting_variables, backward_exitable)
 
         # Convert item locations back to actual names
-        item_location_reachable = {convert_existing_rando_name_to_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
+        item_location_reachable = {data.get_location_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
         return len(item_location_reachable) > 0
 
     def verify_all_locations_reachable(self, starting_variables, backward_exitable):
@@ -143,6 +142,6 @@ class MapAnalyzer(Analyzer):
         reachable, _, _, _ = self.verify_reachable_items(variables, backward_exitable)
 
         # Convert item locations back to actual names
-        item_location_reachable = {convert_existing_rando_name_to_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
+        item_location_reachable = {data.get_location_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
 
         return self.locations_to_reach.issubset(item_location_reachable)

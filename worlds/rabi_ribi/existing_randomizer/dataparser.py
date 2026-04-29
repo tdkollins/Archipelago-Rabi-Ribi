@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 
 from .utility import *
 from ..options import RabiRibiOptions
-from ..utility import resource_listdir
+from ..resource_utility import resource_listdir
 
 """
 Knowledge levels:

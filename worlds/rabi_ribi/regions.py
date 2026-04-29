@@ -4,101 +4,16 @@ import logging
 from typing import Any, Optional
 from BaseClasses import Region, ItemClassification
 from rule_builder.rules import Rule
-from . import logic_helpers as logic
 from .bases import RabiRibiWorldBase
 from .constants import GAME_NAME
+from .data import data, RegionData
 from .entrance_shuffle import MapAllocation, MapGenerator
-from .existing_randomizer.utility import GraphEdge
 from .items import RabiRibiItem
 from .locations import RabiRibiLocation, setup_locations
-from .logic_helpers import convert_existing_rando_rule_to_ap_rule
 from .names import ItemName, LocationName
-from .options import Knowledge, TrickDifficulty
-from .utility import (
-    convert_existing_rando_name_to_ap_name,
-    convert_ap_name_to_existing_rando_name
-)
+from .rules import *
 
 logger = logging.getLogger(GAME_NAME)
-
-# TODO: Move these region names
-plurkwood_regions: set[str] = {
-    "Plurkwood Main",
-    "Item P Hairpin",
-    "Item Egg Plurk East",
-    "Item Egg Plurk Cave",
-    "Item Egg Plurk Cats"
-}
-
-warp_destination_regions: set[str] = {
-    "Warp Destination Hospital",
-    "Warp Destination Outside",
-    "Item Egg Crespirit",
-    "Item Egg Hospital Wall",
-    "Item Egg Hospital Box"
-}
-
-post_game_regions: set[str] = {
-    "Unreachable Location",
-    "Forgotten Cave 2",
-    "Hall Of Memories",
-    "Library Alcove Ledge",
-    "Library Bottom",
-    "Library Entrance",
-    "Library Irisu",
-    "Library Mid Lower",
-    "Library Mid Upper",
-    "Sysint2 Egg Room",
-    "Sysint2 End",
-    "Sysint2 Start",
-    "Item Blessed",
-    "Item Auto Trigger",
-    "Item Hitbox Down",
-    "Item Carrot Shooter",
-    "Item Cyber Flower",
-    "Item Egg Rumi",
-    "Item Egg Library",
-    "Item Egg Memories Sysint",
-    "Item Egg Memories Ravine",
-    "Item Egg Memories Cars Room",
-    "Item Egg Sysint2",
-    "Item Egg Sysint2 Long Jump"
-}
-
-post_irisu_regions: set[str] = {
-    "Item Ribbon Badge",
-    "Item Erina Badge",
-}
-
-halloween_regions: set[str] = {
-    "Halloween Central",
-    "Halloween Dark Shaft",
-    "Halloween Exit",
-    "Halloween Flooded",
-    "Halloween Past Pillars",
-    "Halloween Pumpkin Hall",
-    "Halloween Upper",
-    "Item Egg Halloween Cicini Room",
-    "Item Egg Halloween Left Pillar",
-    "Item Egg Halloween Mid",
-    "Item Egg Halloween Near Boss",
-    "Item Egg Halloween Past Pillars1",
-    "Item Egg Halloween Past Pillars2",
-    "Item Egg Halloween Right Pillar",
-    "Item Egg Halloween Sw Slide",
-    "Item Egg Halloween Warp Zone",
-    "Item Egg Halloween West"
-}
-
-# Impossible to reach without being on a high enough difficulty
-# TODO: Ensure Library OOB is updated to only be reachable if Sky Island OOB is reachable.
-adv_vhard_regions: set[str] = {
-    "Sky Island Oob",
-}
-
-adv_vhard_post_game_regions: set[str] = {
-    "Library Oob",
-}
 
 class RegionHelper:
     """
@@ -108,6 +23,7 @@ class RegionHelper:
     regions: set[str] = set()
     location_table: dict[str, int]
     unreachable_regions: set[str]
+
 
     def __init__(self, world: RabiRibiWorldBase):
         self.world = world
@@ -119,21 +35,59 @@ class RegionHelper:
 
         self.location_table = setup_locations(self.options)
 
+
     def generate_seed(self):
         generator: MapGenerator = MapGenerator(self.randomizer_data, self.existing_randomizer_args, set(self.location_table.keys()), self.world)
         self.allocation, _ = generator.generate_seed()
 
         self.picked_templates = self.allocation.picked_templates
         self.map_transition_shuffle_order = [self.randomizer_data.walking_left_transitions.index(x) for x in self.allocation.walking_left_transitions]
-        self.start_location = convert_existing_rando_name_to_ap_name(self.allocation.start_location.location)
+        self.start_location = data.get_region_ap_name(self.allocation.start_location.location)
+
 
     def generate_set_seed(self):
-        existing_rando_start_location = convert_ap_name_to_existing_rando_name(self.start_location)
+        self.picked_templates = self.world.picked_templates
+        self.map_transition_shuffle_order = self.world.map_transition_shuffle_order
+        self.start_location = self.world.start_location
+
+        existing_rando_start_location = data.get_region_by_ap_name(self.world.start_location).logic_key
         self.allocation = MapAllocation(self.randomizer_data, self.existing_randomizer_args, self.world.random)
-        self.allocation.construct_set_seed(self.randomizer_data, self.existing_randomizer_args, self.picked_templates, self.map_transition_shuffle_order, existing_rando_start_location)
+        self.allocation.construct_set_seed(
+            self.randomizer_data,
+            self.existing_randomizer_args,
+            self.picked_templates,
+            self.map_transition_shuffle_order,
+            existing_rando_start_location)
+
 
     def _get_region(self, region_name: str):
         return self.multiworld.get_region(region_name, self.player)
+
+
+    def _region_filter(self, region: RegionData) -> bool:
+        if not self.world.is_ut and self.options.knowledge < region.knowledge:
+            return False
+
+        if not self.world.is_ut and self.options.trick_difficulty < region.trick_difficulty:
+            return False
+
+        # Include Plurkwood with UT, as the player could recruit Keke Bunny out of logic
+        if not self.world.is_ut and not bool(self.options.include_plurkwood.value) and region.requires_plurkwood:
+            return False
+
+        if not bool(self.options.include_warp_destination.value) and region.requires_warp_destination:
+            return False
+
+        if not bool(self.options.include_post_game.value) and region.requires_post_game:
+            return False
+
+        if not bool(self.options.include_post_irisu.value) and region.requires_post_irisu:
+            return False
+
+        if not bool(self.options.include_halloween.value) and region.requires_halloween:
+            return False
+        return True
+
 
     def set_regions(self):
         """
@@ -148,42 +102,7 @@ class RegionHelper:
         self.multiworld.regions.append(menu)
         self.regions.add("Menu")
 
-        region_names = self._get_region_name_list()
-
-        # Remove unreachable regions before adding to the graph
-        self.unreachable_regions = set()
-
-        if self.options.knowledge < Knowledge.option_advanced or \
-            self.options.trick_difficulty < TrickDifficulty.option_v_hard or \
-            self.world.is_ut:
-            self.unreachable_regions.update(adv_vhard_regions)
-
-        if self.options.knowledge < Knowledge.option_advanced or \
-            self.options.trick_difficulty < TrickDifficulty.option_v_hard or \
-            not self.options.include_post_game or \
-            not self.world.is_ut:
-            self.unreachable_regions.update(adv_vhard_post_game_regions)
-
-        # Include Plurkwood with UT, as the player could recruit Keke Bunny out of logic
-        if not self.options.include_plurkwood and \
-            not self.world.is_ut:
-            self.unreachable_regions.update(plurkwood_regions)
-
-        if not self.options.include_warp_destination and \
-            not self.options.include_post_game and \
-            not self.options.include_post_irisu:
-            self.unreachable_regions.update(warp_destination_regions)
-
-        if not self.options.include_post_game and not self.options.include_post_irisu:
-            self.unreachable_regions.update(post_game_regions)
-
-        if not self.options.include_post_irisu:
-            self.unreachable_regions.update(post_irisu_regions)
-
-        if not self.options.include_halloween:
-            self.unreachable_regions.update(halloween_regions)
-
-        region_names = [r for r in region_names if r not in self.unreachable_regions]
+        region_names = [region.name for region in data.regions if self._region_filter]
 
         for name in region_names:
             region = Region(name, self.player, self.multiworld)
@@ -199,31 +118,55 @@ class RegionHelper:
         :returns: None
         """
         self.multiworld.get_region("Menu", self.player).connect(self._get_region(self.start_location))
-    
-        edge_constraints: list[GraphEdge] = self.allocation.edges
-
         added_exits: set[str] = set()
 
-        for edge in edge_constraints:
-            rule = convert_existing_rando_rule_to_ap_rule(edge.satisfied_expr, self.player, self.regions, self.options)
-            from_location = convert_existing_rando_name_to_ap_name(edge.from_location)
-            to_location = convert_existing_rando_name_to_ap_name(edge.to_location)
+        # Add Map Transitions
+        for (idx, x) in enumerate(self.map_transition_shuffle_order):
+            left = self.randomizer_data.walking_left_transitions[x]
+            right = self.randomizer_data.walking_right_transitions[idx]
+            left_name = data.get_region_by_logic_key(left.origin_location).name
+            right_name = data.get_region_by_logic_key(right.origin_location).name
 
-            if from_location in self.unreachable_regions or to_location in self.unreachable_regions:
-                continue
+            ltr_entrance = f'{left_name} -> {right_name}'
+            if ltr_entrance not in added_exits:
+                added_exits.add(ltr_entrance)
+                self._get_region(left_name).add_exits([right_name])
 
-            if from_location == to_location:
-                continue
+            rtl_entrance = f'{right_name} -> {left_name}'
+            if rtl_entrance not in added_exits:
+                self._get_region(right_name).add_exits([left_name])
+                added_exits.add(rtl_entrance)
 
-            entrance_name = f'{from_location} -> {to_location}'
+        # Parse logic into Rule Builder rules
+        parse_connections()
 
-            if entrance_name in added_exits:
-                self.world.set_rule(self.multiworld.get_entrance(entrance_name, self.player), rule)
-            else:
-                self._get_region(from_location).add_exits([to_location], {
-                    to_location: rule
-                })
-                added_exits.add(entrance_name)
+        changes = {
+            f"{change.from_region} -> {change.to_region}": change
+            for constraint in data.constraints
+            for change in constraint.changes
+            if constraint.logic_key in self.picked_templates
+        }
+
+        for region in data.regions:
+            from_location = region.name
+            for to_location, default_rule in region.connections.items():
+                if from_location not in self.regions or to_location not in self.regions:
+                    continue
+
+                if from_location == to_location:
+                    continue
+
+                entrance_name = f'{from_location} -> {to_location}'
+                rule = changes[entrance_name].rule if entrance_name in changes else default_rule
+
+                if entrance_name in added_exits:
+                    self.world.set_rule(self.multiworld.get_entrance(entrance_name, self.player), rule)
+                else:
+                    self._get_region(from_location).add_exits([to_location], {
+                        to_location: rule
+                    })
+                    added_exits.add(entrance_name)
+
 
     def set_locations(self):
         """
@@ -240,12 +183,14 @@ class RegionHelper:
         found_locations = set()
 
         for location in existing_randomizer_locations:
-            # Note that location rules are always baked into the entry / exit requirements of the region.
-            # Its done this way because this is the way the original randomizer did it.
-            # Items which have an access requirement specific to that region have their own region node.
-            location_name = convert_existing_rando_name_to_ap_name(location.item)
-            region_name = f"Item {location_name}" if f"Item {location_name}" in self.regions else \
-                convert_existing_rando_name_to_ap_name(location.from_location)
+            # Note that access rules are always attached to a region, not to a location.
+            # If a location requires access rules, a separate region is created to contain the location.
+            # This is for two reasons:
+            # - The access rules are directly parsed from the existing randomizer, which handles logic this way.
+            # - Some locations are treated as regions, as there are multiple ways to reach these locations.
+            location_data = data.get_location_by_logic_key(location.item)
+            location_name = location_data.name
+            region_name = location_data.name if location_data.has_region else data.get_region_ap_name(location.from_location)
 
             if (location_name not in self.location_table):
                 continue
@@ -266,9 +211,10 @@ class RegionHelper:
 
         return total_locations
 
+
     def set_events(self):
-        self.add_event("Boost Unlock", LocationName.beach_main)
-        self.add_event("Shop Access", LocationName.town_shop)
+        self.add_event("Boost Unlocked", LocationName.beach_main)
+        self.add_event("Shop Reachable", LocationName.town_shop)
 
         self.add_event(ItemName.ashuri_2, LocationName.riverbank_level3)
         self.add_event(ItemName.cocoa_1, LocationName.forest_cocoa_room)
@@ -282,55 +228,58 @@ class RegionHelper:
         self.add_event(ItemName.aruraune_recruit, LocationName.forest_night_west)
         self.add_event(ItemName.vanilla_recruit, LocationName.sky_bridge_east_lower)
 
-        self.add_event(ItemName.cocoa_recruit, LocationName.cave_cocoa, logic.can_recruit_cocoa)
-        self.add_event(ItemName.ashuri_recruit, LocationName.spectral_west, logic.can_recruit_ashuri)
-        self.add_event(ItemName.saya_recruit, LocationName.evernight_saya, logic.can_recruit_saya)
-        self.add_event(ItemName.nieve_recruit, LocationName.palace_level_5, logic.can_recruit_nieve_and_nixie)
-        self.add_event(ItemName.nixie_recruit, LocationName.icy_summit_nixie, logic.can_recruit_nieve_and_nixie)
-        self.add_event(ItemName.seana_recruit, LocationName.park_town_entrance, logic.can_recruit_seana)
-        self.add_event(ItemName.lilith_recruit, LocationName.sky_island_main, logic.can_recruit_lilith)
-        self.add_event(ItemName.chocolate_recruit, LocationName.ravine_chocolate, logic.can_recruit_chocolate)
-        self.add_event(ItemName.kotri_recruit, LocationName.volcanic_main, logic.can_recruit_kotri)
+        self.add_event(ItemName.cocoa_recruit, LocationName.cave_cocoa, can_recruit_cocoa)
+        self.add_event(ItemName.ashuri_recruit, LocationName.spectral_west, can_recruit_ashuri)
+        self.add_event(ItemName.saya_recruit, LocationName.evernight_saya, can_recruit_saya)
+        self.add_event(ItemName.nieve_recruit, LocationName.palace_level_5, can_recruit_nieve_and_nixie)
+        self.add_event(ItemName.nixie_recruit, LocationName.icy_summit_nixie, can_recruit_nieve_and_nixie)
+        self.add_event(ItemName.seana_recruit, LocationName.park_town_entrance, can_recruit_seana)
+        self.add_event(ItemName.lilith_recruit, LocationName.sky_island_main, can_recruit_lilith)
+        self.add_event(ItemName.chocolate_recruit, LocationName.ravine_chocolate, can_recruit_chocolate)
+        self.add_event(ItemName.kotri_recruit, LocationName.volcanic_main, can_recruit_kotri)
 
         # Note: While out of logic, the player could go to Plurkwood to recruit Keke Bunny
         if self.options.include_plurkwood or self.world.is_ut:
-            self.add_event(ItemName.keke_bunny_recruit, LocationName.plurkwood_main, logic.can_recruit_keke_bunny)
+            self.add_event(ItemName.keke_bunny_recruit, LocationName.plurkwood_main, can_recruit_keke_bunny)
 
         self.add_event("Chapter 1", LocationName.town_main)
-        self.add_event("Chapter 2", LocationName.town_main, logic.can_reach_chapter_2)
-        self.add_event("Chapter 3", LocationName.town_main, logic.can_reach_chapter_3)
-        self.add_event("Chapter 4", LocationName.town_main, logic.can_reach_chapter_4)
-        self.add_event("Chapter 5", LocationName.town_main, logic.can_reach_chapter_5)
+        self.add_event("Chapter 2", LocationName.town_main, can_reach_chapter_2)
+        self.add_event("Chapter 3", LocationName.town_main, can_reach_chapter_3)
+        self.add_event("Chapter 4", LocationName.town_main, can_reach_chapter_4)
+        self.add_event("Chapter 5", LocationName.town_main, can_reach_chapter_5)
 
         if self.options.include_post_game.value or self.options.include_post_irisu.value:
             self.add_event(ItemName.miriam_recruit, LocationName.hall_of_memories)
             self.add_event(ItemName.rumi_recruit, LocationName.forgotten_cave_2)
-            self.add_event(ItemName.irisu_recruit, LocationName.library_irisu, logic.can_recruit_irisu)
-            self.add_event("Chapter 6", LocationName.town_main, logic.can_reach_chapter_6)
-            self.add_event("Chapter 7", LocationName.town_main, logic.can_reach_chapter_7)
+            self.add_event(ItemName.irisu_recruit, LocationName.library_irisu, can_recruit_irisu)
+            self.add_event("Chapter 6", LocationName.town_main, can_reach_chapter_6)
+            self.add_event("Chapter 7", LocationName.town_main, can_reach_chapter_7)
 
-    def add_event(self, event_name: str, location_name: str, rule: Optional[Rule] = None):
+
+    def add_event(self, event_name: str, region_key: str, rule: Rule| Macro = rules.True_()):
         """Places a locked item to represent an in-game event."""
-        event = RabiRibiLocation(self.player, event_name, None, self._get_region(location_name))
+        region_name = data.get_region_ap_name(region_key)
+        event = RabiRibiLocation(self.player, event_name, None, self._get_region(region_name))
         event.place_locked_item(RabiRibiItem(event_name, ItemClassification.progression, None, self.player))
-        self._get_region(location_name).locations.append(event)
+        self._get_region(region_name).locations.append(event)
         if rule is not None:
             self.world.set_rule(event, rule)
+
 
     def configure_slot_data(self):
         self.world.picked_templates = [template.name for template in self.allocation.picked_templates]
         self.world.map_transition_shuffle_order = self.map_transition_shuffle_order
         self.world.start_location = self.start_location
 
+
     def configure_region_spoiler_log_data(self):
         self.world.map_transition_shuffle_spoiler = []
         for (idx, x) in enumerate(self.map_transition_shuffle_order):
             left = self.randomizer_data.walking_left_transitions[x]
             right = self.randomizer_data.walking_right_transitions[idx]
-            left_name = convert_existing_rando_name_to_ap_name(left.origin_location)
-            right_name = convert_existing_rando_name_to_ap_name(right.origin_location)
-            self.world.map_transition_shuffle_spoiler.append(f'{left_name} <=> {right_name}')
+            left_name = data.get_region_by_logic_key(left.origin_location).name
+            right_name = data.get_region_by_logic_key(right.origin_location).name
 
-    def _get_region_name_list(self):
-        return [convert_existing_rando_name_to_ap_name(name) \
-            for name in self.randomizer_data.graph_vertices]
+            # Left and Right are the walking directions
+            # meaning that the walking right region is left of the walking left region
+            self.world.map_transition_shuffle_spoiler.append(f'{right_name} <=> {left_name}')
