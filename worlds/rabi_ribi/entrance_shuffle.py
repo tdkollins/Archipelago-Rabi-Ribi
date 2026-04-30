@@ -37,7 +37,7 @@ class MapAllocation(Allocation):
         # Choose Starting Location
         self.choose_starting_location(data, settings)
 
-    def construct_set_seed(self, data, settings, picked_templates: list[str], map_transition_shuffle_order: list[int], start_location: str):
+    def construct_set_seed(self, data, settings, picked_templates: set[str], map_transition_shuffle_order: list[int], start_location: str):
         self.map_modifications = list(data.default_map_modifications)
 
         # Apply the selected templates for the graph

@@ -787,7 +787,7 @@
     "name": "Warp Destination - Hospital",
     "logic_key": "WARP_DESTINATION_HOSPITAL",
     "region": "Warp Destination",
-    "requires_warp_destination": true
+    "requires_post_game": true
   },
   {
     "name": "Warp Destination - Outside Area",

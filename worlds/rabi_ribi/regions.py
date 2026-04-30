@@ -23,7 +23,7 @@ class RegionHelper:
     regions: set[str] = set()
     location_table: dict[str, int]
     unreachable_regions: set[str]
-
+    picked_templates: set[str]
 
     def __init__(self, world: RabiRibiWorldBase):
         self.world = world
@@ -40,13 +40,13 @@ class RegionHelper:
         generator: MapGenerator = MapGenerator(self.randomizer_data, self.existing_randomizer_args, set(self.location_table.keys()), self.world)
         self.allocation, _ = generator.generate_seed()
 
-        self.picked_templates = self.allocation.picked_templates
+        self.picked_templates = { template.name for template in self.allocation.picked_templates }
         self.map_transition_shuffle_order = [self.randomizer_data.walking_left_transitions.index(x) for x in self.allocation.walking_left_transitions]
         self.start_location = data.get_region_ap_name(self.allocation.start_location.location)
 
 
     def generate_set_seed(self):
-        self.picked_templates = self.world.picked_templates
+        self.picked_templates = set(self.world.picked_templates)
         self.map_transition_shuffle_order = self.world.map_transition_shuffle_order
         self.start_location = self.world.start_location
 
@@ -102,7 +102,7 @@ class RegionHelper:
         self.multiworld.regions.append(menu)
         self.regions.add("Menu")
 
-        region_names = [region.name for region in data.regions if self._region_filter]
+        region_names = [region.name for region in data.regions if self._region_filter(region)]
 
         for name in region_names:
             region = Region(name, self.player, self.multiworld)
@@ -159,12 +159,9 @@ class RegionHelper:
                 entrance_name = f'{from_location} -> {to_location}'
                 rule = changes[entrance_name].rule if entrance_name in changes else default_rule
 
-                if entrance_name in added_exits:
-                    self.world.set_rule(self.multiworld.get_entrance(entrance_name, self.player), rule)
-                else:
-                    self._get_region(from_location).add_exits([to_location], {
-                        to_location: rule
-                    })
+                # Ignore entrances already added by map transitions
+                if entrance_name not in added_exits:
+                    self._get_region(from_location).add_exits([to_location], { to_location: rule })
                     added_exits.add(entrance_name)
 
 
