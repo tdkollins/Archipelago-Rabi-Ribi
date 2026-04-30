@@ -78,7 +78,7 @@ class RegionHelper:
         if not bool(self.options.include_warp_destination.value) and region.requires_warp_destination:
             return False
 
-        if not bool(self.options.include_post_game.value) and region.requires_post_game:
+        if not (bool(self.options.include_post_game.value) or bool(self.options.include_post_irisu.value)) and region.requires_post_game:
             return False
 
         if not bool(self.options.include_post_irisu.value) and region.requires_post_irisu:
@@ -149,11 +149,11 @@ class RegionHelper:
 
         for region in data.regions:
             from_location = region.name
-            for to_location, default_rule in region.connections.items():
-                if from_location not in self.regions or to_location not in self.regions:
+            if from_location not in self.regions:
                     continue
 
-                if from_location == to_location:
+            for to_location, default_rule in region.connections.items():
+                if to_location not in self.regions:
                     continue
 
                 entrance_name = f'{from_location} -> {to_location}'
