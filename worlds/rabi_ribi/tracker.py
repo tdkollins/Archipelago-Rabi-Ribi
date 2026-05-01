@@ -160,11 +160,15 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
             path.reverse()
             for p in path:
                 rule_json = rule_to_json(p.access_rule, state, indent="    ")
-                messages.append({"type": "entrance_name", "text": p.name, "player": self.player})
+                messages.extend(
+                    [
+                        {"type": "entrance_name", "text": p.name, "player": self.player},
+                        {"type": "text", "text": "\n"},
+                    ]
+                )
                 if len(rule_json) > 0:
                     messages.extend(
                         [
-                            {"type": "text", "text": "\n"},
                             *rule_json,
                             {"type": "text", "text": "\n"},
                         ]
