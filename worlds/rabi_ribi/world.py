@@ -6,7 +6,7 @@ import logging
 from collections import defaultdict
 from itertools import chain
 from typing import Any, ClassVar, Optional, TextIO, override
-from BaseClasses import ItemClassification, MultiWorld
+from BaseClasses import ItemClassification, Location, MultiWorld
 from Fill import swap_location_item
 from Options import OptionError
 from worlds.AutoWorld import WebWorld
@@ -202,13 +202,13 @@ class RabiRibiWorld(RabiRibiUTWorld):
             world.player for world in multiworld.get_game_worlds(GAME_NAME)
             if isinstance(world, RabiRibiWorld) and world.options.encourage_eggs_in_late_spheres.value
         ])
-        rr_player_spheres = defaultdict(list)
+        rr_player_spheres: defaultdict[int, list[list[Location]]] = defaultdict(list)
         for sphere in multiworld.get_spheres():
             # For minimal accessibility, get_spheres() returns an empty sphere
             # before returning a sphere containing unreachable locations
             if len(sphere) == 0:
                 break
-            new_player_spheres = defaultdict(list)
+            new_player_spheres: defaultdict[int, list[Location]] = defaultdict(list)
             for location in sphere:
                 if location.game == GAME_NAME and location.player in worlds_with_option_enabled:
                     new_player_spheres[location.player].append(location)
@@ -217,17 +217,24 @@ class RabiRibiWorld(RabiRibiUTWorld):
         for player, spheres in rr_player_spheres.items():
             first_half_of_spheres = spheres[:len(spheres)//2]
             second_half_of_spheres = spheres[len(spheres)//2:]
-            egg_locations_to_swap = []
-            swappable_pool = []
+            egg_locations_to_swap: list[Location] = []
+            swappable_pool: list[Location] = []
             for sphere in first_half_of_spheres:
                 for location in sphere:
-                    if location.item.name == ItemName.easter_egg:
+                    assert location.item is not None
+                    if (location.item.name == ItemName.easter_egg):
                         egg_locations_to_swap.append(location)
             for sphere in second_half_of_spheres:
                 for location in sphere:
+                    assert location.item is not None
                     if location.item.classification == ItemClassification.filler:
                         swappable_pool.append(location)
-            multiworld.random.shuffle(swappable_pool)
+            # As locations are found in spheres, which are unordered sets,
+            # we need to sort them before shuffling and swapping
+            # for deterministic behavior.
+            egg_locations_to_swap.sort()
+            swappable_pool.sort()
+            multiworld.worlds[player].random.shuffle(swappable_pool)
             for old_position, new_position in zip(egg_locations_to_swap, swappable_pool):
                 swap_location_item(old_position, new_position, check_locked=False)
 
