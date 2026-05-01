@@ -20,7 +20,7 @@ class RegionHelper:
     This class provides methods associated with defining and connecting regions, locations,
     and the access rules for those regions and locations.
     """
-    regions: set[str] = set()
+    regions: set[str]
     location_table: dict[str, int]
     unreachable_regions: set[str]
     picked_templates: set[str]
@@ -33,7 +33,9 @@ class RegionHelper:
         self.existing_randomizer_args: Any = self.world.existing_randomizer_args
         self.randomizer_data = self.world.randomizer_data
 
+        self.regions = { region.name for region in data.regions if self._region_filter(region) }
         self.location_table = setup_locations(self.options)
+
 
 
     def generate_seed(self):
@@ -61,7 +63,7 @@ class RegionHelper:
 
 
     def _get_region(self, region_name: str):
-        return self.multiworld.get_region(region_name, self.player)
+        return self.world.get_region(region_name)
 
 
     def _region_filter(self, region: RegionData) -> bool:
@@ -100,14 +102,10 @@ class RegionHelper:
         """
         menu = Region("Menu", self.player, self.multiworld)
         self.multiworld.regions.append(menu)
-        self.regions.add("Menu")
 
-        region_names = [region.name for region in data.regions if self._region_filter(region)]
-
-        for name in region_names:
+        for name in self.regions:
             region = Region(name, self.player, self.multiworld)
             self.multiworld.regions.append(region)
-            self.regions.add(name)
 
 
     def connect_regions(self):
@@ -117,7 +115,7 @@ class RegionHelper:
 
         :returns: None
         """
-        self.multiworld.get_region("Menu", self.player).connect(self._get_region(self.start_location))
+        self.multiworld.get_region("Menu", self.player).connect(self.world.get_region(self.start_location))
         added_exits: set[str] = set()
 
         # Add Map Transitions
@@ -147,10 +145,10 @@ class RegionHelper:
             if constraint.logic_key in self.picked_templates
         }
 
-        for region in data.regions:
+        for region in [r for r in data.regions if self._region_filter(r)]:
             from_location = region.name
             if from_location not in self.regions:
-                    continue
+                continue
 
             for to_location, default_rule in region.connections.items():
                 if to_location not in self.regions:
