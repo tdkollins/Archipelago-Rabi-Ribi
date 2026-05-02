@@ -25,7 +25,6 @@ from worlds.rabi_ribi.locations import all_locations
 from worlds.rabi_ribi.names import ItemName
 from worlds.rabi_ribi.options import AttackMode
 from worlds.rabi_ribi.utility import (
-    CLIENT_VERSION,
     load_text_file,
     convert_existing_rando_name_to_ap_name
 )
@@ -158,7 +157,7 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
 
     def make_gui(self):
         ui = super().make_gui()
-        ui.base_title = f"Rabi-Ribi Client v{CLIENT_VERSION.as_simple_string()}"
+        ui.base_title = f"Rabi-Ribi Client v{RabiRibiWorld.world_version.as_simple_string()}"
         if tracker_loaded:
             ui.base_title += f" | UT {UT_VERSION}"
 
