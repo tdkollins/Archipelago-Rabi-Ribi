@@ -24,7 +24,7 @@ advanced = Macro(
 )
 
 obscure = Macro(
-    KnowledgeRule(Knowledge.option_advanced),
+    KnowledgeRule(Knowledge.option_obscure),
     "OBS",
     "Assumes the player has knowledge of obscure tricks"
 )
