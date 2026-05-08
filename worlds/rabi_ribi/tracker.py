@@ -4,11 +4,11 @@ from BaseClasses import CollectionRule, CollectionState, Entrance, Location, Reg
 from NetUtils import JSONMessagePart
 from Options import Option
 from Utils import get_fuzzy_results, get_intended_text
-from rule_builder.rules import Rule
+from rule_builder.rules import And, CanReachRegion, Has, HasAll, HasAny, HasGroupUnique, Or, Rule
 from worlds.AutoWorld import World
 from .bases import RabiRibiWorldBase
 from .constants import BASE_ID
-from .custom_rules import Macro
+from .custom_rules import GlitchedLogicMixIn, LogicState, Macro, evaluate_rule, get_color, get_indent, get_suffix
 from .data import data
 from .items import item_data_table
 from .locations import all_locations
@@ -61,14 +61,233 @@ poptracker_name_mapping: dict[str, int] = {location.poptracker_name: BASE_ID + l
 def rule_to_json(
     rule: CollectionRule | Rule.Resolved | None,
     state: CollectionState,
-    indent: str = "",
+    glitched_state: CollectionState,
+    depth: int = 0,
 ) -> list[JSONMessagePart]:
     messages: list[JSONMessagePart] = []
-    if isinstance(rule, Rule.Resolved) and not rule.always_true:
-        if indent:
-            messages.append({"type": "text", "text": indent})
-        messages.extend(rule.explain_json(state))
+    if isinstance(rule, GlitchedLogicMixIn):
+        messages.extend(rule.explain_rule_glitched(state, glitched_state, depth))
+    elif isinstance(rule, And.Resolved):
+        messages.extend(explain_rule_and(rule, state, glitched_state, depth))
+    elif isinstance(rule, Or.Resolved):
+        messages.extend(explain_rule_or(rule, state, glitched_state, depth))
+    elif isinstance(rule, Has.Resolved):
+        messages.extend(explain_rule_has(rule, state, glitched_state, depth))
+    elif isinstance(rule, HasAll.Resolved):
+        messages.extend(explain_rule_has_all(rule, state, glitched_state, depth))
+    elif isinstance(rule, HasAny.Resolved):
+        messages.extend(explain_rule_has_any(rule, state, glitched_state, depth))
+    elif isinstance(rule, CanReachRegion.Resolved):
+        messages.extend(explain_rule_can_reach_region(rule, state, glitched_state, depth))
+    elif isinstance(rule, HasGroupUnique.Resolved):
+        messages.extend(explain_rule_has_group_unique(rule, state, glitched_state, depth))
     return messages
+
+def explain_rule_and(rule:And.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
+    result = evaluate_rule(rule, state, glitched_state)
+    indent = get_indent(depth)
+    suffix = get_suffix(result)
+    messages: list[JSONMessagePart] = [
+        {"type": "text", "text": indent},
+        {"type": "text", "text": "Missing" if result == LogicState.CannotReach else "Has"},
+        *suffix,
+        {"type": "color", "color": "cyan", "text": " some" if result == LogicState.CannotReach else " all"},
+        {"type": "text", "text": " of:\n"},
+    ]
+    for idx, child in enumerate(rule.children):
+        messages.extend(rule_to_json(child, state, glitched_state, depth + 1))
+        if idx < (len(rule.children) - 1):
+            messages.append({"type": "text", "text": "\n"})
+    return messages
+
+
+def explain_rule_or(rule: Or.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
+    result = evaluate_rule(rule, state, glitched_state)
+    indent = get_indent(depth)
+    suffix = get_suffix(result)
+    messages: list[JSONMessagePart] = [
+        {"type": "text", "text": indent},
+        {"type": "text", "text": "Missing" if result == LogicState.CannotReach else "Has"},
+        *suffix,
+        {"type": "color", "color": "cyan", "text": " all" if result == LogicState.CannotReach else " some"},
+        {"type": "text", "text": " of:\n"},
+    ]
+    for idx, child in enumerate(rule.children):
+        messages.extend(rule_to_json(child, state, glitched_state, depth + 1))
+        if idx < (len(rule.children) - 1):
+            messages.append({"type": "text", "text": "\n"})
+    return messages
+
+def explain_rule_has(rule: Has.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
+    result = evaluate_rule(rule, state, glitched_state)
+    indent = get_indent(depth)
+    verb = "Missing " if result == LogicState.CannotReach else "Has "
+    messages: list[JSONMessagePart] = [
+        {"type": "text", "text": indent},
+        {"type": "text", "text": verb}
+        ]
+    if rule.count > 1:
+        messages.append({"type": "color", "color": "cyan", "text": str(rule.count)})
+        messages.append({"type": "text", "text": "x "})
+    if state:
+        color = get_color(result)
+        messages.append({"type": "color", "color": color, "text": rule.item_name})
+    else:
+        messages.append({"type": "item_name", "flags": 0b001, "text": rule.item_name, "player": rule.player})
+    messages.extend(get_suffix(result))
+    return messages
+
+def explain_rule_has_all(rule: HasAll.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
+    result = evaluate_rule(rule, state, glitched_state)
+    indent = get_indent(depth)
+    child_indent = get_indent(depth + 1)
+    messages: list[JSONMessagePart] = []
+    if result == LogicState.Explain:
+        messages = [
+            {"type": "text", "text": indent},
+            {"type": "text", "text": "Has "},
+            {"type": "color", "color": "cyan", "text": "all"},
+            {"type": "text", "text": " of ("},
+        ]
+        for i, item in enumerate(rule.item_names):
+            if i > 0:
+                messages.append({"type": "text", "text": ", "})
+            messages.append({"type": "item_name", "flags": 0b001, "text": item, "player": rule.player})
+        messages.append({"type": "text", "text": ")"})
+        return messages
+
+    assert state is not None
+    assert glitched_state is not None
+    found = [item for item in rule.item_names if state.has(item, rule.player)]
+    out_of_logic = [item for item in rule.item_names if glitched_state.has(item, rule.player)]
+    out_of_logic_only = [item for item in out_of_logic if item not in found]
+    missing = [item for item in rule.item_names if item not in found] \
+        if result == LogicState.InLogic \
+        else [item for item in rule.item_names if item not in out_of_logic]
+
+    messages = [
+        {"type": "text", "text": indent},
+        {"type": "text", "text": "Has " if not missing else "Missing "},
+        {"type": "color", "color": "cyan", "text": "all" if not missing else "some"},
+        {"type": "text", "text": " of\n"},
+    ]
+    if found:
+        messages.append({"type": "text", "text": f"{child_indent}Found: "})
+        for i, item in enumerate(found):
+            if i > 0:
+                messages.append({"type": "text", "text": ", "})
+            messages.append({"type": "color", "color": "green", "text": item})
+        if missing or out_of_logic_only:
+            messages.append({"type": "text", "text": "\n"})
+
+    if out_of_logic_only:
+        messages.append({"type": "text", "text": f"{child_indent}Out of Logic: "})
+        for i, item in enumerate(out_of_logic_only):
+            if i > 0:
+                messages.append({"type": "text", "text": ", "})
+            messages.append({"type": "color", "color": "yellow", "text": item})
+        if missing:
+            messages.append({"type": "text", "text": "\n"})
+
+    if missing:
+        messages.append({"type": "text", "text": f"{child_indent}Missing: "})
+        for i, item in enumerate(missing):
+            if i > 0:
+                messages.append({"type": "text", "text": ", "})
+            messages.append({"type": "color", "color": "salmon", "text": item})
+    return messages
+
+def explain_rule_has_any(rule: HasAny.Resolved, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
+    result = evaluate_rule(rule, state, glitched_state)
+    indent = get_indent(depth)
+    child_indent = get_indent(depth + 1)
+    messages: list[JSONMessagePart] = []
+    if result == LogicState.Explain:
+        messages = [
+            {"type": "text", "text": indent},
+            {"type": "text", "text": "Has "},
+            {"type": "color", "color": "cyan", "text": "any"},
+            {"type": "text", "text": " of ("},
+        ]
+        for i, item in enumerate(rule.item_names):
+            if i > 0:
+                messages.append({"type": "text", "text": ", "})
+            messages.append({"type": "item_name", "flags": 0b001, "text": item, "player": rule.player})
+        messages.append({"type": "text", "text": ")"})
+        return messages
+
+    assert state is not None
+    assert glitched_state is not None
+    found = [item for item in rule.item_names if state.has(item, rule.player)]
+    out_of_logic = [item for item in rule.item_names if glitched_state.has(item, rule.player)]
+    out_of_logic_only = [item for item in out_of_logic if item not in found]
+    missing = [item for item in rule.item_names if item not in found] \
+        if result == LogicState.InLogic \
+        else [item for item in rule.item_names if item not in out_of_logic]
+    messages = [
+        {"type": "text", "text": indent},
+        {"type": "text", "text": "Has " if out_of_logic else "Missing "},
+        {"type": "color", "color": "cyan", "text": "some" if out_of_logic else "all"},
+        {"type": "text", "text": " of:\n"},
+    ]
+    if found:
+        messages.append({"type": "text", "text": f"{child_indent}Found: "})
+        for i, item in enumerate(found):
+            if i > 0:
+                messages.append({"type": "text", "text": ", "})
+            messages.append({"type": "color", "color": "green", "text": item})
+        if missing or out_of_logic_only:
+            messages.append({"type": "text", "text": "\n"})
+
+    if out_of_logic_only:
+        messages.append({"type": "text", "text": f"{child_indent}Out of Logic: "})
+        for i, item in enumerate(out_of_logic_only):
+            if i > 0:
+                messages.append({"type": "text", "text": ", "})
+            messages.append({"type": "color", "color": "yellow", "text": item})
+        if missing:
+            messages.append({"type": "text", "text": "\n"})
+
+    if missing:
+        messages.append({"type": "text", "text": f"{child_indent}Missing: "})
+        for i, item in enumerate(missing):
+            if i > 0:
+                messages.append({"type": "text", "text": ", "})
+            messages.append({"type": "color", "color": "salmon", "text": item})
+    return messages
+
+def explain_rule_can_reach_region(rule: CanReachRegion.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
+    result = evaluate_rule(rule, state, glitched_state)
+    indent = get_indent(depth)
+    verb = "Cannot reach" if result == LogicState.OutOfLogic else "Reached"
+    return [
+        {"type": "text", "text": indent},
+        {"type": "text", "text": f"{verb} region "},
+        {"type": "color", "color": get_color(result), "text": rule.region_name},
+        *get_suffix(result)
+    ]
+
+def explain_rule_has_group_unique(rule: HasGroupUnique.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
+    result = evaluate_rule(rule, state, glitched_state)
+    indent = get_indent(depth)
+    body: list[JSONMessagePart] = [{"type": "text", "text": "Has "}]
+    if result == LogicState.Explain:
+        body.append({"type": "color", "color": "cyan", "text": str(rule.count)})
+    else:
+        assert state is not None
+        assert glitched_state is not None
+        if result == LogicState.OutOfLogic:
+            count = glitched_state.count_group_unique(rule.item_name_group, rule.player)
+        else:
+            count = state.count_group_unique(rule.item_name_group, rule.player)
+        body.append({"type": "color", "color": get_color(result), "text": f"{count}/{rule.count}"})
+    body.append({"type": "text", "text": " unique items from "})
+    body.append({"type": "color", "color": "cyan", "text": rule.item_name_group})
+    return [
+        {"type": "text", "text": indent},
+        *body,
+        *get_suffix(result)
+    ]
 
 class RabiRibiUTWorld(RabiRibiWorldBase):
     tracker_world = {
@@ -135,15 +354,16 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
                 return [{"type": "text", "text": response}]
 
         in_logic = True
+        glitched_state = state.copy()
+        glitched_state.collect(self.create_item(self.glitches_item_name))
         if (goal_location and not goal_location.can_reach(state)) or (
             goal_region not in state.path and goal_region.name != self.origin_region_name
         ):
-            state.collect(self.create_item(self.glitches_item_name))
             in_logic = False
 
-        if goal_location and not goal_location.can_reach(state):
+        if goal_location and not goal_location.can_reach(glitched_state):
             return [{"type": "text", "text": f"Location {goal_location.name} cannot be reached"}]
-        if goal_region not in state.path and goal_region.name != self.origin_region_name:
+        if goal_region not in glitched_state.path and goal_region.name != self.origin_region_name:
             return [{"type": "text", "text": f"Region {goal_region.name} cannot be reached"}]
 
         messages: list[JSONMessagePart] = [
@@ -151,7 +371,7 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
         ]
         if goal_region.name != self.origin_region_name:
             path: list[Entrance] = []
-            name, connection = state.path[goal_region]
+            name, connection = state.path[goal_region] if in_logic else glitched_state.path[goal_region]
             while connection is not None:
                 name, connection = connection
                 if "->" in name or name.endswith(" Portal"):
@@ -159,7 +379,7 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
 
             path.reverse()
             for p in path:
-                rule_json = rule_to_json(p.access_rule, state, indent="    ")
+                rule_json = rule_to_json(p.access_rule, state, glitched_state, 1)
                 messages.extend(
                     [
                         {"type": "entrance_name", "text": p.name, "player": self.player},
@@ -175,6 +395,7 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
                     )
 
         if goal_location:
+            rule_json = rule_to_json(goal_location.access_rule, state, glitched_state, 1)
             messages.extend(
                 [
                     {"type": "text", "text": "-> "},
@@ -183,10 +404,15 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
                         "color": "green" if in_logic else "yellow",
                         "text": goal_location.name,
                     },
-                    {"type": "text", "text": "\n"},
-                    *rule_to_json(goal_location.access_rule, state, indent="    "),
                 ]
             )
+            if len(rule_json) > 0:
+                messages.extend(
+                    [
+                        {"type": "text", "text": "\n"},
+                        *rule_json[:-1],
+                    ]
+                )
 
         return messages
 
@@ -200,6 +426,9 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
             "location": self._explain_location,
             "item": self._explain_item,
         }
+
+        glitched_state = state.copy()
+        glitched_state.collect(self.create_item(self.glitches_item_name))
 
         attempts = list(types_to_try.keys())
         parts = dest_name.split(maxsplit=1)
@@ -216,7 +445,7 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
         max_confidence = 0
         confidence = 0
         for classification in attempts:
-            result, usable, confidence = types_to_try[classification](dest_name, state)
+            result, usable, confidence = types_to_try[classification](dest_name, state, glitched_state)
             if usable:
                 return result
             if confidence > max_confidence:
@@ -225,7 +454,7 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
 
         return best_guess
 
-    def _explain_location(self, location_name: str, state: CollectionState) -> tuple[list[JSONMessagePart], bool, int]:
+    def _explain_location(self, location_name: str, state: CollectionState, glitched_state: CollectionState) -> tuple[list[JSONMessagePart], bool, int]:
         all_location_names = set(self.multiworld.regions.location_cache[self.player])
         guess, usable, response = get_intended_text(location_name, all_location_names)
         if not usable:
@@ -244,12 +473,12 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
         messages.extend(
             [
                 {"type": "text", "text": "\nLogic: "},
-                *rule_to_json(location.access_rule, state),
+                *rule_to_json(location.access_rule, state, glitched_state),
             ]
         )
         return messages, True, 100
 
-    def _explain_region(self, region_name: str, state: CollectionState) -> tuple[list[JSONMessagePart], bool, int]:
+    def _explain_region(self, region_name: str, state: CollectionState, glitched_state: CollectionState) -> tuple[list[JSONMessagePart], bool, int]:
         all_region_names = set(self.multiworld.regions.region_cache[self.player])
         guess, usable, response = get_intended_text(region_name, all_region_names)
         if not usable:
@@ -273,12 +502,12 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
                             "type": "text",
                             "text": f"\n  {entrance.parent_region.name if entrance.parent_region else entrance.name}\n",
                         },
-                        *rule_to_json(entrance.access_rule, state, indent="    "),
+                        *rule_to_json(entrance.access_rule, state, glitched_state, 1),
                     ]
                 )
         return messages, True, 100
 
-    def _explain_item(self, item_name: str, state: CollectionState) -> tuple[list[JSONMessagePart], bool, int]:
+    def _explain_item(self, item_name: str, state: CollectionState, glitched_state: CollectionState) -> tuple[list[JSONMessagePart], bool, int]:
         all_item_names = set(self.item_name_to_id.keys())
         guess, usable, response = get_intended_text(item_name, all_item_names)
         if not usable:
@@ -309,7 +538,7 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
         )
         return messages, True, 100
 
-    def _explain_macro(self, macro_name: str, state: CollectionState) -> tuple[list[JSONMessagePart], bool, int]:
+    def _explain_macro(self, macro_name: str, state: CollectionState, glitched_state: CollectionState) -> tuple[list[JSONMessagePart], bool, int]:
         all_macro_names = set(self.rule_macros.keys())
         if len(all_macro_names) == 0:
             return [{"type": "text", "text": "No macros found!"}], False, 0
@@ -323,6 +552,7 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
         macro_name = guess
         macro = self.rule_macros[macro_name]
         assert isinstance(macro, Macro.Resolved)
+        assert isinstance(macro.child, GlitchedLogicMixIn)
         messages: list[JSONMessagePart] = [
             {"type": "text", "text": "Macro "},
             {"type": "color", "color": "green" if macro(state) else "salmon", "text": macro.name},
@@ -332,7 +562,7 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
         messages.extend(
             [
                 {"type": "text", "text": "\nLogic: "},
-                *macro.child.explain_json(state),
+                *macro.child.explain_rule_glitched(state, glitched_state, 0),
             ]
         )
         return messages, True, 100

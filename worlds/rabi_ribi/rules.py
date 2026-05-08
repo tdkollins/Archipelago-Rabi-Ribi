@@ -2,8 +2,9 @@ from dataclasses import dataclass, field
 import json
 import pkgutil
 import re
+from rule_builder.rules import Rule
 from typing import Any
-from rule_builder import rules
+from . import custom_rules as rules
 from .bases import RabiRibiWorldBase
 from .custom_rules import Macro, TownMemberCountRule, TownMemberCountIrisuRule
 from .data import ConstraintChange, data
@@ -57,17 +58,17 @@ def _read_file_and_convert_to_json(filename: str) -> list[Any]:
     return json.loads(jsondata)
 
 _logic_re: re.Pattern[str] = re.compile('([()&|])')
-def _parse_expression_logic(line: str, current_expression: rules.Rule = rules.True_()):
+def _parse_expression_logic(line: str, current_expression: Rule[RabiRibiWorldBase] = rules.True_()):
     line = line.replace('&&', '&').replace('||', '|')
     matches = (s.strip() for s in _logic_re.split(line))
-    tokens: list[str | Macro | rules.Rule[RabiRibiWorldBase]] = [s for s in matches if isinstance(s, str) and len(s) > 0]
+    tokens: list[str | Macro | Rule[RabiRibiWorldBase]] = [s for s in matches if isinstance(s, str) and len(s) > 0]
     # Stack-based parsing. pop from [tokens], push into [stack]
     # We push an expression into [tokens] if we want to process it next iteration.
     tokens.reverse()
     stack = []
     while len(tokens) > 0:
         next = tokens.pop()
-        if isinstance(next, rules.Rule):
+        if isinstance(next, Rule):
             if len(stack) == 0:
                 stack.append(next)
                 continue
@@ -75,31 +76,32 @@ def _parse_expression_logic(line: str, current_expression: rules.Rule = rules.Tr
             if head == '&':
                 stack.pop()
                 exp = stack.pop()
-                assert isinstance(exp, rules.Rule)
+                assert isinstance(exp, Rule)
                 tokens.append(exp & next)
             elif head == '|':
                 stack.pop()
                 exp = stack.pop()
-                assert isinstance(exp, rules.Rule)
+                assert isinstance(exp, Rule)
                 tokens.append(exp | next)
             else:
                 stack.append(next)
-        elif next in '(&|':
+        elif isinstance(next, str) and next in '(&|':
             stack.append(next)
         elif next == ')':
             exp = stack.pop()
-            isinstance(exp, rules.Rule)
+            isinstance(exp, Rule)
             top = stack.pop()
             assert top == '('
             tokens.append(exp)
         else:
             # Literal parsing
+            assert isinstance(next, str)
             if next.startswith('BACKTRACK_'):
                 # Ignore backtracking in AP, as it does not add new regions
                 # only paths to already visited ones
                 tokens.append(rules.False_())
             elif next == 'current':
-                assert isinstance(current_expression, rules.Rule)
+                assert isinstance(current_expression, Rule)
                 tokens.append(current_expression)
             elif next in rules_by_logic_key:
                 tokens.append(rules_by_logic_key[next])
@@ -226,14 +228,14 @@ can_recruit_irisu = \
     TownMemberCountIrisuRule()
 
 can_reach_chapter_1 = Macro(
-    rules.CanReachRegion[RabiRibiWorldBase](data.get_region_ap_name(LocationName.town_main)),
+    rules.CanReachRegion(data.get_region_ap_name(LocationName.town_main)),
     "Chapter 1",
     "Player can reach Chapter 1"
 )
 
 can_reach_chapter_2 = Macro(
     (
-        rules.CanReachRegion[RabiRibiWorldBase](data.get_region_ap_name(LocationName.town_main))
+        rules.CanReachRegion(data.get_region_ap_name(LocationName.town_main))
         & TownMemberCountRule(2)
     ),
     "Chapter 2",
@@ -242,7 +244,7 @@ can_reach_chapter_2 = Macro(
 
 can_reach_chapter_3 = Macro(
     (
-        rules.CanReachRegion[RabiRibiWorldBase](data.get_region_ap_name(LocationName.town_main))
+        rules.CanReachRegion(data.get_region_ap_name(LocationName.town_main))
         & TownMemberCountRule(4)
     ),
     "Chapter 3",
@@ -251,7 +253,7 @@ can_reach_chapter_3 = Macro(
 
 can_reach_chapter_4 = Macro(
     (
-        rules.CanReachRegion[RabiRibiWorldBase](data.get_region_ap_name(LocationName.town_main))
+        rules.CanReachRegion(data.get_region_ap_name(LocationName.town_main))
         & TownMemberCountRule(7)
     ),
     "Chapter 4",
@@ -260,7 +262,7 @@ can_reach_chapter_4 = Macro(
 
 can_reach_chapter_5 = Macro(
     (
-        rules.CanReachRegion[RabiRibiWorldBase](data.get_region_ap_name(LocationName.town_main))
+        rules.CanReachRegion(data.get_region_ap_name(LocationName.town_main))
         & TownMemberCountRule(10)
     ),
     "Chapter 5",
@@ -274,7 +276,7 @@ can_reach_chapter_6 = Macro(
 )
 
 can_reach_chapter_7 = Macro(
-    rules.Has[RabiRibiWorldBase](ItemName.rumi_recruit),
+    rules.Has(ItemName.rumi_recruit),
     "Chapter 7",
     "Player can reach Chapter 7"
 )

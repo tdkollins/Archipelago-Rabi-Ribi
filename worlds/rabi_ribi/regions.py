@@ -1,7 +1,7 @@
 """This module represents region definitions for Rabi-Ribi"""
 import logging
 
-from typing import Any, Optional
+from typing import Any
 from BaseClasses import Region, ItemClassification
 from rule_builder.rules import Rule
 from .bases import RabiRibiWorldBase
@@ -251,7 +251,7 @@ class RegionHelper:
             self.add_event("Chapter 7", LocationName.town_main, can_reach_chapter_7)
 
 
-    def add_event(self, event_name: str, region_key: str, rule: Rule| Macro = rules.True_()):
+    def add_event(self, event_name: str, region_key: str, rule: Rule[RabiRibiWorldBase] | Macro | None = None):
         """Places a locked item to represent an in-game event."""
         region_name = data.get_region_ap_name(region_key)
         event = RabiRibiLocation(self.player, event_name, None, self._get_region(region_name))
