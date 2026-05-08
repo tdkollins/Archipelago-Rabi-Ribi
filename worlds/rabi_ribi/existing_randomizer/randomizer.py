@@ -1,16 +1,16 @@
 import argparse, random
+
 from . import mapfileio
 from . import musicrandomizer
 from . import backgroundrandomizer
-from ..constants import CLIENT_VERSION
 from .utility import *
 from .generator import Generator
 from .dataparser import RandomizerData
 from .converter import diffgenerator as diffgenerator
 
 def parse_args():
-    # AP Change: Switch to APWorld's versioning
-    args = argparse.ArgumentParser(description='Rabi-Ribi AP Randomizer - %s' % CLIENT_VERSION.as_simple_string())
+    # AP Change: Remove versioning
+    args = argparse.ArgumentParser(description='Rabi-Ribi AP Randomizer')
     args.add_argument('--version', action='store_true', help='Print Randomizer Version')
     args.add_argument('-source-dir', default='original_maps', help='Source directory for original maps. Defaults to original_maps/. Do not make the source dir the output dir.')
     args.add_argument('-output-dir', default='generated_maps', help='Output directory for generated maps. Defaults to generated_maps/. Do not make the source dir the output dir.')

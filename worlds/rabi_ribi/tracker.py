@@ -464,7 +464,6 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
 
         location_name = guess
         location = self.get_location(location_name)
-        location_data = all_locations[location_name]
         messages: list[JSONMessagePart] = [
             {"type": "text", "text": "Location "},
             {"type": "color", "color": "green" if location.can_reach(state) else "salmon", "text": location_name},

@@ -314,13 +314,13 @@ hammer_roll_lv3 = rules.Macro(
 
 darkness = rules.Macro(
     rules.Has(ItemName.light_orb) | darkness_without_light_orb,
-    "Darkness",
+    "Navigate Darkness",
     "Player can navigate dark rooms"
 )
 
 underwater = rules.Macro(
     rules.Has(ItemName.water_orb) | underwater_without_water_orb,
-    "Underwater",
+    "Navigate Underwater",
     "Player can navigate underwater"
 )
 

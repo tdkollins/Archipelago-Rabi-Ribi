@@ -19,7 +19,7 @@ from NetUtils import ClientStatus, NetworkItem
 
 from worlds.AutoWorld import World
 from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
-from worlds.rabi_ribi.constants import CLIENT_VERSION, GAME_NAME
+from worlds.rabi_ribi.constants import GAME_NAME
 from worlds.rabi_ribi.data import data
 from worlds.rabi_ribi.items import event_table, item_groups
 from worlds.rabi_ribi.locations import all_locations
