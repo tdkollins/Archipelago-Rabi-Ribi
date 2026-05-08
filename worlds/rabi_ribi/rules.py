@@ -2,9 +2,8 @@ from dataclasses import dataclass, field
 import json
 import pkgutil
 import re
-from rule_builder.rules import Rule
+from rule_builder import rules
 from typing import Any
-from . import custom_rules as rules
 from .bases import RabiRibiWorldBase
 from .custom_rules import Macro, TownMemberCountRule, TownMemberCountIrisuRule
 from .data import ConstraintChange, data
@@ -58,17 +57,17 @@ def _read_file_and_convert_to_json(filename: str) -> list[Any]:
     return json.loads(jsondata)
 
 _logic_re: re.Pattern[str] = re.compile('([()&|])')
-def _parse_expression_logic(line: str, current_expression: Rule[RabiRibiWorldBase] = rules.True_()):
+def _parse_expression_logic(line: str, current_expression: rules.Rule[RabiRibiWorldBase] = rules.True_()):
     line = line.replace('&&', '&').replace('||', '|')
     matches = (s.strip() for s in _logic_re.split(line))
-    tokens: list[str | Macro | Rule[RabiRibiWorldBase]] = [s for s in matches if isinstance(s, str) and len(s) > 0]
+    tokens: list[str | Macro | rules.Rule[RabiRibiWorldBase]] = [s for s in matches if isinstance(s, str) and len(s) > 0]
     # Stack-based parsing. pop from [tokens], push into [stack]
     # We push an expression into [tokens] if we want to process it next iteration.
     tokens.reverse()
     stack = []
     while len(tokens) > 0:
         next = tokens.pop()
-        if isinstance(next, Rule):
+        if isinstance(next, rules.Rule):
             if len(stack) == 0:
                 stack.append(next)
                 continue
@@ -76,12 +75,12 @@ def _parse_expression_logic(line: str, current_expression: Rule[RabiRibiWorldBas
             if head == '&':
                 stack.pop()
                 exp = stack.pop()
-                assert isinstance(exp, Rule)
+                assert isinstance(exp, rules.Rule)
                 tokens.append(exp & next)
             elif head == '|':
                 stack.pop()
                 exp = stack.pop()
-                assert isinstance(exp, Rule)
+                assert isinstance(exp, rules.Rule)
                 tokens.append(exp | next)
             else:
                 stack.append(next)
@@ -89,7 +88,7 @@ def _parse_expression_logic(line: str, current_expression: Rule[RabiRibiWorldBas
             stack.append(next)
         elif next == ')':
             exp = stack.pop()
-            isinstance(exp, Rule)
+            isinstance(exp, rules.Rule)
             top = stack.pop()
             assert top == '('
             tokens.append(exp)
@@ -101,7 +100,7 @@ def _parse_expression_logic(line: str, current_expression: Rule[RabiRibiWorldBas
                 # only paths to already visited ones
                 tokens.append(rules.False_())
             elif next == 'current':
-                assert isinstance(current_expression, Rule)
+                assert isinstance(current_expression, rules.Rule)
                 tokens.append(current_expression)
             elif next in rules_by_logic_key:
                 tokens.append(rules_by_logic_key[next])

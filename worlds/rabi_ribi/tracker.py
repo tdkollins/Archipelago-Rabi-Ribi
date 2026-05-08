@@ -259,7 +259,7 @@ def explain_rule_has_any(rule: HasAny.Resolved, state: CollectionState | None, g
 def explain_rule_can_reach_region(rule: CanReachRegion.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
     result = evaluate_rule(rule, state, glitched_state)
     indent = get_indent(depth)
-    verb = "Cannot reach" if result == LogicState.OutOfLogic else "Reached"
+    verb = "Cannot reach" if result == LogicState.CannotReach else "Reached"
     return [
         {"type": "text", "text": indent},
         {"type": "text", "text": f"{verb} region "},
@@ -410,7 +410,7 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
                 messages.extend(
                     [
                         {"type": "text", "text": "\n"},
-                        *rule_json[:-1],
+                        *rule_json,
                     ]
                 )
 
@@ -464,9 +464,15 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
 
         location_name = guess
         location = self.get_location(location_name)
+        if location.can_reach(state):
+            color = "green"
+        elif location.can_reach(glitched_state):
+            color = "yellow"
+        else:
+            color = "salmon"
         messages: list[JSONMessagePart] = [
             {"type": "text", "text": "Location "},
-            {"type": "color", "color": "green" if location.can_reach(state) else "salmon", "text": location_name},
+            {"type": "color", "color": color, "text": location_name},
         ]
 
         messages.extend(
@@ -487,23 +493,35 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
 
         region_name = guess
         region = self.get_region(region_name)
-        region_data = data.get_region_by_ap_name(region_name)
+        if region.can_reach(state):
+            color = "green"
+        elif region.can_reach(glitched_state):
+            color = "yellow"
+        else:
+            color = "salmon"
         messages: list[JSONMessagePart] = [
             {"type": "text", "text": "Region "},
-            {"type": "color", "color": "green" if region.can_reach(state) else "salmon", "text": region_name},
+            {"type": "color", "color": color, "text": region_name},
         ]
         if region.entrances:
             messages.append({"type": "text", "text": "\nEntrances:"})
             for entrance in region.entrances:
+                rule_json = rule_to_json(entrance.access_rule, state, glitched_state, 1)
                 messages.extend(
                     [
                         {
                             "type": "text",
-                            "text": f"\n  {entrance.parent_region.name if entrance.parent_region else entrance.name}\n",
+                            "text": f"\n  {entrance.parent_region.name if entrance.parent_region else entrance.name}",
                         },
-                        *rule_to_json(entrance.access_rule, state, glitched_state, 1),
                     ]
                 )
+                if len(rule_json) > 0:
+                    messages.extend(
+                        [
+                            {"type": "text", "text": "\n"},
+                            *rule_json,
+                        ]
+                    )
         return messages, True, 100
 
     def _explain_item(self, item_name: str, state: CollectionState, glitched_state: CollectionState) -> tuple[list[JSONMessagePart], bool, int]:
@@ -550,18 +568,18 @@ class RabiRibiUTWorld(RabiRibiWorldBase):
 
         macro_name = guess
         macro = self.rule_macros[macro_name]
+        result = evaluate_rule(macro, state, glitched_state)
         assert isinstance(macro, Macro.Resolved)
-        assert isinstance(macro.child, GlitchedLogicMixIn)
         messages: list[JSONMessagePart] = [
             {"type": "text", "text": "Macro "},
-            {"type": "color", "color": "green" if macro(state) else "salmon", "text": macro.name},
+            {"type": "color", "color": get_color(result), "text": macro.name},
         ]
         if macro.description:
             messages.append({"type": "text", "text": f"\n{macro.description}"})
         messages.extend(
             [
                 {"type": "text", "text": "\nLogic: "},
-                *macro.child.explain_rule_glitched(state, glitched_state, 0),
+                *rule_to_json(macro.child, state, glitched_state, 0),
             ]
         )
         return messages, True, 100
