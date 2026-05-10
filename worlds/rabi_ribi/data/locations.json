@@ -955,7 +955,7 @@
   },
   {
     "id": 120,
-    "name": "Natural Aquarium - Health Up Upper",
+    "name": "Natural Aquarium - Health Up in Water Tower",
     "logic_key": "HP_UP_UPPER_AQUARIUM",
     "poptracker_name": "HP Up Upper Aquarium/HP Up",
     "region": "Natural Aquarium",
@@ -1142,7 +1142,7 @@
   },
   {
     "id": 176,
-    "name": "Natural Aquarium - Attack Up Upper",
+    "name": "Natural Aquarium - Attack Up in Water Tower",
     "logic_key": "ATK_UP_UPPER_AQUARIUM",
     "poptracker_name": "Atk Up Upper Aquarium/Atk Up",
     "region": "Natural Aquarium",
