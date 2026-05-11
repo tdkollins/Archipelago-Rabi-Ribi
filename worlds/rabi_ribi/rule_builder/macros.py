@@ -1,5 +1,5 @@
 """
-This module defines all of the logic macros that are to be used
+This module defines logic macros that are to be used
 when parsing access rules from the existing randomizer.
 """
 from rule_builder import rules

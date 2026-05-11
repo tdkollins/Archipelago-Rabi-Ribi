@@ -1,4 +1,3 @@
-from typing import Union
 from settings import Group, FilePath, UserFolderPath
 
 class RabiRibiSettings(Group):
@@ -16,4 +15,4 @@ class RabiRibiSettings(Group):
         required = False
 
     game_installation_path: GameInstallationPath = GameInstallationPath("C:/Program Files (x86)/Steam/steamapps/common/Rabi-Ribi")
-    ut_pack_path : Union[UTPackPath, str] = UTPackPath()
+    ut_pack_path : UTPackPath | str = UTPackPath()

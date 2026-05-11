@@ -1,5 +1,5 @@
 """This module represents item definitions for Rabi-Ribi"""
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from BaseClasses import Item, ItemClassification
 from .constants import GAME_NAME, BASE_ID
@@ -10,11 +10,11 @@ class RabiRibiItem(Item):
     """Rabi Ribi Item Definition"""
     game: str = GAME_NAME
 
-    def __init__(self, name, classification: ItemClassification, code: Optional[int], player: int):
+    def __init__(self, name, classification: ItemClassification, code: int | None, player: int):
         super(RabiRibiItem, self).__init__(name, classification, code, player)
 
 class RabiRibiItemData(NamedTuple):
-    code: Optional[int]
+    code: int | None
     classification: ItemClassification = ItemClassification.filler
 
 item_data_table : dict[str, RabiRibiItemData] = {

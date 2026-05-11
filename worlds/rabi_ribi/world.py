@@ -1,11 +1,8 @@
-"""
-This module serves as an entrypoint into the Rabi-Ribi AP world.
-"""
 import math
 import logging
 from collections import defaultdict
 from itertools import chain
-from typing import Any, ClassVar, Optional, TextIO, override
+from typing import Any, ClassVar, TextIO, override
 from BaseClasses import ItemClassification, Location, MultiWorld
 from Fill import swap_location_item
 from Options import OptionError
@@ -43,7 +40,7 @@ class RabiRibiWorld(RabiRibiUTWorld):
 
     total_locations: int
     required_egg_count: int
-    filler_items: Optional[list[str]] = None
+    filler_items: list[str] | None = None
 
     @override
     def generate_early(self) -> None:
@@ -60,7 +57,7 @@ class RabiRibiWorld(RabiRibiUTWorld):
         parse_connections()
 
     @override
-    def create_item(self, name: str, force_classification: Optional[ItemClassification] = None) -> RabiRibiItem:
+    def create_item(self, name: str, force_classification: ItemClassification | None = None) -> RabiRibiItem:
         """Create a Rabi-Ribi item for this player"""
         # Universal Tracker: Allow creation of a fake event to represent out of logic checks
         if name == ItemName.glitched_logic:

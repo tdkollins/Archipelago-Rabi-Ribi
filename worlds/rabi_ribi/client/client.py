@@ -18,14 +18,14 @@ from CommonClient import (
 from NetUtils import ClientStatus, NetworkItem
 
 from worlds.AutoWorld import World
-from worlds.rabi_ribi.client.memory_io import RabiRibiMemoryIO
-from worlds.rabi_ribi.constants import GAME_NAME
-from worlds.rabi_ribi.data import data
-from worlds.rabi_ribi.items import event_table, item_groups
-from worlds.rabi_ribi.locations import all_locations
-from worlds.rabi_ribi.names import ItemName
-from worlds.rabi_ribi.options import AttackMode
-from worlds.rabi_ribi.world import RabiRibiWorld
+from ..client.memory_io import RabiRibiMemoryIO
+from ..constants import GAME_NAME
+from ..data import data
+from ..items import item_groups
+from ..locations import all_locations
+from ..names import ItemName
+from ..options import AttackMode
+from ..world import RabiRibiWorld
 
 try:
     from worlds.tracker.TrackerClient import UT_VERSION, TrackerCommandProcessor, TrackerGameContext # type: ignore

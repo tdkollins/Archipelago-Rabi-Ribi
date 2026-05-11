@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 import itertools
 import json
 import pkgutil
-import re
 from typing import Any
 
 from rule_builder import rules
