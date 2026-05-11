@@ -9,6 +9,7 @@ from typing import Any
 from rule_builder import rules
 from .options import Knowledge, TrickDifficulty
 
+
 @dataclass
 class ItemData:
     id: int
@@ -107,14 +108,12 @@ class RabiRibiData:
 
     _locations_by_coordinates: dict[int, dict[tuple[int, int], LocationData]]
 
-
     def __init__(self) -> None:
         self.items = []
         self.locations = []
         self.regions = []
         self.events = []
         self.constraints = []
-
 
     def parse_data(
             self,
@@ -144,79 +143,71 @@ class RabiRibiData:
         self.regions.extend(location_regions)
 
         self._ap_items = {item.name: item for item in self.items}
-        self._ap_locations = {location.name: location for location in self.locations}
+        self._ap_locations = {
+            location.name: location for location in self.locations}
         self._ap_regions = {region.name: region for region in self.regions}
         self._ap_events = {event.name: event for event in self.events}
-        self._ap_constraints = {constraint.name: constraint for constraint in self.constraints}
+        self._ap_constraints = {
+            constraint.name: constraint for constraint in self.constraints}
 
         self._logic_items = {item.logic_key: item for item in self.items}
-        self._logic_locations = {location.logic_key: location for location in self.locations}
-        self._logic_regions = {region.logic_key: region for region in self.regions}
+        self._logic_locations = {
+            location.logic_key: location for location in self.locations}
+        self._logic_regions = {
+            region.logic_key: region for region in self.regions}
         self._logic_events = {event.logic_key: event for event in self.events}
-        self._logic_constraints = {constraint.logic_key: constraint for constraint in self.constraints}
+        self._logic_constraints = {
+            constraint.logic_key: constraint for constraint in self.constraints}
 
         self._locations_by_coordinates = defaultdict(dict)
         for location in self.locations:
-            self._locations_by_coordinates[location.area_id][(location.x_position, location.y_position)] = location
-
+            self._locations_by_coordinates[location.area_id][(
+                location.x_position, location.y_position)] = location
 
     def create_item_groups(self) -> dict[str, set[str]]:
         tags: set[str] = {tag for item in self.items for tag in item.tags}
-        return {tag:{item.name for item in self.items if tag in item.tags} for tag in tags}
-
+        return {tag: {item.name for item in self.items if tag in item.tags} for tag in tags}
 
     def create_location_groups(self) -> dict[str, set[str]]:
-        region_groups: itertools.groupby[str, LocationData] = itertools.groupby(self.locations, key=lambda l: l.region)
-        return {region:{location.name for location in locations} for region, locations in region_groups}
-
+        region_groups: itertools.groupby[str, LocationData] = itertools.groupby(
+            self.locations, key=lambda l: l.region)
+        return {region: {location.name for location in locations} for region, locations in region_groups}
 
     def get_item_by_ap_name(self, name: str) -> ItemData:
         return self._ap_items[name]
 
-
     def get_location_by_ap_name(self, name: str) -> LocationData:
         return self._ap_locations[name]
-
 
     def get_region_by_ap_name(self, name: str) -> RegionData:
         return self._ap_regions[name]
 
-
     def get_event_by_ap_name(self, name: str) -> EventData:
         return self._ap_events[name]
-
 
     def get_constraint_by_ap_name(self, name: str) -> ConstraintData:
         return self._ap_constraints[name]
 
-
     def get_item_by_logic_key(self, logic_key: str) -> ItemData:
         return self._logic_items[logic_key]
-
 
     def get_location_by_logic_key(self, logic_key: str) -> LocationData:
         return self._logic_locations[logic_key]
 
-
     def get_region_by_logic_key(self, logic_key: str) -> RegionData:
         return self._logic_regions[logic_key]
-
 
     def get_event_by_logic_key(self, logic_key: str) -> EventData:
         return self._logic_events[logic_key]
 
-
     def get_constraint_by_logic_key(self, logic_key: str) -> ConstraintData:
         return self._logic_constraints[logic_key]
-
 
     def get_item_ap_name(self, logic_key: str) -> str:
         return self._logic_items[logic_key].name
 
-
     def get_location_ap_name(self, logic_key: str) -> str:
         return self._logic_locations[logic_key].name
-
 
     def get_region_ap_name(self, logic_key: str) -> str:
         if logic_key.startswith("ITEM_"):
@@ -224,28 +215,22 @@ class RabiRibiData:
             return self._logic_locations[logic_key].name
         return self._logic_regions[logic_key].name
 
-
     def is_region_key(self, logic_key: str) -> bool:
         return logic_key in self._logic_regions
 
-
     def is_item_key(self, logic_key: str) -> bool:
         return logic_key in self._logic_items
-
 
     def get_locations_in_area(self, area_id) -> dict[tuple[int, int], LocationData]:
         if area_id in self._locations_by_coordinates:
             return self._locations_by_coordinates[area_id]
         return {}
 
-
     def is_coordinates_location(self, area_id: int, x_position: int, y_position: int) -> bool:
         return area_id in self._locations_by_coordinates and (x_position, y_position) in self._locations_by_coordinates[area_id]
 
-
     def get_location_name_by_coordinates(self, area_id: int, x_position: int, y_position: int) -> str:
         return self._locations_by_coordinates[area_id][(x_position, y_position)].name
-
 
     def get_location_coordinates(self, name) -> tuple[int, int, int]:
         location = self._ap_locations[name]
@@ -254,7 +239,7 @@ class RabiRibiData:
 
 def _load_json_data(data_name: str) -> list[Any]:
     file_data = pkgutil.get_data(__name__, "data/" + data_name)
-    assert(isinstance(file_data, bytes))
+    assert (isinstance(file_data, bytes))
     return json.loads(file_data.decode("utf-8-sig"))
 
 
@@ -262,13 +247,19 @@ data = RabiRibiData()
 
 
 def _init() -> None:
-    item_data: list[ItemData] = [ItemData(**item) for item in _load_json_data("items.json")]
-    location_data: list[LocationData] = [LocationData(**item) for item in _load_json_data("locations.json")]
-    region_data: list[RegionData] = [RegionData(**item) for item in _load_json_data("regions.json")]
-    event_data: list[EventData] = [EventData(**item) for item in _load_json_data("events.json")]
-    constraint_data: list[ConstraintData] = [ConstraintData(**item) for item in _load_json_data("constraints.json")]
+    item_data: list[ItemData] = [
+        ItemData(**item) for item in _load_json_data("items.json")]
+    location_data: list[LocationData] = [LocationData(
+        **item) for item in _load_json_data("locations.json")]
+    region_data: list[RegionData] = [RegionData(
+        **item) for item in _load_json_data("regions.json")]
+    event_data: list[EventData] = [
+        EventData(**item) for item in _load_json_data("events.json")]
+    constraint_data: list[ConstraintData] = [ConstraintData(
+        **item) for item in _load_json_data("constraints.json")]
 
-    data.parse_data(item_data, location_data, region_data, event_data, constraint_data)
+    data.parse_data(item_data, location_data, region_data,
+                    event_data, constraint_data)
 
 
 _init()

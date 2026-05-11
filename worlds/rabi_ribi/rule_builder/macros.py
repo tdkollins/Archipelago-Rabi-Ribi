@@ -3,7 +3,7 @@ This module defines all of the logic macros that are to be used
 when parsing access rules from the existing randomizer.
 """
 from rule_builder import rules
-from .bases import RabiRibiWorldBase
+from ..bases import RabiRibiWorldBase
 from .custom_rules import (
     HasEnoughAmuletFoodRule,
     Macro,
@@ -14,9 +14,9 @@ from .custom_rules import (
     TownMemberCountRule,
     TownMemberCountIrisuRule
 )
-from .data import data
-from .names import ItemName, LocationName
-from .options import *
+from ..data import data
+from ..names import ItemName, LocationName
+from ..options import *
 
 # Knowledge and Trick Difficulty
 intermediate = Macro(
@@ -122,19 +122,28 @@ obs_stupid = Macro(
 
 # Options
 can_zip = OutOfLogicOptionRule("Zip", ZipsRequired, True)
-can_semi_solid_clip = OutOfLogicOptionRule("Semisolid Clip", SemiSolidClipsRequired, True)
+can_semi_solid_clip = OutOfLogicOptionRule(
+    "Semisolid Clip", SemiSolidClipsRequired, True)
 can_block_clip = OutOfLogicOptionRule("Block Clip", BlockClipsRequired, True)
-can_do_boring_tricks = OutOfLogicOptionRule("Boring", BoringTricksRequired, True)
-can_bunstrike_zip = OutOfLogicOptionRule("Bunstrike Zip", BunstrikeZipsRequired, True)
-can_use_carrot_shooter = OutOfLogicOptionRule("Carrot Shooter", CarrotShooterInLogic, True)
-can_use_event_warps = OutOfLogicOptionRule("Event Warp", EventWarpsInLogic, True)
+can_do_boring_tricks = OutOfLogicOptionRule(
+    "Boring", BoringTricksRequired, True)
+can_bunstrike_zip = OutOfLogicOptionRule(
+    "Bunstrike Zip", BunstrikeZipsRequired, True)
+can_use_carrot_shooter = OutOfLogicOptionRule(
+    "Carrot Shooter", CarrotShooterInLogic, True)
+can_use_event_warps = OutOfLogicOptionRule(
+    "Event Warp", EventWarpsInLogic, True)
 can_enter_plurkwood = OutOfLogicOptionRule("Plurkwood", IncludePlurkwood, True)
-can_enter_warp_destination = OutOfLogicOptionRule("Warp Destination", IncludeWarpDestination, True)
+can_enter_warp_destination = OutOfLogicOptionRule(
+    "Warp Destination", IncludeWarpDestination, True)
 can_enter_post_game = OutOfLogicOptionRule("Post-Game", IncludePostGame, True)
-can_enter_post_irisu = OutOfLogicOptionRule("Post-Irisu", IncludePostIrisu, True)
+can_enter_post_irisu = OutOfLogicOptionRule(
+    "Post-Irisu", IncludePostIrisu, True)
 can_enter_halloween = OutOfLogicOptionRule("Halloween", IncludeHalloween, True)
-darkness_without_light_orb = OutOfLogicOptionRule("Darkness", DarknessWithoutLightOrb, True)
-underwater_without_water_orb = OutOfLogicOptionRule("Underwater", UnderwaterWithoutWaterOrb, True)
+darkness_without_light_orb = OutOfLogicOptionRule(
+    "Darkness", DarknessWithoutLightOrb, True)
+underwater_without_water_orb = OutOfLogicOptionRule(
+    "Underwater", UnderwaterWithoutWaterOrb, True)
 
 # Events
 # Contains in-game events
@@ -200,13 +209,15 @@ bunny_amulet = Macro(
 )
 
 bunny_amulet_lv2 = Macro(
-    rules.Has(ItemName.bunny_amulet) & (shop_reachable | chapter_3 | chapter_7),
+    rules.Has(ItemName.bunny_amulet) & (
+        shop_reachable | chapter_3 | chapter_7),
     "Bunny Amulet Lv2",
     "Player can upgrade Bunny Amulet to Level 2"
 )
 
 bunny_amulet_lv3 = Macro(
-    rules.Has(ItemName.bunny_amulet) & (shop_reachable | chapter_4 | chapter_7),
+    rules.Has(ItemName.bunny_amulet) & (
+        shop_reachable | chapter_4 | chapter_7),
     "Bunny Amulet Lv3",
     "Player can upgrade Bunny Amulet to Level 3"
 )
@@ -242,7 +253,8 @@ charge_carrot_shooter_entry = Macro(
 )
 
 speedy = Macro(
-    intermediate & rules.Has(ItemName.cicini_recruit) & chapter_1 & TownMemberCountRule(3),
+    intermediate & rules.Has(
+        ItemName.cicini_recruit) & chapter_1 & TownMemberCountRule(3),
     "Speedy",
     "Player can obtain the Speedy buff from Cicini"
 )
@@ -278,7 +290,8 @@ boost_many = Macro(
 )
 
 boost_boring = Macro(
-    (boost_unlocked & can_do_boring_tricks) | (rules.Has(ItemName.rumi_donut) & item_menu),
+    (boost_unlocked & can_do_boring_tricks) | (
+        rules.Has(ItemName.rumi_donut) & item_menu),
     "Boost Boring",
     "Player can use several boost attacks by farming boost charge or using a Rumi Donut"
 )
@@ -286,7 +299,8 @@ boost_boring = Macro(
 # Items
 # Contains logic to use an item
 bunny_strike = Macro(
-    rules.HasAll(ItemName.piko_hammer, ItemName.sliding_powder, ItemName.bunny_strike),
+    rules.HasAll(ItemName.piko_hammer, ItemName.sliding_powder,
+                 ItemName.bunny_strike),
     "Bunny Strike",
     "Player can use Bunny Strike"
 )
@@ -310,13 +324,15 @@ air_dash_lv3 = Macro(
 )
 
 hammer_roll = Macro(
-    rules.HasAll(ItemName.piko_hammer, ItemName.bunny_whirl, ItemName.hammer_roll),
+    rules.HasAll(ItemName.piko_hammer, ItemName.bunny_whirl,
+                 ItemName.hammer_roll),
     "Hammer Roll",
     "Player can use Hammer Roll"
 )
 
 hammer_roll_lv3 = Macro(
-    rules.HasAll(ItemName.piko_hammer, ItemName.bunny_whirl) & hammer_roll_lv3_upgrade,
+    rules.HasAll(ItemName.piko_hammer,
+                 ItemName.bunny_whirl) & hammer_roll_lv3_upgrade,
     "Hammer Roll Lv3",
     "Player can use Hammer Roll Lv3"
 )
@@ -530,7 +546,7 @@ rules_by_logic_key: dict[str, Macro | rules.Rule[RabiRibiWorldBase]] = {
     "UNDERWATER": underwater,
     "CARROT_SHOOTER": carrot_shooter,
     "EVENT_WARP": can_use_event_warps,
-    "PROLOGUE_TRIGGER": rules.True_(), # Open Mode is always enabled in AP
+    "PROLOGUE_TRIGGER": rules.True_(),  # Open Mode is always enabled in AP
     "NONE": rules.True_(),
     "IMPOSSIBLE": rules.False_(),
     "WALL_JUMP_LV2": wall_jump_lv2,
@@ -544,7 +560,7 @@ rules_by_logic_key: dict[str, Macro | rules.Rule[RabiRibiWorldBase]] = {
     "PIKO_HAMMER_LEVELED": piko_hammer_leveled,
     "CARROT_BOMB_ENTRY": carrot_bomb_entry,
     "CARROT_SHOOTER_ENTRY": carrot_shooter_entry,
-    "CHARGE_CARROT_SHOOTER_ENTRY" : charge_carrot_shooter_entry,
+    "CHARGE_CARROT_SHOOTER_ENTRY": charge_carrot_shooter_entry,
     "COCOA_1": cocoa_1,
     "KOTRI_1": kotri_1,
     "ASHURI_2": ashuri_2,

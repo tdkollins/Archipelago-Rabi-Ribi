@@ -5,9 +5,9 @@ import re
 from rule_builder import rules
 from typing import Any
 from .bases import RabiRibiWorldBase
-from .custom_rules import Macro, TownMemberCountRule, TownMemberCountIrisuRule
+from .rule_builder.custom_rules import Macro, TownMemberCountRule, TownMemberCountIrisuRule
 from .data import ConstraintChange, data
-from .macros import rules_by_logic_key
+from .rule_builder.macros import rules_by_logic_key
 from .names import ItemName, LocationName
 
 
@@ -36,11 +36,12 @@ class TemplateConstraint:
 
 def _read_file_and_convert_to_json(filename: str) -> list[Any]:
     def strip_comments(line):
-        if '//' not in line: return line
+        if '//' not in line:
+            return line
         return line[:line.find('//')]
 
-    file_bytes  = pkgutil.get_data(__name__, f"existing_randomizer/{filename}")
-    assert(isinstance(file_bytes, bytes))
+    file_bytes = pkgutil.get_data(__name__, f"existing_randomizer/{filename}")
+    assert (isinstance(file_bytes, bytes))
 
     # Convert the file to proper JSON by:
     # 1. Removing comments
@@ -56,11 +57,15 @@ def _read_file_and_convert_to_json(filename: str) -> list[Any]:
     jsondata = '[' + jsondata + ']'
     return json.loads(jsondata)
 
+
 _logic_re: re.Pattern[str] = re.compile('([()&|])')
+
+
 def _parse_expression_logic(line: str, current_expression: rules.Rule[RabiRibiWorldBase] = rules.True_()):
     line = line.replace('&&', '&').replace('||', '|')
     matches = (s.strip() for s in _logic_re.split(line))
-    tokens: list[str | Macro | rules.Rule[RabiRibiWorldBase]] = [s for s in matches if isinstance(s, str) and len(s) > 0]
+    tokens: list[str | Macro | rules.Rule[RabiRibiWorldBase]] = [
+        s for s in matches if isinstance(s, str) and len(s) > 0]
     # Stack-based parsing. pop from [tokens], push into [stack]
     # We push an expression into [tokens] if we want to process it next iteration.
     tokens.reverse()
@@ -96,7 +101,7 @@ def _parse_expression_logic(line: str, current_expression: rules.Rule[RabiRibiWo
             # Literal parsing
             assert isinstance(next, str)
             if next.startswith('BACKTRACK_'):
-                # Ignore backtracking in AP, as it does not add new regions
+                # Ignore backtracking in AP, as it does not add new regions,
                 # only paths to already visited ones
                 tokens.append(rules.False_())
             elif next == 'current':
@@ -105,20 +110,26 @@ def _parse_expression_logic(line: str, current_expression: rules.Rule[RabiRibiWo
             elif next in rules_by_logic_key:
                 tokens.append(rules_by_logic_key[next])
             else:
-                if next.startswith('r'): next = next[1:]
+                if next.startswith('r'):
+                    next = next[1:]
                 if data.is_item_key(next):
                     tokens.append(rules.Has(data.get_item_ap_name(next)))
                 elif data.is_region_key(next):
-                    tokens.append(rules.CanReachRegion(data.get_region_ap_name(next)))
+                    tokens.append(rules.CanReachRegion(
+                        data.get_region_ap_name(next)))
                 else:
-                    raise NotImplementedError('Unknown variable %s in expression: %s' % (next, line))
+                    raise NotImplementedError(
+                        'Unknown variable %s in expression: %s' % (next, line))
     assert len(stack) == 1
     return stack[0]
+
 
 def _parse_region_connection(connection: RegionConnection):
     from_key, to_key = (x.strip() for x in connection.edge.split('->'))
     from_region = data.get_region_by_logic_key(from_key)
-    from_region.connections[data.get_region_ap_name(to_key)] = _parse_expression_logic(connection.prereq)
+    from_region.connections[data.get_region_ap_name(
+        to_key)] = _parse_expression_logic(connection.prereq)
+
 
 def _parse_location_connection(connection: LocationConnection):
     location = data.get_location_by_logic_key(connection.item)
@@ -126,18 +137,22 @@ def _parse_location_connection(connection: LocationConnection):
         from_region = data.get_region_by_logic_key(connection.from_location)
         to_region = data.get_region_by_ap_name(location.name)
 
-        from_region.connections[to_region.name] = _parse_expression_logic(connection.entry_prereq)
-        to_region.connections[from_region.name] = _parse_expression_logic(connection.exit_prereq)
+        from_region.connections[to_region.name] = _parse_expression_logic(
+            connection.entry_prereq)
+        to_region.connections[from_region.name] = _parse_expression_logic(
+            connection.exit_prereq)
 
         if len(connection.alternate_entries) > 0:
             for entry, prereq in connection.alternate_entries.items():
                 entry_region = data.get_region_by_logic_key(entry)
-                entry_region.connections[to_region.name] = _parse_expression_logic(prereq)
+                entry_region.connections[to_region.name] = _parse_expression_logic(
+                    prereq)
 
         if len(connection.alternate_exits) > 0:
             for exit, prereq in connection.alternate_exits.items():
                 exit_region = data.get_region_by_logic_key(exit)
-                to_region.connections[exit_region.name] = _parse_expression_logic(prereq)
+                to_region.connections[exit_region.name] = _parse_expression_logic(
+                    prereq)
 
 
 def _parse_template_constraint(constraint: TemplateConstraint):
@@ -149,7 +164,8 @@ def _parse_template_constraint(constraint: TemplateConstraint):
         to_region = data.get_region_by_logic_key(to_key)
         current_rule = from_region.connections[to_region.name]
         rule = _parse_expression_logic(change.prereq, current_rule)
-        data_constraint.changes.append(ConstraintChange(from_region.name, to_region.name, rule))
+        data_constraint.changes.append(ConstraintChange(
+            from_region.name, to_region.name, rule))
 
 
 def parse_connections():
@@ -183,7 +199,8 @@ def parse_connections():
     start_rando_template_constraints: list[TemplateConstraint] = [
         TemplateConstraint(**item)
         for item in
-        _read_file_and_convert_to_json("maptemplates/start_rando_template_constraints.txt")
+        _read_file_and_convert_to_json(
+            "maptemplates/start_rando_template_constraints.txt")
     ]
 
     for constraint in start_rando_template_constraints:
@@ -202,7 +219,8 @@ can_recruit_saya = \
 
 can_recruit_nieve_and_nixie = \
     rules.CanReachRegion(data.get_region_ap_name(LocationName.palace_level_5)) & \
-    rules.CanReachRegion(data.get_region_ap_name(LocationName.icy_summit_nixie))
+    rules.CanReachRegion(data.get_region_ap_name(
+        LocationName.icy_summit_nixie))
 
 can_recruit_seana = rules.HasAll(
     ItemName.seana_1,
@@ -219,7 +237,8 @@ can_recruit_chocolate = rules.Has("Chapter 1")
 
 can_recruit_kotri = rules.Has(ItemName.kotri_2)
 
-can_recruit_keke_bunny = rules.CanReachRegion(data.get_region_ap_name(LocationName.town_main))
+can_recruit_keke_bunny = rules.CanReachRegion(
+    data.get_region_ap_name(LocationName.town_main))
 
 can_recruit_irisu = \
     rules.CanReachRegion(data.get_region_ap_name(LocationName.warp_destination_hospital)) & \

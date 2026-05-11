@@ -1,81 +1,22 @@
-import dataclasses
-from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Iterable, Mapping, Never, Protocol, Self, TypeVar, cast, override, runtime_checkable
+from typing import Any, cast, override
 
 from BaseClasses import CollectionState
 from NetUtils import JSONMessagePart
 from Options import CommonOptions, Option
 from rule_builder import rules
-from rule_builder.options import OPERATORS, REVERSE_OPERATORS, Operator, OptionFilter
+from rule_builder.options import OPERATORS, REVERSE_OPERATORS, Operator
 
-from .bases import RabiRibiWorldBase
-from .constants import GAME_NAME
-from .items import item_groups, recruit_table, recruit_table_irisu
-from .names import ItemName
-from .options import *
+from .glitched_rules import LogicState, evaluate_rule, get_indent, get_logic_color, get_prefix, get_suffix
 
-class LogicState(Enum):
-    CannotReach = 0
-    InLogic = 1
-    OutOfLogic = 2
-    Explain = 3
+from ..bases import RabiRibiWorldBase
+from ..constants import GAME_NAME
+from ..items import item_groups, recruit_table, recruit_table_irisu
+from ..names import ItemName
+from ..options import *
 
-def get_indent(depth: int):
-    hyphen = "- "
-    spaces = depth * 4
-    return "" if depth == 0 else f"{hyphen:>{spaces}}"
-
-def evaluate_rule(rule: rules.Rule.Resolved, state: CollectionState | None, glitched_state: CollectionState | None) -> LogicState:
-    if state is None:
-        return LogicState.Explain
-    if rule(state): # type: ignore
-        return LogicState.InLogic
-    if glitched_state is not None and rule(glitched_state): # type: ignore
-        return LogicState.OutOfLogic
-    return LogicState.CannotReach
-
-def get_color(result: LogicState) -> str:
-    if result == LogicState.Explain:
-        return "cyan"
-    if result == LogicState.InLogic:
-        return "green"
-    if result == LogicState.OutOfLogic:
-        return "yellow"
-    return "salmon"
-
-def get_prefix(result: LogicState, depth: int) -> list[JSONMessagePart]:
-    indent = get_indent(depth)
-    text = "Can " if result != LogicState.CannotReach else "Cannot "
-    return [{"type": "text", "text": f"{indent}{text}"}]
-
-def get_suffix(result: LogicState) -> list[JSONMessagePart]:
-    suffix =  " (Out of Logic)" if result == LogicState.OutOfLogic else ""
-    return [{"type": "text", "text": suffix}]
-
-@runtime_checkable
-class GlitchedLogicMixIn(Protocol):
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
-        pass
-
-    def get_rule_tree_message(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
-        return list()
-
-    def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
-        assert isinstance(self, rules.Rule.Resolved)
-        if self.always_true:
-            return []
-        result = evaluate_rule(self, state, glitched_state)
-        return (
-            get_prefix(result, depth)
-            + self.get_rule_tree_message(state, glitched_state, depth + 1)
-            + get_suffix(result)
-        )
-
-class CustomRuleRegisterProtocolMeta(rules.CustomRuleRegister, type(Protocol)):
-    pass
 
 @dataclass()
-class KnowledgeRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+class KnowledgeRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
     """Rule to check if the player has an knowledge level set or if the rule should be evaluated when out of logic."""
     value: int
 
@@ -87,13 +28,13 @@ class KnowledgeRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
         if getattr(world.multiworld, "generation_is_fake", False):
             return self.Resolved(
                 self.value,
-                player = world.player,
-                caching_enabled = getattr(world, "rule_caching_enabled", False),
+                player=world.player,
+                caching_enabled=getattr(world, "rule_caching_enabled", False),
             )
 
         return rules.False_().resolve(world)
 
-    class Resolved(rules.Rule.Resolved, GlitchedLogicMixIn, metaclass=CustomRuleRegisterProtocolMeta):
+    class Resolved(rules.Rule.Resolved):
         value: int
 
         @override
@@ -106,11 +47,15 @@ class KnowledgeRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             deps.setdefault(ItemName.glitched_logic, set()).add(id(self))
             return deps
 
-        @override
-        def get_rule_tree_message(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
+        def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
             name = Knowledge.get_option_name(self.value)
-            return [{"type": "color", "color": get_color(result), "text": name}]
+            return [
+                *get_prefix(result, depth),
+                {"type": "color", "color": get_logic_color(
+                    result), "text": name},
+                *get_suffix(result)
+            ]
 
         @override
         def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
@@ -120,8 +65,9 @@ class KnowledgeRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             ]
             return messages
 
+
 @dataclass()
-class TrickDifficultyRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+class TrickDifficultyRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
     """Rule to check if the player has an trick difficulty set or if the rule should be evaluated when out of logic."""
     value: int
 
@@ -133,13 +79,13 @@ class TrickDifficultyRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
         if getattr(world.multiworld, "generation_is_fake", False):
             return self.Resolved(
                 self.value,
-                player = world.player,
-                caching_enabled = getattr(world, "rule_caching_enabled", False),
+                player=world.player,
+                caching_enabled=getattr(world, "rule_caching_enabled", False),
             )
 
         return rules.False_().resolve(world)
 
-    class Resolved(rules.Rule.Resolved, GlitchedLogicMixIn, metaclass=CustomRuleRegisterProtocolMeta):
+    class Resolved(rules.Rule.Resolved):
         value: int
 
         @override
@@ -152,11 +98,15 @@ class TrickDifficultyRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             deps.setdefault(ItemName.glitched_logic, set()).add(id(self))
             return deps
 
-        @override
-        def get_rule_tree_message(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
+        def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
             name = Knowledge.get_option_name(self.value)
-            return [{"type": "color", "color": get_color(result), "text": name}]
+            return [
+                *get_prefix(result, depth),
+                {"type": "color", "color": get_logic_color(
+                    result), "text": name},
+                *get_suffix(result)
+            ]
 
         @override
         def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
@@ -166,8 +116,9 @@ class TrickDifficultyRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             ]
             return messages
 
+
 @dataclass()
-class OutOfLogicOptionRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+class OutOfLogicOptionRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
     """Rule to check if the player has an option set or if the rule should be evaluated when out of logic."""
     name: str
     option: type[Option[Any]]
@@ -182,8 +133,8 @@ class OutOfLogicOptionRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
         if getattr(world.multiworld, "generation_is_fake", False):
             return self.Resolved(
                 self.name,
-                player = world.player,
-                caching_enabled = getattr(world, "rule_caching_enabled", False),
+                player=world.player,
+                caching_enabled=getattr(world, "rule_caching_enabled", False),
             )
 
         return rules.False_().resolve(world)
@@ -191,11 +142,13 @@ class OutOfLogicOptionRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
     def check(self, options: CommonOptions) -> bool:
         """Tests the given options dataclass to see if it passes this option filter"""
         option_name = next(
-            (name for name, cls in options.__class__.type_hints.items() if cls is self.option),
+            (name for name, cls in options.__class__.type_hints.items()
+             if cls is self.option),
             None,
         )
         if option_name is None:
-            raise ValueError(f"Cannot find option {self.option.__name__} in options class {options.__class__.__name__}")
+            raise ValueError(
+                f"Cannot find option {self.option.__name__} in options class {options.__class__.__name__}")
         opt = cast(Option[Any] | None, getattr(options, option_name, None))
         if opt is None:
             raise ValueError(f"Invalid option: {option_name}")
@@ -203,7 +156,7 @@ class OutOfLogicOptionRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
         fn = OPERATORS[self.operator]
         return fn(self.value, opt) if self.operator in REVERSE_OPERATORS else fn(opt, self.value)
 
-    class Resolved(rules.Rule.Resolved, GlitchedLogicMixIn, metaclass=CustomRuleRegisterProtocolMeta):
+    class Resolved(rules.Rule.Resolved):
         name: str
 
         @override
@@ -216,10 +169,14 @@ class OutOfLogicOptionRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             deps.setdefault(ItemName.glitched_logic, set()).add(id(self))
             return deps
 
-        @override
-        def get_rule_tree_message(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
+        def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
-            return [{"type": "color", "color": get_color(result), "text": self.name}]
+            return [
+                *get_prefix(result, depth),
+                {"type": "color", "color": get_logic_color(
+                    result), "text": self.name},
+                *get_suffix(result)
+            ]
 
         @override
         def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
@@ -228,8 +185,9 @@ class OutOfLogicOptionRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             ]
             return messages
 
+
 @dataclass
-class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
     """Rule to check if the player can use enough magic types."""
     num_magic_types: int
 
@@ -238,11 +196,11 @@ class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
         return self.Resolved(
             self.num_magic_types,
             bool(world.options.rainbow_shot_in_logic.value),
-            player = world.player,
-            caching_enabled = getattr(world, "rule_caching_enabled", False)
+            player=world.player,
+            caching_enabled=getattr(world, "rule_caching_enabled", False)
         )
 
-    class Resolved(rules.Rule.Resolved, GlitchedLogicMixIn, metaclass=CustomRuleRegisterProtocolMeta):
+    class Resolved(rules.Rule.Resolved):
         num_magic_types: int
         rainbow_shot_in_logic_enabled: bool
 
@@ -251,7 +209,7 @@ class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             curr_magic_types = self._count_magic_types(state)
             return curr_magic_types >= self.num_magic_types
 
-        def _count_magic_types(self, state:CollectionState) -> int:
+        def _count_magic_types(self, state: CollectionState) -> int:
             curr_magic_types = state.count_group_unique("Magic", self.player)
             if self._rainbow_shot_in_logic(state):
                 curr_magic_types += 1
@@ -264,14 +222,14 @@ class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                     self.rainbow_shot_in_logic_enabled
                     or state.has(ItemName.glitched_logic, self.player)
                 )
-                and state.has(ItemName.easter_egg, self.player, count = 5)
+                and state.has(ItemName.easter_egg, self.player, count=5)
             )
 
         def _rainbow_shot_out_of_logic(self, state: CollectionState) -> bool:
             return (
                 not self.rainbow_shot_in_logic_enabled
                 and state.has(ItemName.glitched_logic, self.player)
-                and state.has(ItemName.easter_egg, self.player, count = 5)
+                and state.has(ItemName.easter_egg, self.player, count=5)
             )
 
         @override
@@ -281,7 +239,6 @@ class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                 deps.setdefault(recruit, set()).add(id(self))
             return deps
 
-        @override
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
             indent = get_indent(depth)
@@ -289,7 +246,8 @@ class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             if result == LogicState.Explain:
                 messages = [
                     {"type": "text", "text": f"{indent}Has "},
-                    {"type": "color", "color": "cyan", "text": str(self.num_magic_types)},
+                    {"type": "color", "color": "cyan",
+                        "text": str(self.num_magic_types)},
                     {"type": "text", "text": " Magic Types"},
                 ]
             else:
@@ -300,7 +258,7 @@ class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                     {"type": "text", "text": f"{indent}Has "},
                     {
                         "type": "color",
-                        "color": get_color(result),
+                        "color": get_logic_color(result),
                         "text": f"{curr_magic_types}/{self.num_magic_types}",
                     },
                     {"type": "text", "text": " Magic Types"},
@@ -314,7 +272,8 @@ class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             if state is None:
                 messages = [
                     {"type": "text", "text": "Has "},
-                    {"type": "color", "color": "cyan", "text": str(self.num_magic_types)},
+                    {"type": "color", "color": "cyan",
+                        "text": str(self.num_magic_types)},
                     {"type": "text", "text": " Magic Types"},
                 ]
             else:
@@ -337,7 +296,7 @@ class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
 
 
 @dataclass
-class TownMemberCountRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+class TownMemberCountRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
     """Rule to check if the player can reach enough town members for an event."""
     num_town_members: int
 
@@ -345,11 +304,11 @@ class TownMemberCountRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
     def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
         return self.Resolved(
             self.num_town_members,
-            player = world.player,
-            caching_enabled = getattr(world, "rule_caching_enabled", False)
+            player=world.player,
+            caching_enabled=getattr(world, "rule_caching_enabled", False)
         )
 
-    class Resolved(rules.Rule.Resolved, GlitchedLogicMixIn, metaclass=CustomRuleRegisterProtocolMeta):
+    class Resolved(rules.Rule.Resolved):
         num_town_members: int
 
         @override
@@ -363,7 +322,6 @@ class TownMemberCountRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                 deps.setdefault(recruit, set()).add(id(self))
             return deps
 
-        @override
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
             indent = get_indent(depth)
@@ -371,21 +329,24 @@ class TownMemberCountRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             if result == LogicState.Explain:
                 messages = [
                     {"type": "text", "text": f"{indent}Has "},
-                    {"type": "color", "color": "cyan", "text": str(self.num_town_members)},
+                    {"type": "color", "color": "cyan",
+                        "text": str(self.num_town_members)},
                     {"type": "text", "text": " Town Members"},
                 ]
             else:
                 assert state is not None
                 assert glitched_state is not None
                 if result == LogicState.OutOfLogic:
-                    curr_town_members = glitched_state.count_from_list_unique(recruit_table, self.player)
+                    curr_town_members = glitched_state.count_from_list_unique(
+                        recruit_table, self.player)
                 else:
-                    curr_town_members = state.count_from_list_unique(recruit_table, self.player)
+                    curr_town_members = state.count_from_list_unique(
+                        recruit_table, self.player)
                 messages = [
                     {"type": "text", "text": f"{indent}Has "},
                     {
                         "type": "color",
-                        "color": get_color(result),
+                        "color": get_logic_color(result),
                         "text": f"{curr_town_members}/{self.num_town_members}",
                     },
                     {"type": "text", "text": " Town Members"},
@@ -399,11 +360,13 @@ class TownMemberCountRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             if state is None:
                 messages = [
                     {"type": "text", "text": "Has "},
-                    {"type": "color", "color": "cyan", "text": str(self.num_town_members)},
+                    {"type": "color", "color": "cyan",
+                        "text": str(self.num_town_members)},
                     {"type": "text", "text": " Town Members"},
                 ]
             else:
-                curr_town_members = state.count_from_list_unique(recruit_table, self.player)
+                curr_town_members = state.count_from_list_unique(
+                    recruit_table, self.player)
                 color = "green" if curr_town_members >= self.num_town_members else "salmon"
                 messages = [
                     {"type": "text", "text": "Has "},
@@ -416,17 +379,18 @@ class TownMemberCountRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                 ]
             return messages
 
+
 @dataclass
-class TownMemberCountIrisuRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+class TownMemberCountIrisuRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
     """Rule to check if the player can reach enough town members to fight Irisu."""
     @override
     def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
         return self.Resolved(
-            player = world.player,
-            caching_enabled = getattr(world, "rule_caching_enabled", False)
+            player=world.player,
+            caching_enabled=getattr(world, "rule_caching_enabled", False)
         )
 
-    class Resolved(rules.Rule.Resolved, GlitchedLogicMixIn, metaclass=CustomRuleRegisterProtocolMeta):
+    class Resolved(rules.Rule.Resolved):
         @override
         def _evaluate(self, state: CollectionState) -> bool:
             return state.has_from_list_unique(recruit_table_irisu, self.player, 15)
@@ -438,7 +402,6 @@ class TownMemberCountIrisuRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                 deps.setdefault(recruit, set()).add(id(self))
             return deps
 
-        @override
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
             indent = get_indent(depth)
@@ -453,14 +416,16 @@ class TownMemberCountIrisuRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                 assert state is not None
                 assert glitched_state is not None
                 if result == LogicState.OutOfLogic:
-                    curr_town_members = glitched_state.count_from_list_unique(recruit_table, self.player)
+                    curr_town_members = glitched_state.count_from_list_unique(
+                        recruit_table, self.player)
                 else:
-                    curr_town_members = state.count_from_list_unique(recruit_table, self.player)
+                    curr_town_members = state.count_from_list_unique(
+                        recruit_table, self.player)
                 messages = [
                     {"type": "text", "text": f"{indent}Has "},
                     {
                         "type": "color",
-                        "color": get_color(result),
+                        "color": get_logic_color(result),
                         "text": f"{curr_town_members}/15",
                     },
                     {"type": "text", "text": " Main Game Town Members"},
@@ -478,7 +443,8 @@ class TownMemberCountIrisuRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                     {"type": "text", "text": " Main Game Town Members"},
                 ]
             else:
-                curr_town_members = state.count_from_list_unique(recruit_table_irisu, self.player)
+                curr_town_members = state.count_from_list_unique(
+                    recruit_table_irisu, self.player)
                 color = "green" if curr_town_members >= 15 else "salmon"
                 messages = [
                     {"type": "text", "text": "Has "},
@@ -491,24 +457,26 @@ class TownMemberCountIrisuRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                 ]
             return messages
 
+
 @dataclass()
-class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
+class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
     """Rule to check if the player can utilize enough items to perform a trick."""
     num_amulet_food: int
 
     @override
     def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
         has_advanced_knowledge = world.options.knowledge.value >= Knowledge.option_advanced
-        rainbow_shot_in_logic_enabled = bool(world.options.rainbow_shot_in_logic.value)
+        rainbow_shot_in_logic_enabled = bool(
+            world.options.rainbow_shot_in_logic.value)
         return self.Resolved(
             self.num_amulet_food,
             has_advanced_knowledge,
             rainbow_shot_in_logic_enabled,
-            player = world.player,
-            caching_enabled = getattr(world, "rule_caching_enabled", False)
+            player=world.player,
+            caching_enabled=getattr(world, "rule_caching_enabled", False)
         )
 
-    class Resolved(rules.Rule.Resolved, GlitchedLogicMixIn, metaclass=CustomRuleRegisterProtocolMeta):
+    class Resolved(rules.Rule.Resolved):
         num_amulet_food: int
         has_advanced_knowledge: bool
         rainbow_shot_in_logic_enabled: bool
@@ -526,7 +494,7 @@ class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                     food += self._count_normal_consumable_items(state)
                     # Kotri's buff can save enough amulet charge for an additional amulet use
                     if amulet >= 4 and state.has(ItemName.kotri_recruit, self.player) and \
-                        state.has_from_list_unique(recruit_table, self.player, 3):
+                            state.has_from_list_unique(recruit_table, self.player, 3):
                         amulet += 1
             return (amulet + food)
 
@@ -566,13 +534,15 @@ class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
         def _has_item_menu(self, state: CollectionState) -> bool:
             """Player has access to the item menu"""
             return state.has("Chapter 1", self.player) or \
-                (self._is_at_least_advanced_knowledge(state) and self._has_3_magic_types(state))
+                (self._is_at_least_advanced_knowledge(
+                    state) and self._has_3_magic_types(state))
 
         def _has_3_magic_types(self, state: CollectionState) -> bool:
             """Player has at least 3 types of magic"""
             # If playing with more than 5 Easter Eggs, Rainbow Shot could be used as a magic type
             return state.has_group_unique("Magic", self.player, 2) or \
-                (self._rainbow_shot_in_logic(state) and state.has_group_unique("Magic", self.player, 1))
+                (self._rainbow_shot_in_logic(state)
+                 and state.has_group_unique("Magic", self.player, 1))
 
         def _is_at_least_advanced_knowledge(self, state: CollectionState) -> bool:
             """Knowledge is at least advanced"""
@@ -581,7 +551,7 @@ class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
         def _rainbow_shot_in_logic(self, state: CollectionState) -> bool:
             """Player has Rainbow Shot and it's not out of logic by options"""
             return (self.rainbow_shot_in_logic_enabled or state.has(ItemName.glitched_logic, self.player)) and \
-                state.has(ItemName.easter_egg, self.player, count = 5)
+                state.has(ItemName.easter_egg, self.player, count=5)
 
         @override
         def _evaluate(self, state: CollectionState) -> bool:
@@ -610,7 +580,6 @@ class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
 
             return deps
 
-        @override
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
             indent = get_indent(depth)
@@ -618,7 +587,8 @@ class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             if result == LogicState.Explain:
                 messages = [
                     {"type": "text", "text": f"{indent}Has "},
-                    {"type": "color", "color": "cyan", "text": str(self.num_amulet_food)},
+                    {"type": "color", "color": "cyan",
+                        "text": str(self.num_amulet_food)},
                     {"type": "text", "text": " Amulet/Food"},
                 ]
             else:
@@ -632,7 +602,7 @@ class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
                     {"type": "text", "text": f"{indent}Has "},
                     {
                         "type": "color",
-                        "color": get_color(result),
+                        "color": get_logic_color(result),
                         "text": f"{curr_amulet_food}/{self.num_amulet_food}",
                     },
                     {"type": "text", "text": " Amulet/Food"},
@@ -646,7 +616,8 @@ class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
             if state is None:
                 messages = [
                     {"type": "text", "text": "Has "},
-                    {"type": "color", "color": "cyan", "text": str(self.num_amulet_food)},
+                    {"type": "color", "color": "cyan",
+                        "text": str(self.num_amulet_food)},
                     {"type": "text", "text": " Amulet/Food"},
                 ]
             else:
@@ -674,8 +645,10 @@ class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game = GAME_NAME):
         def __str__(self) -> str:
             return f"Has {self.num_amulet_food} Amulet/Food"
 
+
 def from_option(option: type[Option], value: Any, operator: Operator = "eq") -> rules.Rule[RabiRibiWorldBase]:
     return rules.True_(options=[rules.OptionFilter(option, value, operator)])
+
 
 @dataclass()
 class Macro(rules.WrapperRule[RabiRibiWorldBase], game=GAME_NAME):
@@ -700,19 +673,23 @@ class Macro(rules.WrapperRule[RabiRibiWorldBase], game=GAME_NAME):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}[{self.child}]"
 
-    class Resolved(rules.WrapperRule.Resolved, GlitchedLogicMixIn, metaclass=CustomRuleRegisterProtocolMeta):
+    class Resolved(rules.WrapperRule.Resolved):
         name: str
         description: str = ""
 
-        @override
-        def get_rule_tree_message(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
+        def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
-            return [{"type": "color", "color": get_color(result), "text": str(self)}]
+            return [
+                *get_prefix(result, depth),
+                {"type": "color", "color": get_logic_color(
+                    result), "text": str(self)},
+                *get_suffix(result)
+            ]
 
         @override
         def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, None)
-            return [{"type": "color", "color": get_color(result), "text": str(self)}]
+            return [{"type": "color", "color": get_logic_color(result), "text": str(self)}]
 
         @override
         def explain_str(self, state: CollectionState | None = None) -> str:
