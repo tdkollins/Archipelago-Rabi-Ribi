@@ -245,10 +245,13 @@ can_recruit_irisu = \
     rules.HasAll("Chapter 5", ItemName.miriam_recruit, ItemName.rumi_recruit) & \
     TownMemberCountIrisuRule()
 
+# TODO: Determine if removing chapter events would give better item placement with progression balancing
 can_reach_chapter_1 = Macro(
     rules.CanReachRegion(data.get_region_ap_name(LocationName.town_main)),
     "Chapter 1",
-    "Player can reach Chapter 1"
+    "Player can reach Chapter 1",
+    "Can reach",
+    "Cannot reach"
 )
 
 can_reach_chapter_2 = Macro(
@@ -257,7 +260,9 @@ can_reach_chapter_2 = Macro(
         & TownMemberCountRule(2)
     ),
     "Chapter 2",
-    "Player can reach Chapter 2"
+    "Player can reach Chapter 2",
+    "Can reach",
+    "Cannot reach"
 )
 
 can_reach_chapter_3 = Macro(
@@ -266,7 +271,9 @@ can_reach_chapter_3 = Macro(
         & TownMemberCountRule(4)
     ),
     "Chapter 3",
-    "Player can reach Chapter 3"
+    "Player can reach Chapter 3",
+    "Can reach",
+    "Cannot reach"
 )
 
 can_reach_chapter_4 = Macro(
@@ -275,7 +282,9 @@ can_reach_chapter_4 = Macro(
         & TownMemberCountRule(7)
     ),
     "Chapter 4",
-    "Player can reach Chapter 4"
+    "Player can reach Chapter 4",
+    "Can reach",
+    "Cannot reach"
 )
 
 can_reach_chapter_5 = Macro(
@@ -284,17 +293,23 @@ can_reach_chapter_5 = Macro(
         & TownMemberCountRule(10)
     ),
     "Chapter 5",
-    "Player can reach Chapter 5"
+    "Player can reach Chapter 5",
+    "Can reach",
+    "Cannot reach"
 )
 
 can_reach_chapter_6 = Macro(
     can_reach_chapter_5,
     "Chapter 6",
-    "Player can reach Chapter 6"
+    "Player can reach Chapter 6",
+    "Can reach",
+    "Cannot reach"
 )
 
 can_reach_chapter_7 = Macro(
     rules.Has(ItemName.rumi_recruit),
     "Chapter 7",
-    "Player can reach Chapter 7"
+    "Player can reach Chapter 7",
+    "Can reach",
+    "Cannot reach"
 )

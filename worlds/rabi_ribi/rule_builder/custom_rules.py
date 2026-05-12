@@ -6,7 +6,7 @@ from Options import CommonOptions, Option
 from rule_builder import rules
 from rule_builder.options import OPERATORS, REVERSE_OPERATORS, Operator
 
-from .glitched_rules import LogicState, evaluate_rule, get_indent, get_logic_color, get_prefix, get_suffix
+from .glitched_rules import LogicState, evaluate_rule, get_indentation, get_logic_color, get_out_of_logic_suffix
 
 from ..bases import RabiRibiWorldBase
 from ..constants import GAME_NAME
@@ -50,11 +50,14 @@ class KnowledgeRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
             name = Knowledge.get_option_name(self.value)
+            indent = get_indentation(depth)
+            verb = "Has" if result != LogicState.CannotReach else "Lacks"
+            color = get_logic_color(result)
             return [
-                *get_prefix(result, depth),
-                {"type": "color", "color": get_logic_color(
-                    result), "text": name},
-                *get_suffix(result)
+                {"type": "text", "text": f"{indent}{verb} "},
+                {"type": "color", "color": color, "text": name},
+                {"type": "text", "text": f" knowledge"},
+                *get_out_of_logic_suffix(result)
             ]
 
         @override
@@ -101,11 +104,14 @@ class TrickDifficultyRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
             name = Knowledge.get_option_name(self.value)
+            indent = get_indentation(depth)
+            verb = "Can do" if result != LogicState.CannotReach else "Cannot do"
+            color = get_logic_color(result)
             return [
-                *get_prefix(result, depth),
-                {"type": "color", "color": get_logic_color(
-                    result), "text": name},
-                *get_suffix(result)
+                {"type": "text", "text": f"{indent}{verb} "},
+                {"type": "color", "color": color, "text": name},
+                {"type": "text", "text": f"tricks"},
+                *get_out_of_logic_suffix(result)
             ]
 
         @override
@@ -171,11 +177,13 @@ class OutOfLogicOptionRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
 
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
+            indent = get_indentation(depth)
+            verb = "Can" if result != LogicState.CannotReach else "Cannot"
+            color = get_logic_color(result)
             return [
-                *get_prefix(result, depth),
-                {"type": "color", "color": get_logic_color(
-                    result), "text": self.name},
-                *get_suffix(result)
+                {"type": "text", "text": f"{indent}{verb} "},
+                {"type": "color", "color": color, "text": self.name},
+                *get_out_of_logic_suffix(result)
             ]
 
         @override
@@ -241,7 +249,7 @@ class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
 
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
-            indent = get_indent(depth)
+            indent = get_indentation(depth)
             messages: list[JSONMessagePart] = []
             if result == LogicState.Explain:
                 messages = [
@@ -262,7 +270,7 @@ class MagicTypesRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
                         "text": f"{curr_magic_types}/{self.num_magic_types}",
                     },
                     {"type": "text", "text": " Magic Types"},
-                    *get_suffix(result)
+                    *get_out_of_logic_suffix(result)
                 ]
             return messages
 
@@ -324,7 +332,7 @@ class TownMemberCountRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
 
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
-            indent = get_indent(depth)
+            indent = get_indentation(depth)
             messages: list[JSONMessagePart] = []
             if result == LogicState.Explain:
                 messages = [
@@ -350,7 +358,7 @@ class TownMemberCountRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
                         "text": f"{curr_town_members}/{self.num_town_members}",
                     },
                     {"type": "text", "text": " Town Members"},
-                    *get_suffix(result)
+                    *get_out_of_logic_suffix(result)
                 ]
             return messages
 
@@ -404,7 +412,7 @@ class TownMemberCountIrisuRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
 
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
-            indent = get_indent(depth)
+            indent = get_indentation(depth)
             messages: list[JSONMessagePart] = []
             if result == LogicState.Explain:
                 messages = [
@@ -429,7 +437,7 @@ class TownMemberCountIrisuRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
                         "text": f"{curr_town_members}/15",
                     },
                     {"type": "text", "text": " Main Game Town Members"},
-                    *get_suffix(result)
+                    *get_out_of_logic_suffix(result)
                 ]
             return messages
 
@@ -582,7 +590,7 @@ class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
 
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
-            indent = get_indent(depth)
+            indent = get_indentation(depth)
             messages: list[JSONMessagePart] = []
             if result == LogicState.Explain:
                 messages = [
@@ -606,7 +614,7 @@ class HasEnoughAmuletFoodRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
                         "text": f"{curr_amulet_food}/{self.num_amulet_food}",
                     },
                     {"type": "text", "text": " Amulet/Food"},
-                    *get_suffix(result)
+                    *get_out_of_logic_suffix(result)
                 ]
             return messages
 
@@ -654,6 +662,8 @@ def from_option(option: type[Option], value: Any, operator: Operator = "eq") -> 
 class Macro(rules.WrapperRule[RabiRibiWorldBase], game=GAME_NAME):
     name: str
     description: str = ""
+    verb_true: str = "Can"
+    verb_false: str = "Cannot"
 
     @override
     def _instantiate(self, world: RabiRibiWorldBase) -> rules.Rule.Resolved:
@@ -663,6 +673,8 @@ class Macro(rules.WrapperRule[RabiRibiWorldBase], game=GAME_NAME):
             self.child.resolve(world),
             self.name,
             self.description,
+            self.verb_true,
+            self.verb_false,
             player=world.player,
             caching_enabled=getattr(world, "rule_caching_enabled", False),
         )
@@ -675,21 +687,31 @@ class Macro(rules.WrapperRule[RabiRibiWorldBase], game=GAME_NAME):
 
     class Resolved(rules.WrapperRule.Resolved):
         name: str
-        description: str = ""
+        description: str
+        verb_true: str
+        verb_false: str
 
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
+            indent = get_indentation(depth)
+            verb = self.verb_false if result == LogicState.CannotReach else self.verb_true
+            color = get_logic_color(result)
             return [
-                *get_prefix(result, depth),
-                {"type": "color", "color": get_logic_color(
-                    result), "text": str(self)},
-                *get_suffix(result)
+                {"type": "text", "text": f"{indent}{verb} "},
+                {"type": "color", "color": color, "text": str(self)},
+                *get_out_of_logic_suffix(result)
             ]
 
         @override
         def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, None)
-            return [{"type": "color", "color": get_logic_color(result), "text": str(self)}]
+            verb = self.verb_false if result == LogicState.CannotReach else self.verb_true
+            color = get_logic_color(result)
+            return [
+                {"type": "text", "text": f"{verb} "},
+                {"type": "color", "color": color, "text": str(self)},
+                *get_out_of_logic_suffix(result)
+            ]
 
         @override
         def explain_str(self, state: CollectionState | None = None) -> str:

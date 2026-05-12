@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from enum import Enum
 from typing import Protocol, runtime_checkable
 
@@ -13,44 +14,20 @@ class LogicState(Enum):
     Explain = 3
 
 
-def get_suffix(result: LogicState) -> list[JSONMessagePart]:
-    suffix =  " (Out of Logic)" if result == LogicState.OutOfLogic else ""
-    return [{"type": "text", "text": suffix}]
-
-
-def get_indent(depth: int):
+def get_indentation(depth: int):
     hyphen = "- "
     spaces = depth * 4
     return "" if depth == 0 else f"{hyphen:>{spaces}}"
 
 
-def get_prefix(result: LogicState, depth: int) -> list[JSONMessagePart]:
-    indent = get_indent(depth)
-    text = "Can" if result != LogicState.CannotReach else "Cannot"
-    return [{"type": "text", "text": f"{indent}{text} "}]
-
-
 def evaluate_rule(rule: rules.Rule.Resolved, state: CollectionState | None, glitched_state: CollectionState | None) -> LogicState:
     if state is None:
         return LogicState.Explain
-    if rule(state): # type: ignore
+    if rule(state):
         return LogicState.InLogic
-    if glitched_state is not None and rule(glitched_state): # type: ignore
+    if glitched_state is not None and rule(glitched_state):
         return LogicState.OutOfLogic
     return LogicState.CannotReach
-
-
-@runtime_checkable
-class GlitchedLogicExplainer(Protocol):
-    def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
-        assert isinstance(self, rules.Rule.Resolved)
-        if self.always_true:
-            return []
-        result = evaluate_rule(self, state, glitched_state)
-        return [
-            *get_prefix(result, depth),
-            *get_suffix(result)
-        ]
 
 
 def get_logic_color(result: LogicState) -> str:
@@ -61,6 +38,18 @@ def get_logic_color(result: LogicState) -> str:
     if result == LogicState.OutOfLogic:
         return "yellow"
     return "salmon"
+
+
+def get_out_of_logic_suffix(result: LogicState) -> list[JSONMessagePart]:
+    suffix = " (Out of Logic)" if result == LogicState.OutOfLogic else ""
+    return [{"type": "text", "text": suffix}]
+
+
+@runtime_checkable
+class GlitchedLogicExplainer(Protocol):
+    @abstractmethod
+    def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
+        pass
 
 
 def rule_to_json(
@@ -74,11 +63,14 @@ def rule_to_json(
         messages.extend(rule.explain_rule_glitched(
             state, glitched_state, depth))
     elif isinstance(rule, rules.And.Resolved):
-        messages.extend(explain_rule_and(rule, state, glitched_state, depth))
+        messages.extend(explain_rule_and(
+            rule, state, glitched_state, depth))
     elif isinstance(rule, rules.Or.Resolved):
-        messages.extend(explain_rule_or(rule, state, glitched_state, depth))
+        messages.extend(explain_rule_or(
+            rule, state, glitched_state, depth))
     elif isinstance(rule, rules.Has.Resolved):
-        messages.extend(explain_rule_has(rule, state, glitched_state, depth))
+        messages.extend(explain_rule_has(
+            rule, state, glitched_state, depth))
     elif isinstance(rule, rules.HasAll.Resolved):
         messages.extend(explain_rule_has_all(
             rule, state, glitched_state, depth))
@@ -96,8 +88,8 @@ def rule_to_json(
 
 def explain_rule_and(rule: rules.And.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
     result = evaluate_rule(rule, state, glitched_state)
-    indent = get_indent(depth)
-    suffix = get_suffix(result)
+    indent = get_indentation(depth)
+    suffix = get_out_of_logic_suffix(result)
     messages: list[JSONMessagePart] = [
         {"type": "text", "text": indent},
         {"type": "text", "text": "Missing" if result ==
@@ -116,8 +108,8 @@ def explain_rule_and(rule: rules.And.Resolved, state: CollectionState, glitched_
 
 def explain_rule_or(rule: rules.Or.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
     result = evaluate_rule(rule, state, glitched_state)
-    indent = get_indent(depth)
-    suffix = get_suffix(result)
+    indent = get_indentation(depth)
+    suffix = get_out_of_logic_suffix(result)
     messages: list[JSONMessagePart] = [
         {"type": "text", "text": indent},
         {"type": "text", "text": "Missing" if result ==
@@ -136,11 +128,10 @@ def explain_rule_or(rule: rules.Or.Resolved, state: CollectionState, glitched_st
 
 def explain_rule_has(rule: rules.Has.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
     result = evaluate_rule(rule, state, glitched_state)
-    indent = get_indent(depth)
-    verb = "Missing " if result == LogicState.CannotReach else "Has "
+    indent = get_indentation(depth)
+    verb = "Missing" if result == LogicState.CannotReach else "Has"
     messages: list[JSONMessagePart] = [
-        {"type": "text", "text": indent},
-        {"type": "text", "text": verb}
+        {"type": "text", "text": f"{indent}{verb} "},
     ]
     if rule.count > 1:
         messages.append(
@@ -153,14 +144,14 @@ def explain_rule_has(rule: rules.Has.Resolved, state: CollectionState, glitched_
     else:
         messages.append({"type": "item_name", "flags": 0b001,
                         "text": rule.item_name, "player": rule.player})
-    messages.extend(get_suffix(result))
+    messages.extend(get_out_of_logic_suffix(result))
     return messages
 
 
 def explain_rule_has_all(rule: rules.HasAll.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
     result = evaluate_rule(rule, state, glitched_state)
-    indent = get_indent(depth)
-    child_indent = get_indent(depth + 1)
+    indent = get_indentation(depth)
+    child_indent = get_indentation(depth + 1)
     messages: list[JSONMessagePart] = []
     if result == LogicState.Explain:
         messages = [
@@ -223,8 +214,8 @@ def explain_rule_has_all(rule: rules.HasAll.Resolved, state: CollectionState, gl
 
 def explain_rule_has_any(rule: rules.HasAny.Resolved, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
     result = evaluate_rule(rule, state, glitched_state)
-    indent = get_indent(depth)
-    child_indent = get_indent(depth + 1)
+    indent = get_indentation(depth)
+    child_indent = get_indentation(depth + 1)
     messages: list[JSONMessagePart] = []
     if result == LogicState.Explain:
         messages = [
@@ -286,20 +277,20 @@ def explain_rule_has_any(rule: rules.HasAny.Resolved, state: CollectionState | N
 
 def explain_rule_can_reach_region(rule: rules.CanReachRegion.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
     result = evaluate_rule(rule, state, glitched_state)
-    indent = get_indent(depth)
+    indent = get_indentation(depth)
     verb = "Cannot reach" if result == LogicState.CannotReach else "Reached"
     return [
         {"type": "text", "text": indent},
         {"type": "text", "text": f"{verb} region "},
         {"type": "color", "color": get_logic_color(
             result), "text": rule.region_name},
-        *get_suffix(result)
+        *get_out_of_logic_suffix(result)
     ]
 
 
 def explain_rule_has_group_unique(rule: rules.HasGroupUnique.Resolved, state: CollectionState, glitched_state: CollectionState, depth: int) -> list[JSONMessagePart]:
     result = evaluate_rule(rule, state, glitched_state)
-    indent = get_indent(depth)
+    indent = get_indentation(depth)
     body: list[JSONMessagePart] = [{"type": "text", "text": "Has "}]
     if result == LogicState.Explain:
         body.append({"type": "color", "color": "cyan",
@@ -320,5 +311,5 @@ def explain_rule_has_group_unique(rule: rules.HasGroupUnique.Resolved, state: Co
     return [
         {"type": "text", "text": indent},
         *body,
-        *get_suffix(result)
+        *get_out_of_logic_suffix(result)
     ]

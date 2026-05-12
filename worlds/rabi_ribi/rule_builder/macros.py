@@ -21,40 +21,54 @@ from ..options import *
 # Knowledge and Trick Difficulty
 intermediate = Macro(
     KnowledgeRule(Knowledge.option_intermediate),
-    "ITM",
-    "Assumes the player has knowledge of intermediate-level tricks"
+    "Intermediate Knowledge",
+    "Assumes the player has knowledge of intermediate-level tricks",
+    "Has",
+    "Lacks"
 )
 
 advanced = Macro(
     KnowledgeRule(Knowledge.option_advanced),
-    "ADV",
-    "Assumes the player has knowledge of advanced-level tricks"
+    "Advanced Knowledge",
+    "Assumes the player has knowledge of advanced-level tricks",
+    "Has",
+    "Lacks"
 )
 
 obscure = Macro(
     KnowledgeRule(Knowledge.option_obscure),
-    "OBS",
-    "Assumes the player has knowledge of obscure tricks"
+    "Obscure Knowledge",
+    "Assumes the player has knowledge of obscure tricks",
+    "Has",
+    "Lacks"
 )
 
 hard = Macro(
     TrickDifficultyRule(TrickDifficulty.option_hard),
-    "HARD",
-    "Assumes the player can execute tricks rated hard"
+    "Hard Tricks",
+    "Assumes the player can execute tricks rated hard",
+    "Can do",
+    "Cannot do"
 )
 
 vhard = Macro(
     TrickDifficultyRule(TrickDifficulty.option_v_hard),
-    "VHARD",
-    "Assumes the player can execute tricks rated very hard"
+    "Very Hard Tricks",
+    "Assumes the player can execute tricks rated very hard",
+    "Can do",
+    "Cannot do"
 )
 
 extreme = Macro(
     TrickDifficultyRule(TrickDifficulty.option_extreme),
-    "EXT",
-    "Assumes the player can execute tricks rated extreme"
+    "Extreme Tricks",
+    "Assumes the player can execute tricks rated extreme",
+    "Can do",
+    "Cannot do"
 )
 
+# Note: Yes, this will print "Can STUPID"
+# Leave as is until someone calls this a bug
 stupid = Macro(
     TrickDifficultyRule(TrickDifficulty.option_stupid),
     "STUPID",
@@ -121,29 +135,47 @@ obs_stupid = Macro(
 )
 
 # Options
-can_zip = OutOfLogicOptionRule("Zip", ZipsRequired, True)
+can_zip = OutOfLogicOptionRule(
+    "Zip", ZipsRequired, True)
+
 can_semi_solid_clip = OutOfLogicOptionRule(
     "Semisolid Clip", SemiSolidClipsRequired, True)
-can_block_clip = OutOfLogicOptionRule("Block Clip", BlockClipsRequired, True)
+
+can_block_clip = OutOfLogicOptionRule(
+    "Block Clip", BlockClipsRequired, True)
+
 can_do_boring_tricks = OutOfLogicOptionRule(
-    "Boring", BoringTricksRequired, True)
+    "Do Boring Tricks", BoringTricksRequired, True)
+
 can_bunstrike_zip = OutOfLogicOptionRule(
     "Bunstrike Zip", BunstrikeZipsRequired, True)
+
 can_use_carrot_shooter = OutOfLogicOptionRule(
-    "Carrot Shooter", CarrotShooterInLogic, True)
+    "Use Carrot Shooter", CarrotShooterInLogic, True)
+
 can_use_event_warps = OutOfLogicOptionRule(
-    "Event Warp", EventWarpsInLogic, True)
-can_enter_plurkwood = OutOfLogicOptionRule("Plurkwood", IncludePlurkwood, True)
+    "Use Event Warps", EventWarpsInLogic, True)
+
+can_enter_plurkwood = OutOfLogicOptionRule(
+    "Enter Plurkwood", IncludePlurkwood, True)
+
 can_enter_warp_destination = OutOfLogicOptionRule(
-    "Warp Destination", IncludeWarpDestination, True)
-can_enter_post_game = OutOfLogicOptionRule("Post-Game", IncludePostGame, True)
+    "Enter Warp Destination", IncludeWarpDestination, True)
+
+can_enter_post_game = OutOfLogicOptionRule(
+    "Enter Post-Game", IncludePostGame, True)
+
 can_enter_post_irisu = OutOfLogicOptionRule(
-    "Post-Irisu", IncludePostIrisu, True)
-can_enter_halloween = OutOfLogicOptionRule("Halloween", IncludeHalloween, True)
+    "Enter Post-Irisu", IncludePostIrisu, True)
+
+can_enter_halloween = OutOfLogicOptionRule(
+    "Enter Halloween DLC", IncludeHalloween, True)
+
 darkness_without_light_orb = OutOfLogicOptionRule(
-    "Darkness", DarknessWithoutLightOrb, True)
+    "Navigate Darkness without Light Orb", DarknessWithoutLightOrb, True)
+
 underwater_without_water_orb = OutOfLogicOptionRule(
-    "Underwater", UnderwaterWithoutWaterOrb, True)
+    "Navigate Underwater without Water Orb", UnderwaterWithoutWaterOrb, True)
 
 # Events
 # Contains in-game events
@@ -167,13 +199,17 @@ chapter_7 = rules.Has("Chapter 7")
 boss_keke_bunny = Macro(
     rules.CanReachRegion(data.get_region_ap_name(LocationName.plurkwood_main)),
     "Fought Keke Bunny",
-    "Player can fight Keke Bunny in Plurkwood"
+    "Player can fight Keke Bunny in Plurkwood",
+    "Has",
+    "Has not"
 )
 
 boss_ribbon = Macro(
     rules.CanReachRegion(data.get_region_ap_name(LocationName.spectral_warp)),
     "Fought Ribbon",
-    "Player can fight Ribbon in Spectral Cave"
+    "Player can fight Ribbon in Spectral Cave",
+    "Has",
+    "Has not"
 )
 
 # Pseudo Items
@@ -181,119 +217,147 @@ boss_ribbon = Macro(
 wall_jump_lv2 = Macro(
     rules.Has(ItemName.wall_jump) & shop_reachable,
     "Wall Jump Lv2",
-    "Player can upgrade Wall Jump to Level 2"
+    "Player can upgrade Wall Jump to Level 2",
+    "Can use",
+    "Cannot use"
 )
 
 hammer_roll_lv3_upgrade = Macro(
     rules.Has(ItemName.hammer_roll) & shop_reachable & chapter_3,
     "Hammer Roll Lv3 Upgrade",
-    "Player can upgrade Hammer Roll to Level 3"
+    "Player can upgrade Hammer Roll to Level 3",
+    "Can obtain",
+    "Cannot obtain"
 )
 
 air_dash_lv3_upgrade = Macro(
     rules.Has(ItemName.air_dash) & shop_reachable,
     "Air Dash Lv3 Upgrade",
-    "Player can upgrade Air Dash to Level 3"
+    "Player can upgrade Air Dash to Level 3",
+    "Can obtain",
+    "Cannot obtain"
 )
 
 speed_boost_lv3 = Macro(
     rules.Has(ItemName.speed_boost) & shop_reachable,
     "Speed Boost Lv3",
-    "Player can upgrade Speed Boost to Level 3"
+    "Player can upgrade Speed Boost to Level 3",
+    "Can obtain",
+    "Cannot obtain"
 )
 
 bunny_amulet = Macro(
     rules.Has(ItemName.bunny_amulet) | chapter_2,
     "Bunny Amulet",
-    "Player has Bunny Amulet"
+    "Player has Bunny Amulet",
+    "Has",
+    "Missing"
 )
 
 bunny_amulet_lv2 = Macro(
     rules.Has(ItemName.bunny_amulet) & (
         shop_reachable | chapter_3 | chapter_7),
     "Bunny Amulet Lv2",
-    "Player can upgrade Bunny Amulet to Level 2"
+    "Player can upgrade Bunny Amulet to Level 2",
+    "Can use",
+    "Cannot use"
 )
 
 bunny_amulet_lv3 = Macro(
     rules.Has(ItemName.bunny_amulet) & (
         shop_reachable | chapter_4 | chapter_7),
     "Bunny Amulet Lv3",
-    "Player can upgrade Bunny Amulet to Level 3"
+    "Player can upgrade Bunny Amulet to Level 3",
+    "Can use",
+    "Cannot use"
 )
 
 bunny_amulet_lv4 = Macro(
     rules.Has(ItemName.bunny_amulet) & chapter_7,
     "Bunny Amulet Lv4",
-    "Player can upgrade Bunny Amulet to Level 4"
+    "Player can upgrade Bunny Amulet to Level 4",
+    "Can use",
+    "Cannot use"
 )
 
 piko_hammer_leveled = Macro(
     rules.Has(ItemName.piko_hammer),
-    "Piko Hammer Leveled",
+    "Level Up Piko Hammer",
     "Player has leveled up the Piko Hammer through combat"
 )
 
 carrot_bomb_entry = Macro(
     rules.Has(ItemName.carrot_bomb),
     "Carrot Bomb Entry",
-    "Player can enter a region using Carrot Bombs"
+    "Player can enter a region using Carrot Bombs",
 )
 
 carrot_shooter_entry = Macro(
     rules.Has(ItemName.carrot_shooter),
     "Carrot Shooter Entry",
-    "Player can enter a region using a Carrot Shooter charge shot"
+    "Player can enter a region using a Carrot Shooter charge shot",
 )
 
 charge_carrot_shooter_entry = Macro(
     rules.HasAll(ItemName.carrot_shooter, ItemName.charge_ring),
     "Charge Ring Carrot Shooter Entry",
-    "Player can enter a region using a Carrot Shooter charge shot with Charge Ring"
+    "Player can enter a region using a Carrot Shooter charge shot with Charge Ring",
 )
 
 speedy = Macro(
     intermediate & rules.Has(
         ItemName.cicini_recruit) & chapter_1 & TownMemberCountRule(3),
-    "Speedy",
-    "Player can obtain the Speedy buff from Cicini"
+    "Speedy (Cicini Buff)",
+    "Player can obtain the Speedy buff from Cicini",
+    "Has",
+    "Missing"
 )
 
 item_menu = Macro(
     chapter_1 | (advanced & MagicTypesRule(3)),
     "Item Menu",
-    "Player can open the quick item menu"
+    "Player can open the quick item menu",
+    "Can open",
+    "Cannot open"
 )
 
 consumable_use = Macro(
     item_menu & (rules.HasGroupUnique("Consumables") | shop_reachable),
-    "Consumable Use",
+    "Use Consumables",
     "Player can use a consumable item"
 )
 
 many_amulet_food = Macro(
     item_menu & shop_reachable & bunny_amulet,
-    "Many Amulet and Food",
-    "Player can use a large amount of Bunny Amulet charges and consumables by purchasing them"
+    "Many Amulet Charges and Food",
+    "Player can use a large amount of Bunny Amulet charges and consumables through Miriam's Shop",
+    "Can obtain",
+    "Cannot obtain"
 )
 
 boost = Macro(
     boost_unlocked | (rules.Has(ItemName.rumi_donut) & item_menu),
-    "Boost",
-    "Player can use boost attack"
+    "Boost Attack",
+    "Player can use boost attack",
+    "Can use",
+    "Cannot use"
 )
 
 boost_many = Macro(
     item_menu & shop_reachable,
-    "Boost Many",
-    "Player can use several boost attacks in a row"
+    "Many Boost Attacks",
+    "Player can use several boost attacks in a row",
+    "Can use",
+    "Cannot use"
 )
 
 boost_boring = Macro(
     (boost_unlocked & can_do_boring_tricks) | (
         rules.Has(ItemName.rumi_donut) & item_menu),
-    "Boost Boring",
-    "Player can use several boost attacks by farming boost charge or using a Rumi Donut"
+    "Boost Attack (Boring)",
+    "Player can use several boost attacks by farming boost charge or using a Rumi Donut",
+    "Can use",
+    "Cannot use"
 )
 
 # Items
@@ -302,39 +366,51 @@ bunny_strike = Macro(
     rules.HasAll(ItemName.piko_hammer, ItemName.sliding_powder,
                  ItemName.bunny_strike),
     "Bunny Strike",
-    "Player can use Bunny Strike"
+    "Player can use Bunny Strike",
+    "Can use",
+    "Cannot use"
 )
 
 bunny_whirl = Macro(
     rules.HasAll(ItemName.piko_hammer, ItemName.bunny_whirl),
     "Bunny Whirl",
-    "Player can use Bunny Whirl"
+    "Player can use Bunny Whirl",
+    "Can use",
+    "Cannot use"
 )
 
 air_dash = Macro(
     rules.HasAll(ItemName.piko_hammer, ItemName.air_dash),
     "Air Dash",
-    "Player can use Air Dash"
+    "Player can use Air Dash",
+    "Can use",
+    "Cannot use"
 )
 
 air_dash_lv3 = Macro(
     rules.Has(ItemName.piko_hammer) & air_dash_lv3_upgrade,
     "Air Dash Lv3",
-    "Player can use Air Dash Lv3"
+    "Player can use Air Dash Lv3",
+    "Can use",
+    "Cannot use"
 )
 
 hammer_roll = Macro(
     rules.HasAll(ItemName.piko_hammer, ItemName.bunny_whirl,
                  ItemName.hammer_roll),
     "Hammer Roll",
-    "Player can use Hammer Roll"
+    "Player can use Hammer Roll",
+    "Can use",
+    "Cannot use"
 )
 
 hammer_roll_lv3 = Macro(
     rules.HasAll(ItemName.piko_hammer,
                  ItemName.bunny_whirl) & hammer_roll_lv3_upgrade,
     "Hammer Roll Lv3",
-    "Player can use Hammer Roll Lv3"
+    "Player can use Hammer Roll Lv3",
+    "Can use",
+    "Cannot use"
 )
 
 darkness = Macro(
@@ -352,43 +428,57 @@ underwater = Macro(
 carrot_shooter = Macro(
     rules.Has(ItemName.carrot_shooter) & can_use_carrot_shooter,
     "Carrot Shooter",
-    "Player can use Carrot Shooter"
+    "Player can use Carrot Shooter",
+    "Can use",
+    "Cannot use"
 )
 
 explosives = Macro(
     rules.Has(ItemName.carrot_bomb) | (carrot_shooter & boost),
     "Explosives",
-    "Player can destory bombable tiles using explosives"
+    "Player can destory bombable tiles using explosives",
+    "Can use",
+    "Cannot use"
 )
 
 explosives_enemy = Macro(
     rules.Has(ItemName.carrot_bomb) | carrot_shooter,
     "Explosives With Enemy",
-    "Player can destory bombable tiles using explosives, using an enemy if the explosives are from the Carrot Shooter's charge shot"
+    "Player can destory bombable tiles using explosives, using an enemy if the explosives are from the Carrot Shooter's charge shot",
+    "Can use",
+    "Cannot use"
 )
 
 speed1 = Macro(
     rules.Has(ItemName.speed_boost) | speedy,
     "Speed Lv1",
-    "Player has a way to get a level 1 speed boost"
+    "Player has a way to get a level 1 speed boost",
+    "Has",
+    "Missing"
 )
 
 speed2 = Macro(
     speed_boost_lv3 | speedy,
     "Speed Lv2",
-    "Player has a way to get a level 2 speed boost"
+    "Player has a way to get a level 2 speed boost",
+    "Has",
+    "Missing"
 )
 
 speed3 = Macro(
     speed_boost_lv3 | (rules.Has(ItemName.speed_boost) & speedy),
     "Speed Lv3",
-    "Player has a way to get a level 3 speed boost"
+    "Player has a way to get a level 3 speed boost",
+    "Has",
+    "Missing"
 )
 
 speed5 = Macro(
     speed_boost_lv3 & speedy,
     "Speed Lv5",
-    "Player has a way to get a level 5 speed boost"
+    "Player has a way to get a level 5 speed boost",
+    "Has",
+    "Missing"
 )
 
 # Tricks
@@ -396,7 +486,7 @@ speed5 = Macro(
 hammer_roll_zip = Macro(
     can_zip & hammer_roll_lv3,
     "Hammer Roll Zip",
-    "Player can perform a zip with Hammer Roll"
+    "Player can perform a zip with Hammer Roll",
 )
 
 slide_zip = Macro(
