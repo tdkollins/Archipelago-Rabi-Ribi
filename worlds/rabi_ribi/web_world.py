@@ -9,5 +9,5 @@ class RabiRibiWeb(WebWorld):
         "English",
         "setup_en.md",
         "setup/en",
-        ["Phie", "PsyMarth"]
+        ["PsyMarth", "Phie"]
     )]
