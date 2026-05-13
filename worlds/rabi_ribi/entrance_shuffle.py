@@ -87,6 +87,25 @@ class MapAllocation(Allocation):
                     templates[conflict_index] = None
                     template_index[conflict] = -1
 
+        # Remove excluded templates
+        excluded_constraints = {
+            constraint.logic_key
+            for constraint in game_data.constraints
+            if constraint.name in ap_options.exclude_constraints
+        }
+        excluded_templates = [
+            template
+            for template in data.template_constraints
+            if template.name in excluded_constraints
+        ]
+        for conflict in excluded_templates:
+            if conflict in template_index:
+                conflict_index = template_index[conflict]
+                if conflict_index < 0: continue
+                removed_weight += templates[conflict_index].weight
+                templates[conflict_index] = None
+                template_index[conflict] = -1
+
         while len(templates) > 0 and len(picked_templates) < target_template_count:
             if update_table:
                 update_table = False

@@ -41,7 +41,6 @@ class RabiRibiWorldBase(World):
         self.update_minimum_number_of_constraints()
         self.detect_excluded_required_constraint()
         self.detect_conflicting_constraints()
-        self.exclude_constraints()
 
     def update_minimum_number_of_constraints(self):
         if self.options.number_of_constraint_changes < len(self.options.required_constraints.value):
@@ -91,18 +90,6 @@ class RabiRibiWorldBase(World):
                     f"{template_name} conflicts with one or more required templates. "
                     f"Player {self.player} ({self.player_name}) needs to disable one of these templates.")
 
-    def exclude_constraints(self):
-        # Remove excluded constraints from the pool
-        excluded_constraints = {
-            constraint.logic_key
-            for constraint in data.constraints
-            if constraint.name in self.options.exclude_constraints
-        }
-        self.randomizer_data.template_constraints = [
-            constraint
-            for constraint in self.randomizer_data.template_constraints
-            if constraint.name not in excluded_constraints
-        ]
 
     def _convert_options_to_existing_randomizer_args(self):
         args = parse_args()
