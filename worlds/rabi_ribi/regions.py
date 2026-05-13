@@ -11,13 +11,14 @@ from .entrance_shuffle import MapAllocation, MapGenerator
 from .items import RabiRibiItem
 from .locations import RabiRibiLocation, setup_locations
 from .names import ItemName, LocationName
+from .options import Knowledge, TrickDifficulty
 from .rules import *
 
 logger = logging.getLogger(GAME_NAME)
 
 class RegionHelper:
     """
-    This class provides methods associated with defining and connecting regions, locations,
+    This class provides methods associated with defining and connecting regions and locations,
     and the access rules for those regions and locations.
     """
     regions: set[str]
@@ -35,7 +36,6 @@ class RegionHelper:
 
         self.regions = { region.name for region in data.regions if self._region_filter(region) }
         self.location_table = setup_locations(self.options)
-
 
 
     def generate_seed(self):
@@ -67,10 +67,13 @@ class RegionHelper:
 
 
     def _region_filter(self, region: RegionData) -> bool:
-        if not self.world.is_ut and self.options.knowledge < region.knowledge:
+        knowledge = Knowledge.from_text(region.knowledge).value if region.knowledge else Knowledge.option_basic
+        trick_difficulty = TrickDifficulty.from_text(region.trick_difficulty).value if region.trick_difficulty else TrickDifficulty.option_normal
+
+        if not self.world.is_ut and self.options.knowledge < knowledge:
             return False
 
-        if not self.world.is_ut and self.options.trick_difficulty < region.trick_difficulty:
+        if not self.world.is_ut and self.options.trick_difficulty < trick_difficulty:
             return False
 
         # Include Plurkwood with UT, as the player could recruit Keke Bunny out of logic

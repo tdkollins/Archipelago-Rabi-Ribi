@@ -387,8 +387,8 @@
     "name": "Floating Library - Out of Bounds",
     "logic_key": "LIBRARY_OOB",
     "region": "Floating Library",
-    "knowledge": 2,
-    "trick_difficulty": 2,
+    "knowledge": "advanced",
+    "trick_difficulty": "very_hard",
     "requires_post_game": true
   },
   {
@@ -632,8 +632,8 @@
     "name": "Sky Island Town - Out of Bounds",
     "logic_key": "SKY_ISLAND_OOB",
     "region": "Sky Island Town",
-    "knowledge": 2,
-    "trick_difficulty": 2
+    "knowledge": "advanced",
+    "trick_difficulty": "very_hard"
   },
   {
     "name": "Sky Island Town - Upper Area",

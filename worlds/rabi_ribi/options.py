@@ -1,7 +1,10 @@
 """This module represents option defintions for Rabi-Ribi"""
 from dataclasses import dataclass
 
-from Options import PerGameCommonOptions, Choice, Range, Toggle, DeathLink
+from Options import DeathLinkMixin, OptionGroup, OptionSet, PerGameCommonOptions, Choice, Range, Toggle, StartInventoryPool
+
+from .data import data
+
 
 class ApplyBeginnerMod(Toggle):
     """
@@ -11,6 +14,7 @@ class ApplyBeginnerMod(Toggle):
     """
     display_name = "Apply Beginner Mod"
 
+
 class CarrotShooterInLogic(Toggle):
     """
     If set to false, Carrot Shooter will not be required to bomb locations.
@@ -18,12 +22,14 @@ class CarrotShooterInLogic(Toggle):
     """
     display_name = "Carrot Shooter In Logic"
 
+
 class RainbowShotInLogic(Toggle):
     """
     If set to false, Rainbow Egg will not be considered as a collectable magic type
     to enable the item menu.
     """
     display_name = "Rainbow Egg In Logic"
+
 
 class MaxNumberOfEasterEggs(Range):
     """
@@ -38,6 +44,7 @@ class MaxNumberOfEasterEggs(Range):
     range_end = 80
     default = 5
 
+
 class PercentageOfEasterEggs(Range):
     """
     What percentage of Easter Eggs are required to beat the game. Note that you will receive
@@ -48,6 +55,7 @@ class PercentageOfEasterEggs(Range):
     range_end = 100
     default = 100
 
+
 class EncourageEggsInLateSpheres(Toggle):
     """
     If set to true, the randomizer logic will attempt to place eggs in later spheres
@@ -55,9 +63,10 @@ class EncourageEggsInLateSpheres(Toggle):
     """
     display_name = "Encourage Eggs In Late Spheres"
 
+
 class Knowledge(Choice):
     """
-    Knowledge can be BASIC, INTERMEDIATE, ADVANCED, or OBSCURE.
+    Knowledge can be Basic, Intermediate, Advanced, or Obscure.
 
     There are many tricks in the game that requires advanced knowledge of how the game works to perform.
     Knowledge levels (mostly) align with the tricks explained on each section of the Platforming Tricks Tutorial custom map.
@@ -70,25 +79,27 @@ class Knowledge(Choice):
     option_obscure = 3
     default = option_basic
 
+
 class TrickDifficulty(Choice):
     """
-    Difficulty can be NORMAL, HARD, V_HARD, EXTREME, or STUPID.
+    Difficulty can be Normal, Hard, Very Hard, Extreme, or Stupid.
 
     Some tricks in Rabi-Ribi can be very difficult to execute. This flag determines the minimum execution ability required to complete the seed.
 
     Normal is recommended for most players. Any tricks in normal should be only as hard as what is expected in a Low Item% playthrough.
     Hard involves some tricks that are tight and can be difficult to execute for newer players.
-    V_Hard involves some tricks that are very tight and can be difficult to execute even for experienced players.
+    Very Hard involves some tricks that are very tight and can be difficult to execute even for experienced players.
     Extreme involves tricks that can be quite unreasonable to be expected to execute.
     Stupid refers to tricks that no one wants to do, ever. This often refers to tricks that have only been performed successfully once, just to prove that it is possible.
     """
     display_name = "Trick Difficulty"
     option_normal = 0
     option_hard = 1
-    option_v_hard = 2
+    option_very_hard = 2
     option_extreme = 3
     option_stupid = 4
     default = option_normal
+
 
 class BlockClipsRequired(Toggle):
     """
@@ -96,6 +107,7 @@ class BlockClipsRequired(Toggle):
     Turning off this flag removes the need for block clips.
     """
     display_name = "Block Clips Required"
+
 
 class SemiSolidClipsRequired(Toggle):
     """
@@ -107,6 +119,7 @@ class SemiSolidClipsRequired(Toggle):
     """
     display_name = "Semi Solid Clips Required"
 
+
 class ZipsRequired(Toggle):
     """
     Zips are glitches that allow you to clip through terrain.
@@ -117,6 +130,7 @@ class ZipsRequired(Toggle):
     """
     display_name = "Zips Required"
 
+
 class BunstrikeZipsRequired(Toggle):
     """
     A bunstrike zip is an obscure zip method performed by using Bunny Strike.
@@ -125,6 +139,7 @@ class BunstrikeZipsRequired(Toggle):
     can be obtained without the need for bunstrike zips.
     """
     display_name = "Bunstrike Zips Required"
+
 
 class BoringTricksRequired(Toggle):
     """
@@ -135,12 +150,14 @@ class BoringTricksRequired(Toggle):
     """
     display_name = "Boring Tricks Required"
 
+
 class DarknessWithoutLightOrb(Toggle):
     """
     If this flag is true, the game might expect you to go into dark areas,
     even if you don’t have the Light Orb.
     """
     display_name = "Darkness Without Light Orb"
+
 
 class UnderwaterWithoutWaterOrb(Toggle):
     """
@@ -149,11 +166,13 @@ class UnderwaterWithoutWaterOrb(Toggle):
     """
     display_name = "Underwater Without Water Orb"
 
+
 class IncludePlurkwood(Toggle):
     """
     If this flag is true, the game might expect you to go into Plurkwood.
     """
     display_name = "IncludePlurkwood"
+
 
 class IncludeWarpDestination(Toggle):
     """
@@ -162,17 +181,20 @@ class IncludeWarpDestination(Toggle):
     """
     display_name = "Include Warp Destination"
 
+
 class IncludePostGame(Toggle):
     """
     If this flag is true, locations only reachable in the post game are included in the pool.
     """
     display_name = "Include Post Game"
 
+
 class IncludePostIrisu(Toggle):
     """
     If this flag is true, locations only reachable after beating Irisu are included in the pool.
     """
     display_name = "Include Post Irisu"
+
 
 class IncludeHalloween(Toggle):
     """
@@ -181,6 +203,7 @@ class IncludeHalloween(Toggle):
     """
     display_name = "Include Halloween DLC"
 
+
 class EventWarpsInLogic(Toggle):
     """
     If this flag is true, events that warp the player to another location are considered in logic.
@@ -188,6 +211,7 @@ class EventWarpsInLogic(Toggle):
     allow these events to be accessed multiple times.
     """
     display_name = "Event Warps in Logic"
+
 
 class AttackMode(Choice):
     """
@@ -204,6 +228,7 @@ class AttackMode(Choice):
     option_hyper = 2
     default = option_hyper
 
+
 class NumberOfConstraintChanges(Range):
     """
     Sets the total number of map constraint changes to be added.
@@ -219,17 +244,34 @@ class NumberOfConstraintChanges(Range):
     range_end = 70
     default = 20
 
+class RequiredConstraints(OptionSet):
+    """
+    Sets the map constraints that should be forced when selecting which constraints to place.
+    """
+    display_name = "Required Constraints"
+    valid_keys = {constraint.name for constraint in data.constraints}
+
+class ExcludeConstraints(OptionSet):
+    """
+    Sets the map constraints that should be excluded when selecting which constraints to place.
+    """
+    display_name = "Exclude Constraints"
+    valid_keys = {constraint.name for constraint in data.constraints}
+
+
 class ShuffleMapTransitions(Toggle):
     """
     If this flag is true, the randomizer will shuffle the entrances between maps.
     """
     display_name = "Shuffle Map Transitions"
 
+
 class ShuffleMusic(Toggle):
     """
     If this flag is true, the randomizer will shuffle the music tracks played in each area.
     """
     display_name = "Shuffle Music"
+
 
 class ShuffleBackgrounds(Toggle):
     """
@@ -238,12 +280,14 @@ class ShuffleBackgrounds(Toggle):
     """
     display_name = "Shuffle Backgrounds"
 
+
 class AllowLaggyBackgrounds(Toggle):
     """
     If this flag is true, the randomizer will add backgrounds that introduce lag
     to the pool of backgrounds to choose from when shuffling backgrounds.
     """
     display_name = "Allow Difficult Backgrounds"
+
 
 class AllowDifficultBackgrounds(Toggle):
     """
@@ -252,6 +296,7 @@ class AllowDifficultBackgrounds(Toggle):
     """
     display_name = "Allow Difficult Backgrounds"
 
+
 class ShuffleStartLocation(Toggle):
     """
     If this flag is true, the randomizer will start the player at one of several locations
@@ -259,9 +304,10 @@ class ShuffleStartLocation(Toggle):
     """
     display_name = "Shuffle Start Location"
 
+
 @dataclass
-class RabiRibiOptions(PerGameCommonOptions):
-    """Rabi Ribi Options Definition"""
+class RabiRibiOptions(PerGameCommonOptions, DeathLinkMixin):
+    start_inventory_from_pool: StartInventoryPool
     max_number_of_easter_eggs: MaxNumberOfEasterEggs
     percentage_of_easter_eggs: PercentageOfEasterEggs
     encourage_eggs_in_late_spheres: EncourageEggsInLateSpheres
@@ -288,10 +334,51 @@ class RabiRibiOptions(PerGameCommonOptions):
     include_halloween: IncludeHalloween
 
     number_of_constraint_changes: NumberOfConstraintChanges
+    required_constraints: RequiredConstraints
+    exclude_constraints: ExcludeConstraints
     shuffle_map_transitions: ShuffleMapTransitions
     shuffle_start_location: ShuffleStartLocation
     shuffle_music: ShuffleMusic
     shuffle_backgrounds: ShuffleBackgrounds
     allow_laggy_backgrounds: AllowLaggyBackgrounds
     allow_difficult_backgrounds: AllowDifficultBackgrounds
-    death_link: DeathLink
+
+
+option_groups = [
+    OptionGroup("Goal Options", [
+        MaxNumberOfEasterEggs,
+        PercentageOfEasterEggs,
+        EncourageEggsInLateSpheres,
+        EventWarpsInLogic,
+        IncludePlurkwood,
+        IncludeWarpDestination,
+        IncludePostGame,
+        IncludePostIrisu,
+        IncludeHalloween,
+        NumberOfConstraintChanges,
+        ExcludeConstraints,
+        ShuffleMapTransitions,
+        ShuffleStartLocation]),
+    OptionGroup("Difficulty Options", [
+        Knowledge,
+        TrickDifficulty,
+        BlockClipsRequired,
+        SemiSolidClipsRequired,
+        ZipsRequired,
+        BunstrikeZipsRequired,
+        BoringTricksRequired,
+        DarknessWithoutLightOrb,
+        UnderwaterWithoutWaterOrb,
+        CarrotShooterInLogic,
+        RainbowShotInLogic,
+        EventWarpsInLogic]),
+    OptionGroup("Quality of Life", [
+        ApplyBeginnerMod,
+        AttackMode
+    ]),
+    OptionGroup("Aesthetics", [
+        ShuffleMusic,
+        ShuffleBackgrounds,
+        AllowLaggyBackgrounds,
+        AllowDifficultBackgrounds])
+]

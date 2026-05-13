@@ -6,7 +6,6 @@ import pkgutil
 from typing import Any
 
 from rule_builder import rules
-from .options import Knowledge, TrickDifficulty
 
 
 @dataclass
@@ -47,8 +46,8 @@ class RegionData:
     region: str
     has_warp: bool = False
     connections: dict[str, rules.Rule] = field(default_factory=dict)
-    knowledge: int = Knowledge.option_basic
-    trick_difficulty: int = TrickDifficulty.option_normal
+    knowledge: str | None = None
+    trick_difficulty: str | None = None
     requires_plurkwood: bool = False
     requires_warp_destination: bool = False
     requires_post_game: bool = False
