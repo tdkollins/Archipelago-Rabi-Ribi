@@ -1,15 +1,16 @@
-import argparse, random, sys
+import argparse, random
+
 from . import mapfileio
 from . import musicrandomizer
 from . import backgroundrandomizer
-from . import versioncheck
 from .utility import *
 from .generator import Generator
 from .dataparser import RandomizerData
 from .converter import diffgenerator as diffgenerator
 
 def parse_args():
-    args = argparse.ArgumentParser(description='Rabi-Ribi Randomizer - %s' % versioncheck.VERSION_STRING)
+    # AP Change: Remove versioning
+    args = argparse.ArgumentParser(description='Rabi-Ribi AP Randomizer')
     args.add_argument('--version', action='store_true', help='Print Randomizer Version')
     args.add_argument('-source-dir', default='original_maps', help='Source directory for original maps. Defaults to original_maps/. Do not make the source dir the output dir.')
     args.add_argument('-output-dir', default='generated_maps', help='Output directory for generated maps. Defaults to generated_maps/. Do not make the source dir the output dir.')
@@ -807,22 +808,3 @@ def run_randomizer(seed, settings):
     print_ln('Maps saved successfully to %s.' % settings.output_dir)
 
     display_hash(settings)
-
-
-# if __name__ == '__main__':
-#     args = parse_args()
-
-#     if args.version:
-#         print_ln('Rabi-Ribi Randomizer - %s' % versioncheck.VERSION_STRING)
-#     elif args.check_for_updates:
-#         versioncheck.check_for_updates()
-#     elif args.check_branch:
-#         versioncheck.check_branch()
-#     elif args.hash:
-#         display_hash(args)
-#     elif args.reset:
-#         reset_maps(args.source_dir, args.output_dir)
-#     else:
-#         if args.seed == None: seed = None
-#         else: seed = string_to_integer_seed(args)
-#         run_randomizer(seed, args)

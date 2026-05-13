@@ -8,7 +8,7 @@ import os
 from collections import defaultdict
 from typing import Callable, Dict, List, Set
 
-from ..utility import load_text_file
+from ..resource_utility import load_text_file
 
 ### Enums
 LOCATION_WARP = 0

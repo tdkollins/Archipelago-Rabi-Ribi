@@ -1,0 +1,798 @@
+[
+  {
+    "name": "Natural Aquarium - Beach Entrance",
+    "logic_key": "AQUARIUM_BEACH_ENTRANCE",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Natural Aquarium - Room Below Water Tower",
+    "logic_key": "AQUARIUM_BELOW_WATER_TOWER",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Natural Aquarium - Bombable Walled Off Area",
+    "logic_key": "AQUARIUM_BOMB_WALLED_AREA",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Natural Aquarium - East Area",
+    "logic_key": "AQUARIUM_EAST",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Natural Aquarium - East Side of Middle Area",
+    "logic_key": "AQUARIUM_MID_EAST",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Natural Aquarium - West Side of Middle Area",
+    "logic_key": "AQUARIUM_MID_WEST",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Natural Aquarium - Slide Maze Room",
+    "logic_key": "AQUARIUM_ORB_SLIDE_MAZE",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Natural Aquarium - Seana Room",
+    "logic_key": "AQUARIUM_SEANA",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Natural Aquarium - Top Entrance",
+    "logic_key": "AQUARIUM_TOP_ENTRANCE",
+    "region": "Natural Aquarium",
+    "has_warp": true
+  },
+  {
+    "name": "Natural Aquarium - Water Tower Area",
+    "logic_key": "AQUARIUM_WATER_TOWER",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Natural Aquarium - West Dark Area",
+    "logic_key": "AQUARIUM_WEST_DARKNESS",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Natural Aquarium - West Side of Lower Area",
+    "logic_key": "AQUARIUM_WEST_LOWER",
+    "region": "Natural Aquarium"
+  },
+  {
+    "name": "Rabi Rabi Beach - Forest Entrance",
+    "logic_key": "BEACH_FOREST_ENTRANCE",
+    "region": "Rabi Rabi Beach"
+  },
+  {
+    "name": "Rabi Rabi Beach - Main Area",
+    "logic_key": "BEACH_MAIN",
+    "region": "Rabi Rabi Beach",
+    "has_warp": true
+  },
+  {
+    "name": "Rabi Rabi Beach - Aquarium Entrance",
+    "logic_key": "BEACH_UNDERWATER_ENTRANCE",
+    "region": "Rabi Rabi Beach"
+  },
+  {
+    "name": "Rabi Rabi Beach - Volcanic Entrance",
+    "logic_key": "BEACH_VOLCANIC_ENTRANCE",
+    "region": "Rabi Rabi Beach"
+  },
+  {
+    "name": "Forgotten Cave - Cocoa Room",
+    "logic_key": "CAVE_COCOA",
+    "region": "Forgotten Cave"
+  },
+  {
+    "name": "Forgotten Cave - Entrance Area",
+    "logic_key": "CAVE_ENTRANCE",
+    "region": "Forgotten Cave"
+  },
+  {
+    "name": "Forgotten Cave - West Area",
+    "logic_key": "CAVE_WEST",
+    "region": "Forgotten Cave"
+  },
+  {
+    "name": "Evernight Peak - Corridor Below Saya Room",
+    "logic_key": "EVERNIGHT_CORRIDOR_BELOW_SAYA",
+    "region": "Evernight Peak"
+  },
+  {
+    "name": "Evernight Peak - Area East of Warp",
+    "logic_key": "EVERNIGHT_EAST_OF_WARP",
+    "region": "Evernight Peak"
+  },
+  {
+    "name": "Evernight Peak - Lower Area",
+    "logic_key": "EVERNIGHT_LOWER",
+    "region": "Evernight Peak"
+  },
+  {
+    "name": "Evernight Peak - Northwest Area",
+    "logic_key": "EVERNIGHT_NORTHWEST",
+    "region": "Evernight Peak"
+  },
+  {
+    "name": "Evernight Peak - Saya Room",
+    "logic_key": "EVERNIGHT_SAYA",
+    "region": "Evernight Peak"
+  },
+  {
+    "name": "Evernight Peak - Spike Barrier Room",
+    "logic_key": "EVERNIGHT_SPIKE_BARRIER_ROOM",
+    "region": "Evernight Peak"
+  },
+  {
+    "name": "Evernight Peak - Warp Area",
+    "logic_key": "EVERNIGHT_WARP",
+    "region": "Evernight Peak",
+    "has_warp": true
+  },
+  {
+    "name": "Evernight Peak - West Entrance",
+    "logic_key": "EVERNIGHT_WEST_ENTRANCE",
+    "region": "Evernight Peak"
+  },
+  {
+    "name": "Starting Forest - Before Cocoa Room",
+    "logic_key": "FOREST_BEFORE_COCOA_ROOM",
+    "region": "Starting Forest"
+  },
+  {
+    "name": "Starting Forest - Cocoa Room",
+    "logic_key": "FOREST_COCOA_ROOM",
+    "region": "Starting Forest"
+  },
+  {
+    "name": "Starting Forest - East Area Above Spring",
+    "logic_key": "FOREST_EAST_ABOVE_SPRING",
+    "region": "Starting Forest"
+  },
+  {
+    "name": "Starting Forest - Light Orb Room",
+    "logic_key": "FOREST_LIGHT_ORB_ROOM",
+    "region": "Starting Forest"
+  },
+  {
+    "name": "Starting Forest - Lower Riverbank Entrance",
+    "logic_key": "FOREST_LOWER_RIVERBANK_EXIT",
+    "region": "Starting Forest"
+  },
+  {
+    "name": "Forest Night - Attack Up Room",
+    "logic_key": "FOREST_NIGHT_ATK_UP_ROOM",
+    "region": "Forest Night"
+  },
+  {
+    "name": "Forest Night - Northeast Area",
+    "logic_key": "FOREST_NIGHT_NORTH_EAST",
+    "region": "Forest Night"
+  },
+  {
+    "name": "Forest Night - Toxic Strike Room",
+    "logic_key": "FOREST_NIGHT_TOXIC_STRIKE",
+    "region": "Forest Night"
+  },
+  {
+    "name": "Forest Night - West Area",
+    "logic_key": "FOREST_NIGHT_WEST",
+    "region": "Forest Night"
+  },
+  {
+    "name": "Starting Forest - North Health Up Room",
+    "logic_key": "FOREST_NORTH_HP_UP_ROOM",
+    "region": "Starting Forest"
+  },
+  {
+    "name": "Starting Forest - Starting Room",
+    "logic_key": "FOREST_START",
+    "region": "Starting Forest"
+  },
+  {
+    "name": "Starting Forest - Upper East Area",
+    "logic_key": "FOREST_UPPER_EAST",
+    "region": "Starting Forest"
+  },
+  {
+    "name": "Starting Forest - Upper East Egg Ledge",
+    "logic_key": "FOREST_UPPER_EAST_EGG_LEDGE",
+    "region": "Starting Forest"
+  },
+  {
+    "name": "Starting Forest - Upper Riverbank Entrance",
+    "logic_key": "FOREST_UPPER_RIVERBANK_EXIT",
+    "region": "Starting Forest"
+  },
+  {
+    "name": "Starting Forest - Warp Area",
+    "logic_key": "FOREST_WARP",
+    "region": "Starting Forest",
+    "has_warp": true
+  },
+  {
+    "name": "Forgotten Cave II",
+    "logic_key": "FORGOTTEN_CAVE_2",
+    "region": "Forgotten Cave II",
+    "has_warp": true,
+    "requires_post_game": true
+  },
+  {
+    "name": "Floating Graveyard - Kotri 2 Room",
+    "logic_key": "GRAVEYARD_KOTRI",
+    "region": "Floating Graveyard"
+  },
+  {
+    "name": "Floating Graveyard - Main Area",
+    "logic_key": "GRAVEYARD_MAIN",
+    "region": "Floating Graveyard",
+    "has_warp": true
+  },
+  {
+    "name": "Floating Graveyard - Top of the Bridge",
+    "logic_key": "GRAVEYARD_TOP_OF_BRIDGE",
+    "region": "Floating Graveyard"
+  },
+  {
+    "name": "Floating Graveyard - Upper Area",
+    "logic_key": "GRAVEYARD_UPPER",
+    "region": "Floating Graveyard"
+  },
+  {
+    "name": "Hall of Memory",
+    "logic_key": "HALL_OF_MEMORIES",
+    "region": "Hall of Memory",
+    "has_warp": true,
+    "requires_post_game": true
+  },
+  {
+    "name": "Hallow's Graveyard - Central Area",
+    "logic_key": "HALLOWEEN_CENTRAL",
+    "region": "Hallow's Graveyard",
+    "requires_halloween": true
+  },
+  {
+    "name": "Hallow's Graveyard - Dark Shaft",
+    "logic_key": "HALLOWEEN_DARK_SHAFT",
+    "region": "Hallow's Graveyard",
+    "requires_halloween": true
+  },
+  {
+    "name": "Hallow's Graveyard - Exit Area",
+    "logic_key": "HALLOWEEN_EXIT",
+    "region": "Hallow's Graveyard",
+    "requires_halloween": true
+  },
+  {
+    "name": "Hallow's Graveyard - Flooded Room",
+    "logic_key": "HALLOWEEN_FLOODED",
+    "region": "Hallow's Graveyard",
+    "requires_halloween": true
+  },
+  {
+    "name": "Hallow's Graveyard - Area Past Pillar Room",
+    "logic_key": "HALLOWEEN_PAST_PILLARS",
+    "region": "Hallow's Graveyard",
+    "requires_halloween": true
+  },
+  {
+    "name": "Hallow's Graveyard - Pumpkin Hall",
+    "logic_key": "HALLOWEEN_PUMPKIN_HALL",
+    "region": "Hallow's Graveyard",
+    "requires_halloween": true
+  },
+  {
+    "name": "Hallow's Graveyard - Upper Area",
+    "logic_key": "HALLOWEEN_UPPER",
+    "region": "Hallow's Graveyard",
+    "requires_halloween": true
+  },
+  {
+    "name": "Icy Summit - Main Area",
+    "logic_key": "ICY_SUMMIT_MAIN",
+    "region": "Icy Summit",
+    "has_warp": true
+  },
+  {
+    "name": "Icy Summit - Nixie Room",
+    "logic_key": "ICY_SUMMIT_NIXIE",
+    "region": "Icy Summit"
+  },
+  {
+    "name": "Icy Summit - Upper Area",
+    "logic_key": "ICY_SUMMIT_UPPER",
+    "region": "Icy Summit"
+  },
+  {
+    "name": "Exotic Laboratory - Computer Room",
+    "logic_key": "LAB_COMPUTER_ROOM",
+    "region": "Exotic Laboratory"
+  },
+  {
+    "name": "Exotic Laboratory - East Area",
+    "logic_key": "LAB_EAST",
+    "region": "Exotic Laboratory"
+  },
+  {
+    "name": "Exotic Laboratory - East Attack Up Room",
+    "logic_key": "LAB_EAST_ATK_UP_ROOM",
+    "region": "Exotic Laboratory"
+  },
+  {
+    "name": "Exotic Laboratory - East Pack Up Room",
+    "logic_key": "LAB_EAST_PACK_UP_ROOM",
+    "region": "Exotic Laboratory"
+  },
+  {
+    "name": "Exotic Laboratory - Entrance",
+    "logic_key": "LAB_ENTRANCE",
+    "region": "Exotic Laboratory"
+  },
+  {
+    "name": "Exotic Laboratory - Middle Area",
+    "logic_key": "LAB_MID",
+    "region": "Exotic Laboratory",
+    "has_warp": true
+  },
+  {
+    "name": "Exotic Laboratory - Sliding Powder Room",
+    "logic_key": "LAB_SLIDING_POWDER_ROOM",
+    "region": "Exotic Laboratory"
+  },
+  {
+    "name": "Exotic Laboratory - West Area",
+    "logic_key": "LAB_WEST",
+    "region": "Exotic Laboratory"
+  },
+  {
+    "name": "Floating Library - Ledge Below Alcove",
+    "logic_key": "LIBRARY_ALCOVE_LEDGE",
+    "region": "Floating Library",
+    "requires_post_game": true
+  },
+  {
+    "name": "Floating Library - Bottom Area",
+    "logic_key": "LIBRARY_BOTTOM",
+    "region": "Floating Library",
+    "requires_post_game": true
+  },
+  {
+    "name": "Floating Library - Entrance",
+    "logic_key": "LIBRARY_ENTRANCE",
+    "region": "Floating Library",
+    "requires_post_game": true
+  },
+  {
+    "name": "Floating Library - Irisu Room",
+    "logic_key": "LIBRARY_IRISU",
+    "region": "Floating Library",
+    "requires_post_game": true
+  },
+  {
+    "name": "Floating Library - Lower Middle Area",
+    "logic_key": "LIBRARY_MID_LOWER",
+    "region": "Floating Library",
+    "requires_post_game": true
+  },
+  {
+    "name": "Floating Library - Upper Middle Area",
+    "logic_key": "LIBRARY_MID_UPPER",
+    "region": "Floating Library",
+    "requires_post_game": true
+  },
+  {
+    "name": "Floating Library - Out of Bounds",
+    "logic_key": "LIBRARY_OOB",
+    "region": "Floating Library",
+    "knowledge": 2,
+    "trick_difficulty": 2,
+    "requires_post_game": true
+  },
+  {
+    "name": "Floating Library - Outside Area",
+    "logic_key": "LIBRARY_OUTSIDE",
+    "region": "Floating Library"
+  },
+  {
+    "name": "Aurora Palace - Attack Up Tunnel",
+    "logic_key": "PALACE_ATTACK_UP_TUNNEL",
+    "region": "Aurora Palace"
+  },
+  {
+    "name": "Aurora Palace - Level 3",
+    "logic_key": "PALACE_LEVEL_3",
+    "region": "Aurora Palace"
+  },
+  {
+    "name": "Aurora Palace - Level 4",
+    "logic_key": "PALACE_LEVEL_4",
+    "region": "Aurora Palace"
+  },
+  {
+    "name": "Aurora Palace - Level 5",
+    "logic_key": "PALACE_LEVEL_5",
+    "region": "Aurora Palace"
+  },
+  {
+    "name": "Aurora Palace - Levels 1 and 2",
+    "logic_key": "PALACE_WARP_LEVEL_1_2",
+    "region": "Aurora Palace",
+    "has_warp": true
+  },
+  {
+    "name": "Rabi Rabi Park - Kotri 1 Room",
+    "logic_key": "PARK_KOTRI",
+    "region": "Rabi Rabi Park"
+  },
+  {
+    "name": "Rabi Rabi Park - Main Area",
+    "logic_key": "PARK_MAIN",
+    "region": "Rabi Rabi Park"
+  },
+  {
+    "name": "Rabi Rabi Park - Town Entrance",
+    "logic_key": "PARK_TOWN_ENTRANCE",
+    "region": "Rabi Rabi Park"
+  },
+  {
+    "name": "Rabi Rabi Park - Upper Area",
+    "logic_key": "PARK_UPPER",
+    "region": "Rabi Rabi Park"
+  },
+  {
+    "name": "Rabi Rabi Park - Warp Area",
+    "logic_key": "PARK_WARP",
+    "region": "Rabi Rabi Park",
+    "has_warp": true
+  },
+  {
+    "name": "Plurkwood",
+    "logic_key": "PLURKWOOD_MAIN",
+    "region": "Plurkwood",
+    "requires_plurkwood": true
+  },
+  {
+    "name": "Golden Pyramid - Chaos Rod Room",
+    "logic_key": "PYRAMID_CHAOS_ROD_ROOM",
+    "region": "Golden Pyramid"
+  },
+  {
+    "name": "Golden Pyramid - Hourglass Room",
+    "logic_key": "PYRAMID_HOURGLASS_ROOM",
+    "region": "Golden Pyramid"
+  },
+  {
+    "name": "Golden Pyramid - Lower Area",
+    "logic_key": "PYRAMID_LOWER",
+    "region": "Golden Pyramid"
+  },
+  {
+    "name": "Golden Pyramid - Main Area",
+    "logic_key": "PYRAMID_MAIN",
+    "region": "Golden Pyramid"
+  },
+  {
+    "name": "Golden Pyramid - Dark Room",
+    "logic_key": "PYRAMID_SOUTHWEST_ROOM",
+    "region": "Golden Pyramid"
+  },
+  {
+    "name": "Golden Pyramid - Warp Area",
+    "logic_key": "PYRAMID_WARP_ROOM",
+    "region": "Golden Pyramid",
+    "has_warp": true
+  },
+  {
+    "name": "Rabi Rabi Ravine - Room Above Chocolate",
+    "logic_key": "RAVINE_ABOVE_CHOCOLATE",
+    "region": "Rabi Rabi Ravine"
+  },
+  {
+    "name": "Rabi Rabi Ravine - Beach Entrance",
+    "logic_key": "RAVINE_BEACH_ENTRANCE",
+    "region": "Rabi Rabi Ravine"
+  },
+  {
+    "name": "Rabi Rabi Ravine - Chocolate Room",
+    "logic_key": "RAVINE_CHOCOLATE",
+    "region": "Rabi Rabi Ravine"
+  },
+  {
+    "name": "Rabi Rabi Ravine - Lower Area",
+    "logic_key": "RAVINE_LOWER",
+    "region": "Rabi Rabi Ravine"
+  },
+  {
+    "name": "Rabi Rabi Ravine - Mana Surge Room",
+    "logic_key": "RAVINE_MANA_SURGE",
+    "region": "Rabi Rabi Ravine"
+  },
+  {
+    "name": "Rabi Rabi Ravine - North Attack Up Room",
+    "logic_key": "RAVINE_NORTH_ATTACK_UP_ROOM",
+    "region": "Rabi Rabi Ravine"
+  },
+  {
+    "name": "Rabi Rabi Ravine - Town Entrance",
+    "logic_key": "RAVINE_TOWN_ENTRANCE",
+    "region": "Rabi Rabi Ravine"
+  },
+  {
+    "name": "Rabi Rabi Ravine - Upper East Area",
+    "logic_key": "RAVINE_UPPER_EAST",
+    "region": "Rabi Rabi Ravine",
+    "has_warp": true
+  },
+  {
+    "name": "Rabi Rabi Ravine - Upper West Area",
+    "logic_key": "RAVINE_UPPER_WEST",
+    "region": "Rabi Rabi Ravine"
+  },
+  {
+    "name": "Golden Riverbank - Level 2",
+    "logic_key": "RIVERBANK_LEVEL2",
+    "region": "Golden Riverbank"
+  },
+  {
+    "name": "Golden Riverbank - Level 3",
+    "logic_key": "RIVERBANK_LEVEL3",
+    "region": "Golden Riverbank"
+  },
+  {
+    "name": "Golden Riverbank - Lower Forest Entrance",
+    "logic_key": "RIVERBANK_LOWER_FOREST_ENTRANCE",
+    "region": "Golden Riverbank"
+  },
+  {
+    "name": "Golden Riverbank - Lower Health Up Room",
+    "logic_key": "RIVERBANK_LOWER_HEALTH_UP_ROOM",
+    "region": "Golden Riverbank"
+  },
+  {
+    "name": "Golden Riverbank - Lower Area - West Side",
+    "logic_key": "RIVERBANK_LOWER_LEFT",
+    "region": "Golden Riverbank"
+  },
+  {
+    "name": "Golden Riverbank - Lower Area - Middle",
+    "logic_key": "RIVERBANK_LOWER_MID",
+    "region": "Golden Riverbank"
+  },
+  {
+    "name": "Golden Riverbank - Lower Area - East Side",
+    "logic_key": "RIVERBANK_LOWER_RIGHT",
+    "region": "Golden Riverbank"
+  },
+  {
+    "name": "Golden Riverbank - Level 1",
+    "logic_key": "RIVERBANK_MAIN_LEVEL1",
+    "region": "Golden Riverbank",
+    "has_warp": true
+  },
+  {
+    "name": "Golden Riverbank - Pack Up Room",
+    "logic_key": "RIVERBANK_PACK_UP_ROOM",
+    "region": "Golden Riverbank"
+  },
+  {
+    "name": "Golden Riverbank - Underground Area",
+    "logic_key": "RIVERBANK_UNDERGROUND",
+    "region": "Golden Riverbank"
+  },
+  {
+    "name": "Sky-High Bridge - Dark Area",
+    "logic_key": "SKY_BRIDGE_DARK_AREA",
+    "region": "Sky-High Bridge"
+  },
+  {
+    "name": "Sky-High Bridge - East Area",
+    "logic_key": "SKY_BRIDGE_EAST",
+    "region": "Sky-High Bridge"
+  },
+  {
+    "name": "Sky-High Bridge - Lower East Area",
+    "logic_key": "SKY_BRIDGE_EAST_LOWER",
+    "region": "Sky-High Bridge"
+  },
+  {
+    "name": "Sky-High Bridge - Health Surge Room",
+    "logic_key": "SKY_BRIDGE_HEALTH_SURGE_ROOM",
+    "region": "Sky-High Bridge"
+  },
+  {
+    "name": "Sky-High Bridge - Main Area",
+    "logic_key": "SKY_BRIDGE_MAIN",
+    "region": "Sky-High Bridge",
+    "has_warp": true
+  },
+  {
+    "name": "Sky-High Bridge - Regen Up Ledge",
+    "logic_key": "SKY_BRIDGE_REGEN_UP_LEDGE",
+    "region": "Sky-High Bridge"
+  },
+  {
+    "name": "Sky-High Bridge - Slide Area",
+    "logic_key": "SKY_BRIDGE_SLIDE_AREA",
+    "region": "Sky-High Bridge"
+  },
+  {
+    "name": "Sky Island Town - Air Dash Room",
+    "logic_key": "SKY_ISLAND_AIR_DASH_ROOM",
+    "region": "Sky Island Town"
+  },
+  {
+    "name": "Sky Island Town - Main Area",
+    "logic_key": "SKY_ISLAND_MAIN",
+    "region": "Sky Island Town"
+  },
+  {
+    "name": "Sky Island Town - Out of Bounds",
+    "logic_key": "SKY_ISLAND_OOB",
+    "region": "Sky Island Town",
+    "knowledge": 2,
+    "trick_difficulty": 2
+  },
+  {
+    "name": "Sky Island Town - Upper Area",
+    "logic_key": "SKY_ISLAND_UPPER",
+    "region": "Sky Island Town",
+    "has_warp": true
+  },
+  {
+    "name": "Azure Snow Land - Christmas Tree Room",
+    "logic_key": "SNOWLAND_CHRISTMAS_TREE",
+    "region": "Azure Snow Land"
+  },
+  {
+    "name": "Azure Snow Land - East Area",
+    "logic_key": "SNOWLAND_EAST",
+    "region": "Azure Snow Land"
+  },
+  {
+    "name": "Azure Snow Land - Evernight Entrance",
+    "logic_key": "SNOWLAND_EVERNIGHT_ENTRANCE",
+    "region": "Azure Snow Land"
+  },
+  {
+    "name": "Azure Snow Land - Lake Area",
+    "logic_key": "SNOWLAND_LAKE",
+    "region": "Azure Snow Land"
+  },
+  {
+    "name": "Azure Snow Land - Middle Area",
+    "logic_key": "SNOWLAND_MID",
+    "region": "Azure Snow Land"
+  },
+  {
+    "name": "Azure Snow Land - Quick Barrette Room",
+    "logic_key": "SNOWLAND_QUICK_BARRETTE_ROOM",
+    "region": "Azure Snow Land"
+  },
+  {
+    "name": "Azure Snow Land - Rita Room",
+    "logic_key": "SNOWLAND_RITA",
+    "region": "Azure Snow Land",
+    "has_warp": true
+  },
+  {
+    "name": "Azure Snow Land - Hidden Spike Room",
+    "logic_key": "SNOWLAND_SPIKE_ROOM",
+    "region": "Azure Snow Land"
+  },
+  {
+    "name": "Azure Snow Land - West Area",
+    "logic_key": "SNOWLAND_WEST",
+    "region": "Azure Snow Land"
+  },
+  {
+    "name": "Spectral Cave - Ledge near Cicini Room",
+    "logic_key": "SPECTRAL_CICINI_LEDGE",
+    "region": "Spectral Cave"
+  },
+  {
+    "name": "Spectral Cave - Cicini Room",
+    "logic_key": "SPECTRAL_CICINI_ROOM",
+    "region": "Spectral Cave"
+  },
+  {
+    "name": "Spectral Cave - Ledge in Gap Room",
+    "logic_key": "SPECTRAL_GAP_LEDGE",
+    "region": "Spectral Cave"
+  },
+  {
+    "name": "Spectral Cave - Middle Area",
+    "logic_key": "SPECTRAL_MID",
+    "region": "Spectral Cave"
+  },
+  {
+    "name": "Spectral Cave - Upper Area",
+    "logic_key": "SPECTRAL_UPPER",
+    "region": "Spectral Cave"
+  },
+  {
+    "name": "Spectral Cave - Warp Area",
+    "logic_key": "SPECTRAL_WARP",
+    "region": "Spectral Cave",
+    "has_warp": true
+  },
+  {
+    "name": "Spectral Cave - West Area",
+    "logic_key": "SPECTRAL_WEST",
+    "region": "Spectral Cave"
+  },
+  {
+    "name": "Spectral Cave - Egg Room in West Area",
+    "logic_key": "SPECTRAL_WEST_EGG_ROOM",
+    "region": "Spectral Cave"
+  },
+  {
+    "name": "System Interior II - Egg Room",
+    "logic_key": "SYSINT2_EGG_ROOM",
+    "region": "System Interior II",
+    "requires_post_game": true
+  },
+  {
+    "name": "System Interior II - End Area",
+    "logic_key": "SYSINT2_END",
+    "region": "System Interior II",
+    "requires_post_game": true
+  },
+  {
+    "name": "System Interior II - Start Area",
+    "logic_key": "SYSINT2_START",
+    "region": "System Interior II",
+    "requires_post_game": true
+  },
+  {
+    "name": "System Interior",
+    "logic_key": "SYSTEM_INTERIOR_MAIN",
+    "region": "System Interior"
+  },
+  {
+    "name": "Rabi Rabi Town - Main Area",
+    "logic_key": "TOWN_MAIN",
+    "region": "Rabi Rabi Town",
+    "has_warp": true
+  },
+  {
+    "name": "Rabi Rabi Town - Shop",
+    "logic_key": "TOWN_SHOP",
+    "region": "Rabi Rabi Town"
+  },
+  {
+    "name": "UPRPRC Base - Main Area",
+    "logic_key": "UPRPRC_BASE",
+    "region": "UPRPRC Base"
+  },
+  {
+    "name": "UPRPRC Base - Lower Area",
+    "logic_key": "UPRPRC_LOWER",
+    "region": "UPRPRC Base"
+  },
+  {
+    "name": "Volcanic Area - Beach Entrance",
+    "logic_key": "VOLCANIC_BEACH_ENTRANCE",
+    "region": "Volcanic Area"
+  },
+  {
+    "name": "Volcanic Area - Main Area",
+    "logic_key": "VOLCANIC_MAIN",
+    "region": "Volcanic Area",
+    "has_warp": true
+  },
+  {
+    "name": "Warp Destination - Hospital",
+    "logic_key": "WARP_DESTINATION_HOSPITAL",
+    "region": "Warp Destination",
+    "requires_post_game": true
+  },
+  {
+    "name": "Warp Destination - Outside Area",
+    "logic_key": "WARP_DESTINATION_OUTSIDE",
+    "region": "Warp Destination",
+    "requires_warp_destination": true
+  }
+]

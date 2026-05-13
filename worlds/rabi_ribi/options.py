@@ -76,9 +76,9 @@ class TrickDifficulty(Choice):
 
     Some tricks in Rabi-Ribi can be very difficult to execute. This flag determines the minimum execution ability required to complete the seed.
 
-    Normal is recommended for most players. There are many tight jumps which are still labeled as NORMAL.
-    Hard involves some tricks that are tight, and can be difficult to execute for newer players.
-    V_Hard involves some tricks that are very tight, and can be difficult to execute even for experienced players.
+    Normal is recommended for most players. Any tricks in normal should be only as hard as what is expected in a Low Item% playthrough.
+    Hard involves some tricks that are tight and can be difficult to execute for newer players.
+    V_Hard involves some tricks that are very tight and can be difficult to execute even for experienced players.
     Extreme involves tricks that can be quite unreasonable to be expected to execute.
     Stupid refers to tricks that no one wants to do, ever. This often refers to tricks that have only been performed successfully once, just to prove that it is possible.
     """

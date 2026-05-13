@@ -5,7 +5,7 @@ import os
 import sys
 from typing import Any
 from ..utility import print_ln
-from ...utility import load_text_file
+from ...resource_utility import load_text_file
 
 DIR_ORIGINAL_MAPS = './original'
 DIR_MODIFIED_MAPS = './modified'

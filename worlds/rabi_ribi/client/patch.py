@@ -4,20 +4,17 @@ This is done on the client side upon connect to allow for a smoother setup exper
 """
 import os
 import struct
-from typing import Any, List, Optional
-
-from Options import Option
-from worlds.rabi_ribi import RabiRibiWorld
-from worlds.rabi_ribi.client.client import RabiRibiContext
-from worlds.rabi_ribi.existing_randomizer.dataparser import RandomizerData
-from worlds.rabi_ribi.existing_randomizer.mapfileio import (
+from .client import RabiRibiContext
+from ..data import data
+from ..existing_randomizer.dataparser import RandomizerData
+from ..existing_randomizer.mapfileio import (
     ItemModifier,
     grab_original_maps,
     MAP_ITEMS_OFFSET,
     MAP_TILES0_OFFSET,
     MAP_SIZE
 )
-from worlds.rabi_ribi.existing_randomizer.randomizer import (
+from ..existing_randomizer.randomizer import (
     apply_item_specific_fixes,
     apply_map_transition_shuffle,
     apply_start_location_shuffle,
@@ -26,12 +23,11 @@ from worlds.rabi_ribi.existing_randomizer.randomizer import (
     parse_args,
     pre_modify_map_data
 )
-from worlds.rabi_ribi.existing_randomizer.utility import to_index
-from worlds.rabi_ribi.items import lookup_item_id_to_name
-from worlds.rabi_ribi.locations import lookup_location_id_to_name
-from worlds.rabi_ribi.names import LocationName
-from worlds.rabi_ribi.options import AttackMode, RabiRibiOptions
-from worlds.rabi_ribi.utility import convert_ap_name_to_existing_rando_name
+from ..existing_randomizer.utility import to_index
+from ..items import lookup_item_id_to_name
+from ..locations import lookup_location_id_to_name
+from ..options import AttackMode
+from ..world import RabiRibiWorld
 
 class Allocation():
     """
@@ -50,19 +46,19 @@ class Allocation():
         if not ctx.slot_data:
             raise RuntimeError("Missing slot data while attempting to patch maps")
 
-        map_transition_shuffle_order: List[int] = ctx.slot_data["map_transition_shuffle_order"]
+        map_transition_shuffle_order: list[int] = ctx.slot_data["map_transition_shuffle_order"]
 
         self.map_modifications += randomizer_data.default_map_modifications
         self.walking_left_transitions = [randomizer_data.walking_left_transitions[x] for x in map_transition_shuffle_order]
 
-        start_location_name = convert_ap_name_to_existing_rando_name(ctx.slot_data["start_location"])
+        start_location_name = data.get_region_by_ap_name(ctx.slot_data["start_location"]).logic_key
         self.start_location = next((location for location in randomizer_data.start_locations
                                     if location.location == start_location_name), randomizer_data.start_locations[0])
 
     def set_location_info(self, slot_num, location_info):
         return {
-            convert_ap_name_to_existing_rando_name(lookup_location_id_to_name[location.location]):
-            convert_ap_name_to_existing_rando_name(lookup_item_id_to_name[location.item]) \
+            data.get_location_by_ap_name(lookup_location_id_to_name[location.location]).logic_key:
+            data.get_item_by_ap_name(lookup_item_id_to_name[location.item]).logic_key \
                 if location.player == slot_num else "ANOTHER_PLAYERS_ITEM"
             for location in location_info.values()
         }
@@ -109,6 +105,7 @@ def patch_map_files(ctx: RabiRibiContext):
     create_custom_text_file(ctx)
 
 def initialize_settings(ctx: RabiRibiContext):
+    assert(ctx.slot_data is not None)
     settings = parse_args()
     settings.open_mode = True
     settings.num_hard_to_reach = ctx.slot_data["required_egg_count"]
@@ -157,11 +154,12 @@ def embed_seed_player_into_mapdata(ctx: RabiRibiContext, item_modifier):
             f.close()
 
 def create_custom_text_file(ctx: RabiRibiContext):
+    assert(ctx.slot_data is not None)
     start_location = ctx.slot_data["start_location"]
     required_egg_count = ctx.slot_data["required_egg_count"] if "required_egg_count" in ctx.slot_data else 5
     with open(f"{ctx.custom_seed_subdir}/story_text.rbrb", "w") as f:
         f.write("\r\n")
         f.write("Starting Forest\r\n")
         f.write("Forgotten Cave II\r\n")
-        f.write(f"{LocationName.start_location_to_area_name[start_location]}\r\n")
+        f.write(f"{data.get_region_by_ap_name(start_location).region}\r\n")
         f.write(f"Required Eggs: {required_egg_count}\r\n")

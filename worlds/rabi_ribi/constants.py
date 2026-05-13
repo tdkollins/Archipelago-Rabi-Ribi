@@ -1,0 +1,2 @@
+GAME_NAME = "Rabi-Ribi"
+BASE_ID: int = 8350438193300

@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Chapter 1",
+    "logic_key": "CHAPTER_1",
+    "is_chapter": true
+  },
+  {
+    "name": "Chapter 2",
+    "logic_key": "CHAPTER_2",
+    "is_chapter": true
+  },
+  {
+    "name": "Chapter 3",
+    "logic_key": "CHAPTER_3",
+    "is_chapter": true
+  },
+  {
+    "name": "Chapter 4",
+    "logic_key": "CHAPTER_4",
+    "is_chapter": true
+  },
+  {
+    "name": "Chapter 5",
+    "logic_key": "CHAPTER_5",
+    "is_chapter": true
+  },
+  {
+    "name": "Chapter 6",
+    "logic_key": "CHAPTER_6",
+    "is_chapter": true,
+    "requires_post_game": true
+  },
+  {
+    "name": "Chapter 7",
+    "logic_key": "CHAPTER_7",
+    "is_chapter": true,
+    "requires_post_game": true
+  },
+  {
+    "name": "Cocoa Recruited",
+    "logic_key": "TM_COCOA",
+    "is_town_member": true
+  },
+  {
+    "name": "Ashuri Recruited",
+    "logic_key": "TM_ASHURI",
+    "is_town_member": true
+  },
+  {
+    "name": "Rita Recruited",
+    "logic_key": "TM_RITA",
+    "is_town_member": true
+  },
+  {
+    "name": "Cicini Recruited",
+    "logic_key": "TM_CICINI",
+    "is_town_member": true
+  },
+  {
+    "name": "Saya Recruited",
+    "logic_key": "TM_SAYA",
+    "is_town_member": true
+  },
+  {
+    "name": "Syaro Recruited",
+    "logic_key": "TM_SYARO",
+    "is_town_member": true
+  },
+  {
+    "name": "Pandora Recruited",
+    "logic_key": "TM_PANDORA",
+    "is_town_member": true
+  },
+  {
+    "name": "Nieve Recruited",
+    "logic_key": "TM_NIEVE",
+    "is_town_member": true
+  },
+  {
+    "name": "Nixie Recruited",
+    "logic_key": "TM_NIXIE",
+    "is_town_member": true
+  },
+  {
+    "name": "Aruraune Recruited",
+    "logic_key": "TM_ARURAUNE",
+    "is_town_member": true
+  },
+  {
+    "name": "Seana Recruited",
+    "logic_key": "TM_SEANA",
+    "is_town_member": true
+  },
+  {
+    "name": "Lilith Recruited",
+    "logic_key": "TM_LILITH",
+    "is_town_member": true
+  },
+  {
+    "name": "Vanilla Recruited",
+    "logic_key": "TM_VANILLA",
+    "is_town_member": true
+  },
+  {
+    "name": "Chocolate Recruited",
+    "logic_key": "TM_CHOCOLATE",
+    "is_town_member": true
+  },
+  {
+    "name": "Kotri Recruited",
+    "logic_key": "TM_KOTRI",
+    "is_town_member": true
+  },
+  {
+    "name": "Keke Bunny Recruited",
+    "logic_key": "TM_KEKE_BUNNY",
+    "is_town_member": true,
+    "requires_plurkwood": true
+  },
+  {
+    "name": "Miriam Recruited",
+    "logic_key": "TM_MIRIAM",
+    "is_town_member": true,
+    "requires_post_game": true
+  },
+  {
+    "name": "Rumi Recruited",
+    "logic_key": "TM_RUMI",
+    "is_town_member": true,
+    "requires_post_game": true
+  },
+  {
+    "name": "Irisu Recruited",
+    "logic_key": "TM_IRISU",
+    "is_town_member": true,
+    "requires_post_game": true
+  },
+  {
+    "name": "Cocoa 1 Defeated",
+    "logic_key": "COCOA_1",
+    "event_id": 256
+  },
+  {
+    "name": "Kotri 1 Defeated",
+    "logic_key": "KOTRI_1",
+    "event_id": 322
+  },
+  {
+    "name": "Kotri 2 Defeated",
+    "logic_key": "KOTRI_2",
+    "event_id": 379
+  },
+  {
+    "name": "Ashuri 2 Defeated",
+    "logic_key": "ASHURI_2",
+    "event_id": 343
+  },
+  {
+    "name": "Keke Bunny Defeated",
+    "logic_key": "BOSS_KEKE_BUNNY",
+    "event_id": 452,
+    "requires_plurkwood": true
+  },
+  {
+    "name": "Ribbon Defeated",
+    "logic_key": "BOSS_RIBBON",
+    "event_id": 257
+  },
+  {
+    "name": "Boost Unlocked",
+    "logic_key": "BEACH_MAIN",
+    "event_id": 323
+  },
+  {
+    "name": "Prologue Completed",
+    "logic_key": "PROLOGUE_TRIGGER"
+  },
+  {
+    "name": "Shop Reachable",
+    "logic_key": "TOWN_SHOP"
+  }
+]
