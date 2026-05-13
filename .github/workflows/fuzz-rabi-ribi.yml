@@ -5,7 +5,7 @@ on:
 
 env:
   ap-version: 'latest'
-  python-version: '3.12'
+  python-version: '3.13'
   apworld-path: worlds/rabi_ribi
   fuzzer-commit: f027bf2ebf8ceae5da75232112039e6f26da3e85
   runs: 1000
