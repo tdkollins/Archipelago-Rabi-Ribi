@@ -76,62 +76,83 @@ stupid = Macro(
 
 itm_hard = Macro(
     intermediate & hard,
-    "ITM_HARD",
-    "Assumes the player has knowledge of intermediate-level tricks and can execute tricks rated hard"
+    "Intermediate & Hard Tricks",
+    "Assumes the player has knowledge of intermediate-level tricks and can execute tricks rated hard",
+    "Can do",
+    "Cannot do"
+
 )
 
 itm_vhard = Macro(
     intermediate & vhard,
-    "ITM_VHARD",
-    "Assumes the player has knowledge of intermediate-level tricks and can execute tricks rated very hard"
+    "Intermediate & Very Hard Tricks",
+    "Assumes the player has knowledge of intermediate-level tricks and can execute tricks rated very hard",
+    "Can do",
+    "Cannot do"
 )
 
 adv_hard = Macro(
     advanced & hard,
-    "ADV_HARD",
-    "Assumes the player has knowledge of advanced-level tricks and can execute tricks rated hard"
+    "Advanced & Hard Tricks",
+    "Assumes the player has knowledge of advanced-level tricks and can execute tricks rated hard",
+    "Can do",
+    "Cannot do"
 )
 
 adv_vhard = Macro(
     advanced & vhard,
-    "ADV_VHARD",
-    "Assumes the player has knowledge of advanced-level tricks and can execute tricks rated very hard"
+    "Advanced & Very Hard Tricks",
+    "Assumes the player has knowledge of advanced-level tricks and can execute tricks rated very hard",
+    "Can do",
+    "Cannot do"
 )
 
 adv_ext = Macro(
     advanced & extreme,
-    "ADV_EXT",
-    "Assumes the player has knowledge of advanced-level tricks and can execute tricks rated extreme"
+    "Advanced & Extreme Tricks",
+    "Assumes the player has knowledge of advanced-level tricks and can execute tricks rated extreme",
+    "Can do",
+    "Cannot do"
 )
 
 adv_stupid = Macro(
     advanced & stupid,
-    "ADV_STUPID",
-    "Assumes the player has knowledge of advanced-level tricks and can execute tricks rated stupid"
+    "Advanced & Stupid Tricks",
+    "Assumes the player has knowledge of advanced-level tricks and can execute tricks rated stupid",
+    "Can do",
+    "Cannot do"
 )
 
 obs_hard = Macro(
     obscure & hard,
-    "OBS_HARD",
-    "Assumes the player has knowledge of obscure tricks and can execute tricks rated hard"
+    "Obscure & Hard Tricks",
+    "Assumes the player has knowledge of obscure tricks and can execute tricks rated hard",
+    "Can do",
+    "Cannot do"
 )
 
 obs_vhard = Macro(
     obscure & vhard,
-    "OBS_VHARD",
-    "Assumes the player has knowledge of obscure tricks and can execute tricks rated very hard"
+    "Obscure & Very Hard Tricks",
+    "Assumes the player has knowledge of obscure tricks and can execute tricks rated very hard",
+    "Can do",
+    "Cannot do"
 )
 
 obs_ext = Macro(
     obscure & extreme,
-    "OBS_EXT",
-    "Assumes the player has knowledge of obscure tricks and can execute tricks rated extreme"
+    "Obscure & Extreme Tricks",
+    "Assumes the player has knowledge of obscure tricks and can execute tricks rated extreme",
+    "Can do",
+    "Cannot do"
 )
 
 obs_stupid = Macro(
     obscure & stupid,
-    "OBS_STUPID",
-    "Assumes the player has knowledge of obscure tricks and can execute tricks rated stupid"
+    "Obscure & Stupid Tricks",
+    "Assumes the player has knowledge of obscure tricks and can execute tricks rated stupid",
+    "Can do",
+    "Cannot do"
 )
 
 # Options
