@@ -56,6 +56,17 @@ class MapAllocation(Allocation):
             if low == high:return low
             return self.random.randrange(low, high)
 
+        def remove_conflicting_templates(conflicts, templates, template_index):
+            weight = 0
+            for conflict in conflicts:
+                if conflict in template_index:
+                    conflict_index = template_index[conflict]
+                    if conflict_index < 0: continue
+                    weight += templates[conflict_index].weight
+                    templates[conflict_index] = None
+                    template_index[conflict] = -1
+            return weight
+
         templates = list(data.template_constraints)
         target_template_count = get_template_count(settings)
 
@@ -79,13 +90,7 @@ class MapAllocation(Allocation):
 
         # Remove conflicting templates from required templates
         for template in picked_templates:
-            for conflict in template.conflicts_names:
-                if conflict in template_index:
-                    conflict_index = template_index[conflict]
-                    if conflict_index < 0: continue
-                    removed_weight += templates[conflict_index].weight
-                    templates[conflict_index] = None
-                    template_index[conflict] = -1
+            removed_weight += remove_conflicting_templates(template.conflicts_names, templates, template_index)
 
         # Remove excluded templates
         excluded_constraints = {
@@ -98,13 +103,7 @@ class MapAllocation(Allocation):
             for template in data.template_constraints
             if template.name in excluded_constraints
         ]
-        for conflict in excluded_templates:
-            if conflict in template_index:
-                conflict_index = template_index[conflict]
-                if conflict_index < 0: continue
-                removed_weight += templates[conflict_index].weight
-                templates[conflict_index] = None
-                template_index[conflict] = -1
+        removed_weight += remove_conflicting_templates(excluded_templates, templates, template_index)
 
         while len(templates) > 0 and len(picked_templates) < target_template_count:
             if update_table:
@@ -129,14 +128,8 @@ class MapAllocation(Allocation):
 
             picked_templates.append(current_template)
 
-            # remove all conflicting templates
-            for conflict in current_template.conflicts_names:
-                if conflict in template_index:
-                    conflict_index = template_index[conflict]
-                    if conflict_index < 0: continue
-                    removed_weight += templates[conflict_index].weight
-                    templates[conflict_index] = None
-                    template_index[conflict] = -1
+            # Remove all conflicting templates
+            removed_weight += remove_conflicting_templates(current_template.conflicts_names, templates, template_index)
 
             if (removed_weight / total_weight) > 0.35:
                 update_table = True
@@ -151,6 +144,7 @@ class MapAllocation(Allocation):
             for change in template.changes:
                 self.edge_replacements[(change.from_location, change.to_location)] = change
             self.map_modifications.append(template.template_file)
+
 
     def construct_set_seed(self, data, settings, picked_templates: set[str], map_transition_shuffle_order: list[int], start_location: str):
         self.map_modifications = list(data.default_map_modifications)
