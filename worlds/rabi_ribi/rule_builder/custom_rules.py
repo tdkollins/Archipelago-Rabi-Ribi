@@ -103,14 +103,14 @@ class TrickDifficultyRule(rules.Rule[RabiRibiWorldBase], game=GAME_NAME):
 
         def explain_rule_glitched(self, state: CollectionState | None, glitched_state: CollectionState | None, depth: int) -> list[JSONMessagePart]:
             result = evaluate_rule(self, state, glitched_state)
-            name = Knowledge.get_option_name(self.value)
+            name = TrickDifficulty.get_option_name(self.value)
             indent = get_indentation(depth)
             verb = "Can do" if result != LogicState.CannotReach else "Cannot do"
             color = get_logic_color(result)
             return [
                 {"type": "text", "text": f"{indent}{verb} "},
                 {"type": "color", "color": color, "text": name},
-                {"type": "text", "text": f"tricks"},
+                {"type": "text", "text": f" tricks"},
                 *get_out_of_logic_suffix(result)
             ]
 
