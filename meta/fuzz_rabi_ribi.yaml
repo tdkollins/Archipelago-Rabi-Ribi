@@ -1,5 +1,4 @@
 Rabi-Ribi:
-  exclude_constraints: []
   required_constraints: []
   fuzz_constraints:
     - option: rainbow_shot_in_logic
