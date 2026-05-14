@@ -1,4 +1,5 @@
 Rabi-Ribi:
+  required_constraints: []
   fuzz_constraints:
     - option: rainbow_shot_in_logic
       if_value: 'true'

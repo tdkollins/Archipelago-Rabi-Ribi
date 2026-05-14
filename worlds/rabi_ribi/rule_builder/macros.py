@@ -52,7 +52,7 @@ hard = Macro(
 )
 
 vhard = Macro(
-    TrickDifficultyRule(TrickDifficulty.option_v_hard),
+    TrickDifficultyRule(TrickDifficulty.option_very_hard),
     "Very Hard Tricks",
     "Assumes the player can execute tricks rated very hard",
     "Can do",

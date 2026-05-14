@@ -1,13 +1,16 @@
+import bisect
 import logging
 
 from random import Random
-from typing import Any
+from typing import Any, override
+from Options import Accessibility
 from worlds.AutoWorld import World
 from .constants import GAME_NAME
-from .data import data
+from .data import data as game_data
 from .existing_randomizer.analyzer import Analyzer
 from .existing_randomizer.dataparser import RandomizerData
 from .existing_randomizer.allocation import Allocation
+from .options import RabiRibiOptions
 
 logger = logging.getLogger(GAME_NAME)
 MAX_ATTEMPTS = 10000
@@ -36,6 +39,112 @@ class MapAllocation(Allocation):
 
         # Choose Starting Location
         self.choose_starting_location(data, settings)
+
+    @override
+    def choose_constraint_templates(self, data, settings):        
+        self.edge_replacements = {}
+
+        def get_template_count(settings):
+            low = int(0.5 * settings.constraint_changes)
+            high = int(1.5 * settings.constraint_changes + 2)
+            if settings.constraint_changes <= 0:
+                high = 0
+            if settings.min_constraint_changes >= 0:
+                low = int(settings.min_constraint_changes)
+            if settings.max_constraint_changes >= 0:
+                high = int(settings.max_constraint_changes + 1)
+            if low == high:return low
+            return self.random.randrange(low, high)
+
+        def remove_conflicting_templates(conflicts, templates, template_index):
+            weight = 0
+            for conflict in conflicts:
+                if conflict in template_index:
+                    conflict_index = template_index[conflict]
+                    if conflict_index < 0: continue
+                    weight += templates[conflict_index].weight
+                    templates[conflict_index] = None
+                    template_index[conflict] = -1
+            return weight
+
+        templates = list(data.template_constraints)
+        target_template_count = get_template_count(settings)
+
+        # Force selection of required templates
+        ap_options: RabiRibiOptions = settings.ap_options
+        required_constraints = {
+            constraint.logic_key
+            for constraint in game_data.constraints
+            if constraint.name in ap_options.required_constraints
+        }
+        picked_templates = [
+            template
+            for template in data.template_constraints
+            if template.name in required_constraints
+        ]
+        update_table = False
+        template_weights = data.initial_template_weights.copy()
+        template_index = data.initial_template_index.copy()
+        total_weight = template_weights[-1]
+        removed_weight = 0
+
+        # Remove conflicting templates from required templates
+        for template in picked_templates:
+            removed_weight += remove_conflicting_templates(template.conflicts_names, templates, template_index)
+
+        # Remove excluded templates
+        excluded_constraints = {
+            constraint.logic_key
+            for constraint in game_data.constraints
+            if constraint.name in ap_options.exclude_constraints
+        }
+        excluded_templates = [
+            template
+            for template in data.template_constraints
+            if template.name in excluded_constraints
+        ]
+        removed_weight += remove_conflicting_templates(excluded_templates, templates, template_index)
+
+        while len(templates) > 0 and len(picked_templates) < target_template_count:
+            if update_table:
+                update_table = False
+                i = 0
+                total_weight = 0
+                removed_weight = 0
+                template_index.clear()
+                for t in templates:
+                    total_weight += t.weight
+                    template_weights[i] = total_weight
+                    template_index[t.name] = i
+                    i += 1
+                template_weights = template_weights[:i]
+
+            while True:
+                index = self.random.randrange(total_weight)
+                picked = bisect.bisect(template_weights, index)
+                current_template = templates[picked]
+                if current_template != None:
+                    break
+
+            picked_templates.append(current_template)
+
+            # Remove all conflicting templates
+            removed_weight += remove_conflicting_templates(current_template.conflicts_names, templates, template_index)
+
+            if (removed_weight / total_weight) > 0.35:
+                update_table = True
+                new_templates = []
+                for t in templates:
+                    if t == None: continue
+                    new_templates.append(t)
+                templates = new_templates
+
+        self.picked_templates = picked_templates
+        for template in picked_templates:
+            for change in template.changes:
+                self.edge_replacements[(change.from_location, change.to_location)] = change
+            self.map_modifications.append(template.template_file)
+
 
     def construct_set_seed(self, data, settings, picked_templates: set[str], map_transition_shuffle_order: list[int], start_location: str):
         self.map_modifications = list(data.default_map_modifications)
@@ -118,8 +227,13 @@ class MapAnalyzer(Analyzer):
             self.error_message = 'No locations are reachable at the start.'
             return False
 
-        if not self.verify_all_locations_reachable(starting_variables, backward_exitable):
-            self.error_message = 'Not all locations are reachable.'
+        ap_options: RabiRibiOptions = self.settings.ap_options
+        if ap_options.accessibility == Accessibility.option_full:
+            if not self.verify_all_locations_reachable(starting_variables, backward_exitable):
+                self.error_message = 'Not all locations are reachable.'
+                return False
+        elif not self.verify_most_locations_reachable(starting_variables, backward_exitable):
+            self.error_message = 'Many locations are not reachable.'
             return False
 
         return True
@@ -129,7 +243,7 @@ class MapAnalyzer(Analyzer):
         reachable, _, _, _ = self.verify_reachable_items(starting_variables, backward_exitable)
 
         # Convert item locations back to actual names
-        item_location_reachable = {data.get_location_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
+        item_location_reachable = {game_data.get_location_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
         return len(item_location_reachable) > 0
 
     def verify_all_locations_reachable(self, starting_variables, backward_exitable):
@@ -142,6 +256,24 @@ class MapAnalyzer(Analyzer):
         reachable, _, _, _ = self.verify_reachable_items(variables, backward_exitable)
 
         # Convert item locations back to actual names
-        item_location_reachable = {data.get_location_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
+        item_location_reachable = {game_data.get_location_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
 
         return self.locations_to_reach.issubset(item_location_reachable)
+
+    # TODO: Remove this after eggs can be placed in other worlds.
+    def verify_most_locations_reachable(self, starting_variables, backward_exitable):
+        """Verifies that most locations are reachable if player has all items."""
+        # Mark all upgrades as obtained already
+        variables = dict(starting_variables)
+        for item in self.data.must_be_reachable:
+            variables[item] = True
+
+        reachable, _, _, _ = self.verify_reachable_items(variables, backward_exitable)
+
+        # Convert item locations back to actual names
+        item_location_reachable = {game_data.get_location_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
+        missing_locations = self.locations_to_reach - item_location_reachable
+
+        # For now, require at least 60% of locations to be reachable
+        percentage_missing = len(missing_locations) / len(self.locations_to_reach)
+        return percentage_missing < 0.4
