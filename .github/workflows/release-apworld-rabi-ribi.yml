@@ -1,8 +1,13 @@
 name: Release APWorld for Rabi-Ribi
+
 on:
   push:
     tags:
       - '**'
+
+permissions:
+  contents: 'write' # Required for release
+
 jobs:
   release:
     uses: Eijebong/ap-actions/.github/workflows/release-apworld.yml@main
