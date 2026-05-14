@@ -1,7 +1,10 @@
 name: Fuzz APWorld for Rabi-Ribi
+
 on:
   push:
   pull_request:
+
+permissions: {}
 
 env:
   ap-version: 'latest'
