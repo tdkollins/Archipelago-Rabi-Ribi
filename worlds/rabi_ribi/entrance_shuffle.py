@@ -227,11 +227,13 @@ class MapAnalyzer(Analyzer):
             self.error_message = 'No locations are reachable at the start.'
             return False
 
-        # Ignore accessibility requirements when on minimal accessibility
         ap_options: RabiRibiOptions = self.settings.ap_options
-        if (ap_options.accessibility == Accessibility.option_full
-            and not self.verify_all_locations_reachable(starting_variables, backward_exitable)):
-            self.error_message = 'Not all locations are reachable.'
+        if ap_options.accessibility == Accessibility.option_full:
+            if not self.verify_all_locations_reachable(starting_variables, backward_exitable):
+                self.error_message = 'Not all locations are reachable.'
+                return False
+        elif not self.verify_most_locations_reachable(starting_variables, backward_exitable):
+            self.error_message = 'Many locations are not reachable.'
             return False
 
         return True
@@ -257,3 +259,21 @@ class MapAnalyzer(Analyzer):
         item_location_reachable = {game_data.get_location_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
 
         return self.locations_to_reach.issubset(item_location_reachable)
+
+    # TODO: Remove this after eggs can be placed in other worlds.
+    def verify_most_locations_reachable(self, starting_variables, backward_exitable):
+        """Verifies that most locations are reachable if player has all items."""
+        # Mark all upgrades as obtained already
+        variables = dict(starting_variables)
+        for item in self.data.must_be_reachable:
+            variables[item] = True
+
+        reachable, _, _, _ = self.verify_reachable_items(variables, backward_exitable)
+
+        # Convert item locations back to actual names
+        item_location_reachable = {game_data.get_location_ap_name(name[4:]) for name in reachable if name.startswith('LOC_')}
+        missing_locations = self.locations_to_reach - item_location_reachable
+
+        # For now, require at least 60% of locations to be reachable
+        percentage_missing = len(missing_locations) / len(self.locations_to_reach)
+        return percentage_missing < 0.4
