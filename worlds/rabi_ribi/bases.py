@@ -17,8 +17,7 @@ logger = logging.getLogger(GAME_NAME)
 
 class RabiRibiWorldBase(World):
     options_dataclass = RabiRibiOptions
-    # pyright: ignore[reportIncompatibleVariableOverride]
-    options: RabiRibiOptions
+    options: RabiRibiOptions # pyright: ignore[reportIncompatibleVariableOverride]
     rule_macros: dict[str, Rule.Resolved]
 
     start_location: str

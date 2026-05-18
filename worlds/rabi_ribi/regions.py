@@ -119,51 +119,49 @@ class RegionHelper:
         :returns: None
         """
         self.multiworld.get_region("Menu", self.player).connect(self.world.get_region(self.start_location))
-        added_exits: set[str] = set()
+        added_entrances: set[tuple[str, str]] = set()
 
         # Add Map Transitions
         for (idx, x) in enumerate(self.map_transition_shuffle_order):
             left = self.randomizer_data.walking_left_transitions[x]
             right = self.randomizer_data.walking_right_transitions[idx]
-            left_name = data.get_region_by_logic_key(left.origin_location).name
-            right_name = data.get_region_by_logic_key(right.origin_location).name
-
-            ltr_entrance = f'{left_name} -> {right_name}'
-            if ltr_entrance not in added_exits:
-                added_exits.add(ltr_entrance)
-                self._get_region(left_name).add_exits([right_name])
-
-            rtl_entrance = f'{right_name} -> {left_name}'
-            if rtl_entrance not in added_exits:
-                self._get_region(right_name).add_exits([left_name])
-                added_exits.add(rtl_entrance)
+            left_region_name = data.get_region_by_logic_key(left.origin_location).name
+            right_region_name = data.get_region_by_logic_key(right.origin_location).name
+            self.create_entrance(left_region_name, right_region_name, added_entrances)
+            self.create_entrance(right_region_name, left_region_name, added_entrances)
 
         # Parse logic into Rule Builder rules
         parse_connections()
 
         changes = {
-            f"{change.from_region} -> {change.to_region}": change
+            (change.from_region, change.to_region): change
             for constraint in data.constraints
             for change in constraint.changes
             if constraint.logic_key in self.picked_templates
         }
 
         for region in [r for r in data.regions if self._region_filter(r)]:
-            from_location = region.name
-            if from_location not in self.regions:
+            from_region_name = region.name
+            if from_region_name not in self.regions:
                 continue
 
-            for to_location, default_rule in region.connections.items():
-                if to_location not in self.regions:
+            for to_region_name, default_rule in region.connections.items():
+                if to_region_name not in self.regions:
                     continue
 
-                entrance_name = f'{from_location} -> {to_location}'
-                rule = changes[entrance_name].rule if entrance_name in changes else default_rule
+                entrance = (from_region_name, to_region_name)
+                rule = changes[entrance].rule if entrance in changes else default_rule
+                self.create_entrance(from_region_name, to_region_name, added_entrances, rule)
 
-                # Ignore entrances already added by map transitions
-                if entrance_name not in added_exits:
-                    self._get_region(from_location).add_exits([to_location], { to_location: rule })
-                    added_exits.add(entrance_name)
+    def create_entrance(self, from_region_name: str, to_region_name: str, added_entrances: set[tuple[str, str]], rule: rules.Rule = rules.True_()):
+        entrance = (from_region_name, to_region_name)
+
+        # Ignore entrances already added by map transitions
+        if entrance not in added_entrances:
+            from_region = self._get_region(from_region_name)
+            to_region = self._get_region(to_region_name)
+            self.world.create_entrance(from_region, to_region, rule)
+            added_entrances.add(entrance)
 
 
     def set_locations(self):
