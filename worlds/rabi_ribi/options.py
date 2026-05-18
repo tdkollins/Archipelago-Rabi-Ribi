@@ -286,7 +286,7 @@ class AllowLaggyBackgrounds(Toggle):
     If this flag is true, the randomizer will add backgrounds that introduce lag
     to the pool of backgrounds to choose from when shuffling backgrounds.
     """
-    display_name = "Allow Difficult Backgrounds"
+    display_name = "Allow Laggy Backgrounds"
 
 
 class AllowDifficultBackgrounds(Toggle):
