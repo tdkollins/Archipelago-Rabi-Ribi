@@ -3,7 +3,7 @@
     "id": 0,
     "name": "Easter Egg",
     "logic_key": "EASTER_EGG",
-    "classification": "progression_skip_balancing",
+    "classification": "progression_deprioritized_skip_balancing",
     "tags": ["Collectables"],
     "max_count": 80,
     "exclude_from_default_pool": true
@@ -102,7 +102,7 @@
     "id": 14,
     "name": "Chaos Rod",
     "logic_key": "CHAOS_ROD",
-    "classification": "progression",
+    "classification": "progression_deprioritized_skip_balancing",
     "tags": ["Upgrades", "Magic"]
   },
   {
@@ -165,7 +165,7 @@
     "id": 22,
     "name": "Sunny Beam",
     "logic_key": "SUNNY_BEAM",
-    "classification": "progression",
+    "classification": "progression_deprioritized_skip_balancing",
     "tags": ["Upgrades", "Magic"]
   },
   {
@@ -187,7 +187,7 @@
     "id": 25,
     "name": "Healing Staff",
     "logic_key": "HEALING_STAFF",
-    "classification": "progression",
+    "classification": "progression_deprioritized_skip_balancing",
     "tags": ["Upgrades", "Magic"]
   },
   {
@@ -201,7 +201,7 @@
     "id": 27,
     "name": "Explode Shot",
     "logic_key": "EXPLODE_SHOT",
-    "classification": "progression",
+    "classification": "progression_deprioritized_skip_balancing",
     "tags": ["Upgrades", "Magic"]
   },
   {
