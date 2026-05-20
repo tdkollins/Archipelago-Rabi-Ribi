@@ -255,11 +255,7 @@ class RegionHelper:
     def add_event(self, event_name: str, region_key: str, rule: Rule[RabiRibiWorldBase] | Macro | None = None):
         """Places a locked item to represent an in-game event."""
         region_name = data.get_region_ap_name(region_key)
-        event = RabiRibiLocation(self.player, event_name, None, self._get_region(region_name))
-        event.place_locked_item(RabiRibiItem(event_name, ItemClassification.progression, None, self.player))
-        self._get_region(region_name).locations.append(event)
-        if rule is not None:
-            self.world.set_rule(event, rule)
+        self._get_region(region_name).add_event(event_name, event_name, rule, RabiRibiLocation, RabiRibiItem, show_in_spoiler=False)
 
 
     def configure_slot_data(self):
