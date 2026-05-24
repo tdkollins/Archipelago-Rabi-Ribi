@@ -371,7 +371,9 @@ class RabiRibiContext(TrackerGameContext): # type: ignore
             )
 
         room_x = x // 20
-        room_y = 0 if y < 12 else (((y - 12) // 45) * 4) + (((y - 12) % 45) // 11)
+        room_y = (y // 45) * 4
+        if y % 45 >= 12:
+            room_y += ((y % 45) - 1) // 11
 
         if self.current_room != (room_x, room_y):
             self.current_room = (room_x, room_y)
