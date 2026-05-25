@@ -38,7 +38,7 @@ MAP_OFFSETS = [
     (3, 2),  # Island Core
     (2, 1),  # Northern Tundra
     (1, 1),  # Eastern Highlands
-    (2, -1),  # Rabi Rabi Town
+    (2, -1), # Rabi Rabi Town
     (1, 1),  # Plurkwood
     (1, 1),  # Subterranean Area
     (0, 4),  # Warp Destination
