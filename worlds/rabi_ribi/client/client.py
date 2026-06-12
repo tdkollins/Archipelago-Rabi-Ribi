@@ -699,11 +699,17 @@ async def check_for_locations(ctx: RabiRibiContext):
     if ctx.rr_interface.is_in_item_receive_animation():
         ap_location_id, coordinates = ctx.find_closest_item_location()
         if not ap_location_id:
-            # logger.warning("Detected item obtained, but unable to find location.")
             return
         if ap_location_id not in ctx.locations_checked:
             ctx.locations_checked.add(ap_location_id)
             await ctx.check_locations([ap_location_id])
+
+            # TODO: Remove this LocationScout when UT fixes issue with local item tracking
+            asyncio.create_task(ctx.send_msgs([{
+                "cmd": "LocationScouts",
+                "locations": [ap_location_id]
+            }]))
+
             await remove_exclamation_point(ctx, coordinates)
 
 async def remove_exclamation_point(ctx: RabiRibiContext, coordinates):
